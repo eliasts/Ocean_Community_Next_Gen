@@ -40,6 +40,8 @@ Shader "Mobile/Ocean" {
     			float3  objSpaceNormal : TEXCOORD3;
     			float3  lightDir : TEXCOORD4;
 				UNITY_FOG_COORDS(7)
+				half4 buv : TEXCOORD5;
+				half3 normViewDir : TEXCOORD6;
 			};
 
 			float _Size;
@@ -58,7 +60,9 @@ Shader "Mobile/Ocean" {
  
   				half4 projSource = float4(v.vertex.x, 0.0, v.vertex.z, 1.0);
     			half4 tmpProj = mul( UNITY_MATRIX_MVP, projSource);
-    			o.projTexCoord = tmpProj;
+    			//o.projTexCoord = tmpProj;
+
+				o.projTexCoord.xy = 0.5 * tmpProj.xy * float2(1, _ProjectionParams.x) / tmpProj.w + float2(0.5, 0.5);
 
     			float3 objSpaceViewDir = ObjSpaceViewDir(v.vertex);
     			float3 binormal = cross( normalize(v.normal), normalize(v.tangent.xyz) );
@@ -67,6 +71,10 @@ Shader "Mobile/Ocean" {
     			o.objSpaceNormal = v.normal;
     			o.viewDir = mul(rotation, objSpaceViewDir);
     			o.lightDir = mul(rotation, float3(_SunDir.xyz));
+
+				o.buv = half4(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03, o.bumpTexCoord.x + _WaveOffset * 0.04, o.bumpTexCoord.y);// - _WaveOffset * 0.02
+
+				o.normViewDir = normalize(o.viewDir);
                 
 				UNITY_TRANSFER_FOG(o, o.pos);
 
@@ -85,33 +93,33 @@ Shader "Mobile/Ocean" {
 			half4 _SunColor;
 
 			half4 frag (v2f i) : COLOR {
-				half3 normViewDir = normalize(i.viewDir);
-				half4 buv = half4(i.bumpTexCoord.x + _WaveOffset * 0.05, i.bumpTexCoord.y + _WaveOffset * 0.03, i.bumpTexCoord.x + _WaveOffset * 0.04, i.bumpTexCoord.y - _WaveOffset * 0.02);
-
+				//half3 normViewDir = normalize(i.viewDir);
+				//half4 buv = half4(i.bumpTexCoord.x + _WaveOffset * 0.05, i.bumpTexCoord.y + _WaveOffset * 0.03, i.bumpTexCoord.x + _WaveOffset * 0.04, i.bumpTexCoord.y - _WaveOffset * 0.02);
 				//float foamStrength = i.bumpTexCoord.z * _FoamFactor;
 
-				half foam = clamp( tex2D(_Foam, i.bumpTexCoord.xy)*tex2D(_Foam, buv.zy) -0.15, 0.0, 1.0) * i.bumpTexCoord.z * _FoamFactor;
+				half foam = clamp( tex2D(_Foam, i.bumpTexCoord.xy)*tex2D(_Foam, i.buv.zy) -0.15, 0.0, 1.0) * i.bumpTexCoord.z * _FoamFactor;
 								
-				half3 tangentNormal0 = (tex2D(_Bump, buv.xy) * 2 )+( tex2D(_Bump, buv.zw) * 2 ) - 2 + (  tex2D(_FoamBump, i.bumpTexCoord.xy)*4   - 1)*foam; 
+				half3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2 )+( tex2D(_Bump, i.buv.zw) * 2 ) - 2 + (  tex2D(_FoamBump, i.bumpTexCoord.xy)*4   - 1)*foam; 
 
 				half3 tangentNormal = normalize(tangentNormal0 );
 
 
-				float2 projTexCoord = 0.5 * i.projTexCoord.xy * float2(1, _ProjectionParams.x) / i.projTexCoord.w + float2(0.5, 0.5);
+				//float2 projTexCoord = 0.5 * i.projTexCoord.xy * float2(1, _ProjectionParams.x) / i.projTexCoord.w + float2(0.5, 0.5);
+
 				half4 result = half4(0, 0, 0, 1);
 
-				float2 bumpSampleOffset = (i.objSpaceNormal.xz  + tangentNormal.xy) * 0.05  + projTexCoord.xy;
+				float2 bumpSampleOffset = (i.objSpaceNormal.xz  + tangentNormal.xy) * 0.05  + i.projTexCoord.xy;// + projTexCoord.xy
 	
 				half3 reflection = tex2D( _Reflection,  bumpSampleOffset) * _SurfaceColor ;
 				half3 refraction = tex2D( _Refraction,  bumpSampleOffset ) * _WaterColor ;
 
-				float fresnelLookup = dot(tangentNormal, normViewDir);
+				float fresnelLookup = dot(tangentNormal, i.normViewDir);
 
 				//float bias = 0.06;
 				//float power = 4.0;
 				float fresnelTerm = 0.06 + (1.0 - 0.06)*pow(1.0 - fresnelLookup, 4);
 
-				float3 halfVec = normalize(normViewDir - normalize(i.lightDir));
+				float3 halfVec = normalize(i.normViewDir - normalize(i.lightDir));
 
 				float specular = pow(max(dot(halfVec,  tangentNormal) , 0.0), 250.0 * _Specularity ) *(1.2-foam);
 
@@ -151,9 +159,11 @@ Shader "Mobile/Ocean" {
     			float4 pos : SV_POSITION;
     			half3  bumpTexCoord : TEXCOORD1;
     			float3  viewDir : TEXCOORD2;
-    			float3  objSpaceNormal : TEXCOORD3;
     			float3  lightDir : TEXCOORD4;
 				UNITY_FOG_COORDS(7)
+				half4 buv : TEXCOORD5;
+				half3 normViewDir : TEXCOORD6;
+				float3 halfVec : TEXCOORD0;
 			};
 
 			float _Size;
@@ -168,17 +178,19 @@ Shader "Mobile/Ocean" {
     			o.bumpTexCoord.xy = v.vertex.xz*_Size;///float2(_Size.x, _Size.z)*5;
     			o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
     			o.bumpTexCoord.z = v.tangent.w;
-    
-  				half4 projSource = float4(v.vertex.x, 0.0, v.vertex.z, 1.0);
-    			half4 tmpProj = mul( UNITY_MATRIX_MVP, projSource);
 
     			float3 objSpaceViewDir = ObjSpaceViewDir(v.vertex);
     			float3 binormal = cross( normalize(v.normal), normalize(v.tangent.xyz) );
 				float3x3 rotation = float3x3( v.tangent.xyz, binormal, v.normal );
     
-    			o.objSpaceNormal = v.normal;
     			o.viewDir = mul(rotation, objSpaceViewDir);
     			o.lightDir = mul(rotation, float3(_SunDir.xyz));
+
+				o.buv = half4(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03, o.bumpTexCoord.x + _WaveOffset * 0.04, o.bumpTexCoord.y);
+
+				o.normViewDir = normalize(o.viewDir);
+
+				o.halfVec = normalize(o.normViewDir - normalize(o.lightDir));
 
 				UNITY_TRANSFER_FOG(o, o.pos);
 
@@ -194,25 +206,25 @@ Shader "Mobile/Ocean" {
             half4 _SunColor;
 
 			half4 frag (v2f i) : COLOR {
-				half3 normViewDir = normalize(i.viewDir);
-			   half4 buv = half4(i.bumpTexCoord.x + _WaveOffset * 0.05, i.bumpTexCoord.y + _WaveOffset * 0.03, i.bumpTexCoord.x + _WaveOffset * 0.04, i.bumpTexCoord.y - _WaveOffset * 0.02);
+				//half3 normViewDir = normalize(i.viewDir);
+			  // half4 buv = half4(i.bumpTexCoord.x + _WaveOffset * 0.05, i.bumpTexCoord.y + _WaveOffset * 0.03, i.bumpTexCoord.x + _WaveOffset * 0.04, i.bumpTexCoord.y - _WaveOffset * 0.02);
                 
-				half3 tangentNormal0 = (tex2D(_Bump, buv.xy) * 2.0) + (tex2D(_Bump, buv.zw) * 2.0) - 2;
+				half3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2.0) + (tex2D(_Bump, i.buv.zw) * 2.0) - 2;
 
 				half3 tangentNormal = normalize(tangentNormal0);
 
 				half4 result = half4(0, 0, 0, 1);
                 
-				float fresnelLookup = dot(tangentNormal, normViewDir);
+				float fresnelLookup = dot(tangentNormal, i.normViewDir);
 				//float bias = 0.06;
 				//float power = 4.0;
 				float fresnelTerm = 0.06 + (1.0-0.06)*pow(1.0 - fresnelLookup, 4.0);
 
 				half4 foam = clamp(tex2D(_Foam, i.bumpTexCoord.xy * 1.0)  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z * _FoamFactor;
 
-				float3 halfVec = normalize(normViewDir - normalize(i.lightDir));
+				//float3 halfVec = normalize(i.normViewDir - normalize(i.lightDir));
 
-				float specular = pow(max(dot(halfVec,  tangentNormal) , 0.0), 250.0 * _Specularity ) *(1.2-foam);
+				float specular = pow(max(dot(i.halfVec,  tangentNormal) , 0.0), 250.0 * _Specularity ) *(1.2-foam);
                 
 				result.rgb = lerp(_WaterColor*_FakeUnderwaterColor, _SunColor.rgb*_SurfaceColor*0.85, fresnelTerm*0.65) + clamp(foam.r, 0.0, 1.0)*_SunColor.b + specular*_SunColor.rgb;
 
@@ -240,9 +252,11 @@ Shader "Mobile/Ocean" {
     			float4 pos : SV_POSITION;
     			half2  bumpTexCoord : TEXCOORD1;
     			float3  viewDir : TEXCOORD2;
-    			float3  objSpaceNormal : TEXCOORD3;
     			float3  lightDir : TEXCOORD4;
 				UNITY_FOG_COORDS(7)
+				half4 buv : TEXCOORD5;
+				half3 normViewDir : TEXCOORD6;
+				float3 halfVec : TEXCOORD0;
 			};
 
 			float _Size;
@@ -257,16 +271,18 @@ Shader "Mobile/Ocean" {
     			o.bumpTexCoord.xy = v.vertex.xz*_Size;///float2(_Size.x, _Size.z)*5;
     			o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
     
-  				half4 projSource = float4(v.vertex.x, 0.0, v.vertex.z, 1.0);
-    			half4 tmpProj = mul( UNITY_MATRIX_MVP, projSource);
-
     			float3 objSpaceViewDir = ObjSpaceViewDir(v.vertex);
     			float3 binormal = cross( normalize(v.normal), normalize(v.tangent.xyz) );
 				float3x3 rotation = float3x3( v.tangent.xyz, binormal, v.normal );
     
-    			o.objSpaceNormal = v.normal;
     			o.viewDir = mul(rotation, objSpaceViewDir);
     			o.lightDir = mul(rotation, float3(_SunDir.xyz));
+
+				o.buv = half4(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03, o.bumpTexCoord.x + _WaveOffset * 0.04, o.bumpTexCoord.y);
+
+				o.normViewDir = normalize(o.viewDir);
+
+				o.halfVec = normalize(o.normViewDir - normalize(o.lightDir));
 
 				UNITY_TRANSFER_FOG(o, o.pos);
 
@@ -282,23 +298,23 @@ Shader "Mobile/Ocean" {
             half4 _SunColor;
 
 			half4 frag (v2f i) : COLOR {
-				half3 normViewDir = normalize(i.viewDir);
-			   half4 buv = half4(i.bumpTexCoord.x + _WaveOffset * 0.05, i.bumpTexCoord.y + _WaveOffset * 0.03, i.bumpTexCoord.x + _WaveOffset * 0.04, i.bumpTexCoord.y - _WaveOffset * 0.02);
+				//half3 normViewDir = normalize(i.viewDir);
+				//half4 buv = half4(i.bumpTexCoord.x + _WaveOffset * 0.05, i.bumpTexCoord.y + _WaveOffset * 0.03, i.bumpTexCoord.x + _WaveOffset * 0.04, i.bumpTexCoord.y - _WaveOffset * 0.02);
                 
-				half3 tangentNormal0 = (tex2D(_Bump, buv.xy) * 2.0) + (tex2D(_Bump, buv.zw) * 2.0) - 2;
+				half3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2.0) + (tex2D(_Bump, i.buv.zw) * 2.0) - 2;
 
 				half3 tangentNormal = normalize(tangentNormal0);
 
 				half4 result = half4(0, 0, 0, 1);
                 
-				float fresnelLookup = dot(tangentNormal, normViewDir);
+				float fresnelLookup = dot(tangentNormal,i. normViewDir);
 				//float bias = 0.06;
 				//float power = 4.0;
 				float fresnelTerm = 0.06 + (1.0-0.06)*pow(1.0 - fresnelLookup, 4.0);
 
-				float3 halfVec = normalize(normViewDir - normalize(i.lightDir));
+				//float3 halfVec = normalize(i.normViewDir - normalize(i.lightDir));
 
-				float specular = pow(max(dot(halfVec,  tangentNormal) , 0.0), 250.0 * _Specularity );
+				float specular = pow(max(dot(i.halfVec,  tangentNormal) , 0.0), 250.0 * _Specularity );
                 
 				result.rgb = lerp(_WaterColor*_FakeUnderwaterColor, _SunColor.rgb*_SurfaceColor*0.85, fresnelTerm*0.65)  + specular*_SunColor.rgb;
 
@@ -329,9 +345,11 @@ Shader "Mobile/Ocean" {
     			float4 pos : SV_POSITION;
     			half3  bumpTexCoord : TEXCOORD1;
     			float3  viewDir : TEXCOORD2;
-    			float3  objSpaceNormal : TEXCOORD3;
     			float3  lightDir : TEXCOORD4;
 				UNITY_FOG_COORDS(7)
+				half4 buv : TEXCOORD5;
+				half3 normViewDir : TEXCOORD6;
+				float3 halfVec : TEXCOORD0;
 			};
 
 			float _Size;
@@ -346,17 +364,19 @@ Shader "Mobile/Ocean" {
     			o.bumpTexCoord.xy = v.vertex.xz*_Size;///float2(_Size.x, _Size.z)*5;
     			o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
     			o.bumpTexCoord.z = v.tangent.w;
-    
-  				half4 projSource = float4(v.vertex.x, 0.0, v.vertex.z, 1.0);
-    			half4 tmpProj = mul( UNITY_MATRIX_MVP, projSource);
 
     			float3 objSpaceViewDir = ObjSpaceViewDir(v.vertex);
     			float3 binormal = cross( normalize(v.normal), normalize(v.tangent.xyz) );
 				float3x3 rotation = float3x3( v.tangent.xyz, binormal, v.normal );
     
-    			o.objSpaceNormal = v.normal;
     			o.viewDir = mul(rotation, objSpaceViewDir);
     			o.lightDir = mul(rotation, float3(_SunDir.xyz));
+
+				o.buv = half4(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03, o.bumpTexCoord.x + _WaveOffset * 0.04, o.bumpTexCoord.y);
+
+				o.normViewDir = normalize(o.viewDir);
+
+				o.halfVec = normalize(o.normViewDir - normalize(o.lightDir));
 
 				UNITY_TRANSFER_FOG(o, o.pos);
 
@@ -373,25 +393,25 @@ Shader "Mobile/Ocean" {
             half4 _SunColor;
 
 			half4 frag (v2f i) : COLOR {
-				half3 normViewDir = normalize(i.viewDir);
-			   half4 buv = half4(i.bumpTexCoord.x + _WaveOffset * 0.05, i.bumpTexCoord.y + _WaveOffset * 0.03, i.bumpTexCoord.x + _WaveOffset * 0.04, i.bumpTexCoord.y - _WaveOffset * 0.02);
+				//half3 normViewDir = normalize(i.viewDir);
+				//half4 buv = half4(i.bumpTexCoord.x + _WaveOffset * 0.05, i.bumpTexCoord.y + _WaveOffset * 0.03, i.bumpTexCoord.x + _WaveOffset * 0.04, i.bumpTexCoord.y - _WaveOffset * 0.02);
                 
-				half3 tangentNormal0 = (tex2D(_Bump, buv.xy) * 2.0) + (tex2D(_Bump, buv.zw) * 2.0) - 2;
+				half3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2.0) + (tex2D(_Bump, i.buv.zw) * 2.0) - 2;
 
 				half3 tangentNormal = normalize(tangentNormal0);
 
 				half4 result = half4(0, 0, 0, 1);
                 
-				float fresnelLookup = dot(tangentNormal, normViewDir);
+				float fresnelLookup = dot(tangentNormal, i.normViewDir);
 				//float bias = 0.06;
 				//float power = 4.0;
 				float fresnelTerm = 0.06 + (1.0-0.06)*pow(1.0 - fresnelLookup, 4.0);
 
 				half4 foam = clamp(tex2D(_Foam, i.bumpTexCoord.xy * 1.0)  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z * _FoamFactor;;
 
-				float3 halfVec = normalize(normViewDir - normalize(i.lightDir));
+				//float3 halfVec = normalize(i.normViewDir - normalize(i.lightDir));
 
-				float specular = pow(max(dot(halfVec,  tangentNormal) , 0.0), 250.0 * _Specularity ) *(1.2-foam);
+				float specular = pow(max(dot(i.halfVec,  tangentNormal) , 0.0), 250.0 * _Specularity ) *(1.2-foam);
                 
                 
 				result.rgb = lerp(_WaterColor*_FakeUnderwaterColor, _SunColor.rgb*_SurfaceColor*0.85, fresnelTerm*0.65) + clamp(foam.r, 0.0, 1.0)*_SunColor.b + specular*_SunColor.rgb;

@@ -13,6 +13,8 @@ $RECYCLE.BIN/
 *.msi
 *.msm
 *.msp
+*.sln
+*.csproj
 
 # Windows shortcuts
 *.lnk
@@ -45,3 +47,6 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+
+#Ignore these directories
+Library

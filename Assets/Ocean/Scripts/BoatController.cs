@@ -35,7 +35,7 @@ public class BoatController : Boyancy{
 
 	public void initPosition()
 	{
-		#if UNITY_ANDROID
+		#if UNITY_ANDROID && !UNITY_EDITOR
 		m_androidInputInit.x = Input.acceleration.y;
 		m_androidInputInit.y = Input.acceleration.x;
 		#endif
@@ -43,7 +43,7 @@ public class BoatController : Boyancy{
 
 	void Update()
 	{
-		#if UNITY_ANDROID
+		#if UNITY_ANDROID && !UNITY_EDITOR
 		Vector2 touchInput = Vector2.zero;
 		touchInput.x =  -(Input.acceleration.y - m_androidInputInit.y);
 		touchInput.y =  Input.acceleration.x - m_androidInputInit.x;

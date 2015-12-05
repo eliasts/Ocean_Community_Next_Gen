@@ -33,9 +33,11 @@ Shader "Mobile/OceanL2" {
     			float4 pos : SV_POSITION;
     			half2  bumpTexCoord : TEXCOORD1;
     			float3  viewDir : TEXCOORD2;
-    			float3  objSpaceNormal : TEXCOORD3;
     			float3  lightDir : TEXCOORD4;
 				UNITY_FOG_COORDS(7)
+				half4 buv : TEXCOORD5;
+				half3 normViewDir : TEXCOORD6;
+				float3 halfVec : TEXCOORD0;
 			};
 
 			float _Size;
@@ -57,9 +59,14 @@ Shader "Mobile/OceanL2" {
     			float3 binormal = cross( normalize(v.normal), normalize(v.tangent.xyz) );
 				float3x3 rotation = float3x3( v.tangent.xyz, binormal, v.normal );
     
-    			o.objSpaceNormal = v.normal;
     			o.viewDir = mul(rotation, objSpaceViewDir);
     			o.lightDir = mul(rotation, float3(_SunDir.xyz));
+
+				o.buv = half4(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03, o.bumpTexCoord.x + _WaveOffset * 0.04, o.bumpTexCoord.y);
+
+				o.normViewDir = normalize(o.viewDir);
+
+				o.halfVec = normalize(o.normViewDir - normalize(o.lightDir));
 
 				UNITY_TRANSFER_FOG(o, o.pos);
 
@@ -75,23 +82,23 @@ Shader "Mobile/OceanL2" {
             half4 _SunColor;
 
 			half4 frag (v2f i) : COLOR {
-				half3 normViewDir = normalize(i.viewDir);
-			   half4 buv = half4(i.bumpTexCoord.x + _WaveOffset * 0.05, i.bumpTexCoord.y + _WaveOffset * 0.03, i.bumpTexCoord.x + _WaveOffset * 0.04, i.bumpTexCoord.y - _WaveOffset * 0.02);
+				//half3 normViewDir = normalize(i.viewDir);
+				//half4 buv = half4(i.bumpTexCoord.x + _WaveOffset * 0.05, i.bumpTexCoord.y + _WaveOffset * 0.03, i.bumpTexCoord.x + _WaveOffset * 0.04, i.bumpTexCoord.y - _WaveOffset * 0.02);
                 
-				half3 tangentNormal0 = (tex2D(_Bump, buv.xy) * 2.0) + (tex2D(_Bump, buv.zw) * 2.0) - 2;
+				half3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2.0) + (tex2D(_Bump, i.buv.zw) * 2.0) - 2;
 
 				half3 tangentNormal = normalize(tangentNormal0);
 
 				half4 result = half4(0, 0, 0, 1);
                 
-				float fresnelLookup = dot(tangentNormal, normViewDir);
+				float fresnelLookup = dot(tangentNormal, i.normViewDir);
 				//float bias = 0.06;
 				//float power = 4.0;
 				float fresnelTerm = 0.06 + (1.0-0.06)*pow(1.0 - fresnelLookup, 4.0);
 
-				float3 halfVec = normalize(normViewDir - normalize(i.lightDir));
+				//float3 halfVec = normalize(i.normViewDir - normalize(i.lightDir));
 
-				float specular = pow(max(dot(halfVec,  tangentNormal) , 0.0), 250.0 * _Specularity );
+				float specular = pow(max(dot(i.halfVec,  tangentNormal) , 0.0), 250.0 * _Specularity );
                 
 				result.rgb = lerp(_WaterColor*_FakeUnderwaterColor, _SunColor.rgb*_SurfaceColor*0.85, fresnelTerm*0.65)  + specular*_SunColor.rgb;
 

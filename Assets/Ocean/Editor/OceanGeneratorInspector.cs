@@ -253,7 +253,8 @@ public class OceanGeneratorInspector : Editor {
 		if(ocean.defaultLOD==0) ocean.defaultLOD = 1;
 		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 			EditorUtility.DisplayDialog("Default shader Quality.","Decalre the shader lod(quality) that is getting loaded by default when the simulation starts.\n\n"+
-			"4: high quality. (reflection/reflection/wave bump/foam bump/foam)\n\n3: medium quality. (wave bump/foam bump/foam)\n\n2: low quality. (wave bump)\n\n1: medium quality-transparent variation. (wave bump/foam bump/foam)","OK");
+			"4: high quality. (reflection/reflection/wave bump/foam bump/foam)\n\n3: medium quality. (wave bump/foam bump/foam)\n\n2: low quality. (wave bump)\n\n1: medium quality-transparent variation. (wave bump/foam bump/foam)\n\n"+
+			"For older mobile devices the medium quality shader is recommended (3)","OK");
 		}
 		EditorGUILayout.EndHorizontal();
 
