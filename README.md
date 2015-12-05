@@ -4,11 +4,11 @@ Based on ocean community : http://forum.unity3d.com/threads/wanted-ocean-shader.
 
 3rd iteration by Laurent Clave (unity forum user): http://forum.unity3d.com/members/laurent-clave.54364/
 
-# Ocean mobile with boat physics
-## Optimized for Unity 5, tested on Android
+Ocean mobile with boat physics
+Optimized for Unity 5, tested on Android
 - Mask system to hide the water inside the boat
 
-4th iteration by me (Elias Tsiantas) : http://forum.unity3d.com/members/elias_t.24679/
+# 4th iteration by me (Elias Tsiantas) : http://forum.unity3d.com/members/elias_t.24679/
 
 - tremendous speed increase by lots and lots of optimizations.
 - shader rewrite and multiple shader lods.
