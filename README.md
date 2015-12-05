@@ -22,4 +22,3 @@ Get updates here: http://forum.unity3d.com/threads/the-community-ocean-shader-op
 
 
 
-
