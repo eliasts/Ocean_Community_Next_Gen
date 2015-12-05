@@ -15,6 +15,7 @@ $RECYCLE.BIN/
 *.msp
 *.sln
 *.csproj
+.suo
 
 # Windows shortcuts
 *.lnk
