@@ -14,6 +14,7 @@ Shader "Mobile/Ocean" {
 		_FoamBump ("Foam B(RGB)", 2D) = "bump" {}
 		_FoamFactor("Foam Factor", Range(0,3)) = 1.8
 		_Size ("UVSize", Float) = 0.015625//this is the best value (1/64) to have the same uv scales of normal and foam maps on all ocean sizes
+		_FoamSize ("FoamUVSize", Float) = 2//tiling of the foam texture
 		_SunDir ("SunDir", Vector) = (0.3, -0.6, -1, 0)
 		_WaveOffset ("Wave speed", Float) = 0
 
@@ -21,6 +22,7 @@ Shader "Mobile/Ocean" {
 		_WaterLod1Alpha ("Water Transparency", Range(0,1)) = 0.95
 	}
 	
+	//water bump/foam bump/foam
 	SubShader {
 	    Tags { "RenderType" = "Opaque" "Queue"="Geometry"}
 		LOD 4
@@ -45,6 +47,7 @@ Shader "Mobile/Ocean" {
 			};
 
 			float _Size;
+			float _FoamSize;
 			half4 _SunDir;
 			half _WaveOffset;
 
@@ -72,7 +75,9 @@ Shader "Mobile/Ocean" {
     			o.viewDir = mul(rotation, objSpaceViewDir);
     			o.lightDir = mul(rotation, float3(_SunDir.xyz));
 
-				o.buv = half4(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03, o.bumpTexCoord.x + _WaveOffset * 0.04, o.bumpTexCoord.y);// - _WaveOffset * 0.02
+				o.buv = half4(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03, o.bumpTexCoord.x*1.1 + _WaveOffset * 0.04, o.bumpTexCoord.y*1.1);// - _WaveOffset * 0.02
+
+				//o.buv = half4(o.bumpTexCoord.x + _Time.x * 0.03, o.bumpTexCoord.y + _SinTime.x * 0.2, o.bumpTexCoord.x + _Time.y * 0.04, o.bumpTexCoord.y + _SinTime.y * 0.5);
 
 				o.normViewDir = normalize(o.viewDir);
                 
@@ -97,9 +102,9 @@ Shader "Mobile/Ocean" {
 				//half4 buv = half4(i.bumpTexCoord.x + _WaveOffset * 0.05, i.bumpTexCoord.y + _WaveOffset * 0.03, i.bumpTexCoord.x + _WaveOffset * 0.04, i.bumpTexCoord.y - _WaveOffset * 0.02);
 				//float foamStrength = i.bumpTexCoord.z * _FoamFactor;
 
-				half foam = clamp( tex2D(_Foam, i.bumpTexCoord.xy)*tex2D(_Foam, i.buv.zy) -0.15, 0.0, 1.0) * i.bumpTexCoord.z * _FoamFactor;
+				half foam = clamp( tex2D(_Foam, i.bumpTexCoord.xy*_FoamSize)*tex2D(_Foam, i.buv.zy*_FoamSize) -0.15, 0.0, 1.0) * i.bumpTexCoord.z * _FoamFactor;
 								
-				half3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2 )+( tex2D(_Bump, i.buv.zw) * 2 ) - 2 + (  tex2D(_FoamBump, i.bumpTexCoord.xy)*4   - 1)*foam; 
+				half3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2 )+( tex2D(_Bump, i.buv.zw) * 2 ) - 2 + (  tex2D(_FoamBump, i.bumpTexCoord.xy*_FoamSize)*4   - 1)*foam; 
 
 				half3 tangentNormal = normalize(tangentNormal0 );
 
@@ -144,7 +149,7 @@ Shader "Mobile/Ocean" {
 		
 
  
- 	
+ 		//water bump/foam
 	    SubShader {
         Tags { "RenderType" = "Opaque" "Queue"="Geometry"}
         LOD 3
@@ -167,6 +172,7 @@ Shader "Mobile/Ocean" {
 			};
 
 			float _Size;
+			float _FoamSize;
 			half4 _SunDir;
 			half4 _FakeUnderwaterColor;
             half _WaveOffset;
@@ -186,7 +192,7 @@ Shader "Mobile/Ocean" {
     			o.viewDir = mul(rotation, objSpaceViewDir);
     			o.lightDir = mul(rotation, float3(_SunDir.xyz));
 
-				o.buv = half4(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03, o.bumpTexCoord.x + _WaveOffset * 0.04, o.bumpTexCoord.y);
+				o.buv = half4(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03, o.bumpTexCoord.x*1.1 + _WaveOffset * 0.04, o.bumpTexCoord.y*1.1);
 
 				o.normViewDir = normalize(o.viewDir);
 
@@ -220,7 +226,7 @@ Shader "Mobile/Ocean" {
 				//float power = 4.0;
 				float fresnelTerm = 0.06 + (1.0-0.06)*pow(1.0 - fresnelLookup, 4.0);
 
-				half4 foam = clamp(tex2D(_Foam, i.bumpTexCoord.xy * 1.0)  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z * _FoamFactor;
+				half4 foam = clamp(tex2D(_Foam, i.bumpTexCoord.xy *_FoamSize)  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z * _FoamFactor;
 
 				//float3 halfVec = normalize(i.normViewDir - normalize(i.lightDir));
 
@@ -238,6 +244,7 @@ Shader "Mobile/Ocean" {
 		}
     }
  
+	//water bump
      SubShader {
         Tags { "RenderType" = "Opaque" "Queue"="Geometry"}
         LOD 2
@@ -278,7 +285,7 @@ Shader "Mobile/Ocean" {
     			o.viewDir = mul(rotation, objSpaceViewDir);
     			o.lightDir = mul(rotation, float3(_SunDir.xyz));
 
-				o.buv = half4(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03, o.bumpTexCoord.x + _WaveOffset * 0.04, o.bumpTexCoord.y);
+				o.buv = half4(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03, o.bumpTexCoord.x*1.1 + _WaveOffset * 0.04, o.bumpTexCoord.y*1.1);
 
 				o.normViewDir = normalize(o.viewDir);
 
@@ -329,7 +336,7 @@ Shader "Mobile/Ocean" {
     }
 
 
-
+	//water bump/foam/alpha
     SubShader {
         Tags { "Queue"="Transparent" "RenderType"="Transparent" }
         LOD 1
@@ -353,6 +360,7 @@ Shader "Mobile/Ocean" {
 			};
 
 			float _Size;
+			float _FoamSize;
 			half4 _SunDir;
 			half4 _FakeUnderwaterColor;
             half _WaveOffset;
@@ -372,7 +380,7 @@ Shader "Mobile/Ocean" {
     			o.viewDir = mul(rotation, objSpaceViewDir);
     			o.lightDir = mul(rotation, float3(_SunDir.xyz));
 
-				o.buv = half4(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03, o.bumpTexCoord.x + _WaveOffset * 0.04, o.bumpTexCoord.y);
+				o.buv = half4(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03, o.bumpTexCoord.x*1.1 + _WaveOffset * 0.04, o.bumpTexCoord.y*1.1);
 
 				o.normViewDir = normalize(o.viewDir);
 
@@ -407,7 +415,7 @@ Shader "Mobile/Ocean" {
 				//float power = 4.0;
 				float fresnelTerm = 0.06 + (1.0-0.06)*pow(1.0 - fresnelLookup, 4.0);
 
-				half4 foam = clamp(tex2D(_Foam, i.bumpTexCoord.xy * 1.0)  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z * _FoamFactor;;
+				half4 foam = clamp(tex2D(_Foam, i.bumpTexCoord.xy *_FoamSize)  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z * _FoamFactor;
 
 				//float3 halfVec = normalize(i.normViewDir - normalize(i.lightDir));
 

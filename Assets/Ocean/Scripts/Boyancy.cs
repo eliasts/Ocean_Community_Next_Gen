@@ -9,22 +9,44 @@ public class Boyancy : MonoBehaviour
 	private float mag = 1f;
 	public float ypos = 0.0f;
 	private List<Vector3> blobs;
-	private float ax = 2.0f;
-	private float ay = 2.0f;
+	private List<float[]> prevBoya;
+
 	//private bool engine = false;
 	private List<float> sinkForces;
 
+	[SerializeField] private float CenterOfMassOffset = -1f;
 	[SerializeField] private float dampCoeff = .1f;
-	[SerializeField] private float dampCoeffIdle = .68f;
+	//[SerializeField] private float dampCoeffIdle = .68f;
+
+	//buoyancy slices. (Cannot be smaller then 2)
+	//Raise these numbers if you want more accurate simulation. However it will add overhead. So keep it as small as possible.
+	[SerializeField]private int SlicesX = 3;
+	[SerializeField]private int SlicesZ = 3;
+
 	[SerializeField] private bool sink = false;
 	[SerializeField] private float sinkForce = 3;
+	[SerializeField] private int interpolation = 3;
 
+	private float iF; 
+	private bool interpolate = false;
 
-    protected virtual void Start ()
-	{
+	private Rigidbody rrigidbody;
+
+    void Start () {
+
+		rrigidbody =  GetComponent<Rigidbody>();
+
+		if(interpolation>0) {
+			interpolate = true;
+			iF = 1/(float)interpolation;
+		}
+
+		if(SlicesX<2) SlicesX=2;
+		if(SlicesZ<2) SlicesZ=2;
+
         ocean = Ocean.Singleton;
 		
-		GetComponent<Rigidbody>().centerOfMass = new Vector3 (0.0f, -1f, 0.0f);
+		rrigidbody.centerOfMass = new Vector3 (0.0f, CenterOfMassOffset, 0.0f);
 	
 		Vector3 bounds = GetComponent<BoxCollider> ().size;
 
@@ -32,18 +54,23 @@ public class Boyancy : MonoBehaviour
 		float width = bounds.x;
 
 		blobs = new List<Vector3> ();
+		prevBoya = new List<float[]>();
 
 		int i = 0;
-		float xstep = 1.0f / (ax - 1f);
-		float ystep = 1.0f / (ay - 1f);
+		float xstep = 1.0f / ((float)SlicesX - 1f);
+		float ystep = 1.0f / ((float)SlicesZ - 1f);
 	
 		sinkForces = new List<float>();
 		
 		float totalSink = 0;
 
-		for (int x=0; x<ax; x++) {
-			for (int y=0; y<ay; y++) {		
+		for (int x=0; x<SlicesX; x++) {
+			for (int y=0; y<SlicesX; y++) {		
 				blobs.Add (new Vector3 ((-0.5f + x * xstep) * width, 0.0f, (-0.5f + y * ystep) * length) + Vector3.up * ypos);
+
+				if(interpolate) {
+					prevBoya.Add(new float[interpolation]);
+				}
 				
 				float force =  Random.Range(0f,1f);
 				
@@ -64,38 +91,50 @@ public class Boyancy : MonoBehaviour
 		
 	}
 
+	private int tick;
+	private bool llerp;
 
-    protected virtual void FixedUpdate()
-	{
+   void FixedUpdate() {
+
         if (ocean != null) {
 			float coef = dampCoeff;
 
-			Rigidbody rigidbody =  GetComponent<Rigidbody>();
+            int index = 0, k=0;
 
-			if(rigidbody.velocity.magnitude<3)  coef = dampCoeffIdle;
+			for(int j = 0; j<blobs.Count; j++) {
 
-            int index = 0;
-            foreach (Vector3 blob in blobs) {
-
-                Vector3 wpos = transform.TransformPoint (blob);
-                float damp = rigidbody .GetPointVelocity (wpos).y;
+                Vector3 wpos = transform.TransformPoint (blobs[j]);
 
                 float buyancy = mag * (wpos.y);
 
-                if (ocean.enabled)
-                    buyancy = mag * (wpos.y - ocean.GetWaterHeightAtLocation (wpos.x, wpos.z));
+                if (ocean.enabled) buyancy = mag * (wpos.y - ocean.GetWaterHeightAtLocation (wpos.x, wpos.z));
 			
-			    if (sink)
-			    {
-				    buyancy = Mathf.Max(buyancy, -3) + sinkForces[index++] ;
-			    }
+			    if (sink) { buyancy = Mathf.Max(buyancy, -3) + sinkForces[index++]; }
 
-				
-				rigidbody.AddForceAtPosition (-Vector3.up * (buyancy + coef * damp), wpos);
+				float damp = rrigidbody.GetPointVelocity (wpos).y;
+
+				float bbuyancy = buyancy;
+
+				//interpolate last (int interpolation) frames to smooth out the jerkiness
+				if(interpolate) {
+					prevBoya[k][tick] = buyancy;
+					bbuyancy=0;
+					for(int i=0; i<interpolation; i++) { bbuyancy += prevBoya[k][i]; }
+					bbuyancy *= iF;
+				}
+
+				rrigidbody.AddForceAtPosition (-Vector3.up * (bbuyancy + coef * damp), wpos);
+				k++;
 		    }
+
+
+			if(interpolate) { tick++; if(tick==interpolation) tick=0; }
+
+
         }
     }
 	
+
 	public void Sink(bool isActive)
 	{
 	    sink = isActive;	

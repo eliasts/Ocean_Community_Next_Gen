@@ -53,6 +53,5 @@ function Update()
         lastInterval = timeNow;
     }
 	
-	if ( Input.GetKeyDown(KeyCode.Escape  )) {Application.LoadLevel("menu");}
 	
 }

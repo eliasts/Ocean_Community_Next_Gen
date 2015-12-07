@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class BoatController : Boyancy{
+public class BoatController : MonoBehaviour{
 
     [SerializeField] private List<GameObject> m_motors;
 
@@ -22,13 +22,12 @@ public class BoatController : Boyancy{
 	private Vector2 m_androidInputInit;
 
 
-    protected override void Start()
-    {
-        base.Start();
+     void Start()   {
+       // base.Start();
 
         m_rigidbody = GetComponent<Rigidbody>();
-        m_rigidbody.drag = 1;
-        m_rigidbody.angularDrag = 1;
+       // m_rigidbody.drag = 1;
+      //  m_rigidbody.angularDrag = 1;
 
 		initPosition ();
 	}
@@ -63,9 +62,9 @@ public class BoatController : Boyancy{
 		m_horizontalInput = iHorizontalInput;
 	}
 
-	protected override void FixedUpdate()
+	 void FixedUpdate()
 	{
-		base.FixedUpdate();
+		//base.FixedUpdate();
 		
 		m_rigidbody.AddRelativeForce(Vector3.forward * m_verticalInput * m_accelerationFactor);
 
@@ -75,24 +74,23 @@ public class BoatController : Boyancy{
 			m_horizontalInput * -m_turningTorqueFactor
         );
 
-        if(m_motors.Count > 0)
-        {
+        if(m_motors.Count > 0) {
+
             float motorRotationAngle = 0F;
 			float motorMaxRotationAngle = 70;
 
 			motorRotationAngle = - m_horizontalInput * motorMaxRotationAngle;
 
-            foreach (GameObject motor in m_motors)
-            {
-				float currentAngleY = motor.transform.localEulerAngles.y;
+			for(int i=0; i<m_motors.Count; i++) {
+				float currentAngleY = m_motors[i].transform.localEulerAngles.y;
 				if (currentAngleY > 180.0f)
 					currentAngleY -= 360.0f;
 
 				float localEulerAngleY = Mathf.Lerp(currentAngleY, motorRotationAngle, Time.deltaTime * 10);
-				motor.transform.localEulerAngles = new Vector3(
-					motor.transform.localEulerAngles.x,
+				m_motors[i].transform.localEulerAngles = new Vector3(
+					m_motors[i].transform.localEulerAngles.x,
 					localEulerAngleY,
-					motor.transform.localEulerAngles.z
+					m_motors[i].transform.localEulerAngles.z
 				);
             }
         }

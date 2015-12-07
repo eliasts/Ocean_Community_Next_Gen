@@ -26,8 +26,10 @@ public class OceanGeneratorInspector : Editor {
 	public static float oldSpecularity;
 	public static bool oldShaderLod;
 	public static bool oldrefl, prevrefl;
-	public static bool oldrefr, prevrefr;
-
+	public static bool oldrefr, prevrefr, oldSpread, oldFixed;
+	public static float oldFoamUV, oldBumpUV;
+	public static Vector3 oldSunDir;
+	public static int oldRefrReflXframe;
 
 	private string[] defShader = {"default lod","1","2","3","4"};
 
@@ -69,34 +71,23 @@ public class OceanGeneratorInspector : Editor {
 
 	public override void OnInspectorGUI() {
 
-		EditorGUILayout.BeginHorizontal();
+		Ocean ocean = target as Ocean;
+
+		//EditorGUILayout.BeginHorizontal();
+		//EditorGUILayout.BeginVertical();
 		GUILayout.FlexibleSpace();
 		DrawBackground();
-		GUILayout.FlexibleSpace();
-		EditorGUILayout.EndHorizontal();
 
 		GUI.backgroundColor = new Color(.5f, .8f, 1f, 1f);
 		GUI.contentColor = new Color(1f, 1f, 1f, 1f);
 
-		EditorGUIUtility.labelWidth = 80F;// LookLikeControls(80f);
-		Ocean ocean = target as Ocean;
-
-		DrawSeparator();
-
-		GUILayout.Space(-15);
-
-		EditorGUILayout.BeginHorizontal();
-		//float bannerWidth = 256;
-		GUILayout.Space(Screen.width * 0.65f);
-		// EditorGUILayout.LabelField(new GUIContent( logo ), GUILayout.Width( bannerWidth), GUILayout.Height( bannerWidth * 0.40f ));
-		EditorGUILayout.EndHorizontal();
-
-		//GUILayout.Space(-20);
+		EditorGUIUtility.labelWidth = 70F;// LookLikeControls(80f);
+		
 
 		DrawSeparator();
 
 		DrawVerticalSeparator();
-
+		
 		EditorGUILayout.BeginHorizontal();
 		GUILayout.FlexibleSpace();
 		EditorGUILayout.BeginVertical();
@@ -111,7 +102,7 @@ public class OceanGeneratorInspector : Editor {
 		ocean.player = (Transform)EditorGUILayout.ObjectField(ocean.player, typeof(Transform), true, GUILayout.MinWidth(150));
 		EditorGUILayout.EndHorizontal();
 		EditorGUILayout.BeginHorizontal();
-		EditorGUILayout.LabelField("Follow");
+		EditorGUILayout.LabelField("Follow", GUILayout.MaxWidth(65));
 		ocean.followMainCamera = EditorGUILayout.Toggle(ocean.followMainCamera);
 		EditorGUILayout.EndHorizontal();
 
@@ -143,10 +134,12 @@ public class OceanGeneratorInspector : Editor {
 
 		EditorGUILayout.BeginHorizontal();
 		ocean.ifoamStrength = (float)EditorGUILayout.Slider(ocean.ifoamStrength, 0, 50);
+		EditorGUILayout.BeginVertical();
+		GUILayout.Space(-1);
 		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 			EditorUtility.DisplayDialog("Interactive foam strength/duaration.","The strength/duration of the boat that interacts with the ocean.","OK");
 		}
-		
+		EditorGUILayout.EndVertical();
 		EditorGUILayout.EndHorizontal();
 		GUILayout.Space(-2);
 
@@ -154,10 +147,13 @@ public class OceanGeneratorInspector : Editor {
 		EditorGUILayout.LabelField("Far LOD Y-offset");
 		EditorGUILayout.BeginHorizontal();
 		ocean.farLodOffset = (float)EditorGUILayout.Slider(ocean.farLodOffset, -30f, 0);
+		EditorGUILayout.BeginVertical();
+		GUILayout.Space(-1);
 		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 			EditorUtility.DisplayDialog("Far lod tiles offset","This value will offset the far lod tiles (after the 2nd) to a lower level to eliminate noticable gaps between lod borders.\n\n"+
 			"Each extra lod (after the 2nd) will get lowered by 1/3 of the entered value.","OK");
 		}
+		EditorGUILayout.EndVertical();
 		EditorGUILayout.EndHorizontal();
 		GUILayout.Space(-2);
 		DrawSeparator();
@@ -188,7 +184,7 @@ public class OceanGeneratorInspector : Editor {
 		EditorGUILayout.EndVertical();
 
 		EditorGUILayout.BeginHorizontal();
-		EditorGUILayout.LabelField("Enable Mist");
+		EditorGUILayout.LabelField("Enable Mist", GUILayout.MaxWidth(100));
 		ocean.mistEnabled = EditorGUILayout.Toggle(ocean.mistEnabled);
 		EditorGUILayout.EndHorizontal();
 		EditorGUILayout.BeginHorizontal();
@@ -237,13 +233,18 @@ public class OceanGeneratorInspector : Editor {
 
 
 		GUILayout.Space(22);
+		if(!ocean.fixedUpdate) {
 		EditorGUILayout.BeginHorizontal();
-		EditorGUILayout.LabelField("Spread along frames");
-		ocean.spreadAlongFrames = EditorGUILayout.Toggle(ocean.spreadAlongFrames);
-		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
-			EditorUtility.DisplayDialog("Enable spread along frames.","This will enable/disable the work offload of the wave calculations by spreading the calculations among x frames declared by the slider.","OK");
-		}
+			EditorGUILayout.LabelField("Spread along frames");
+			ocean.spreadAlongFrames = EditorGUILayout.Toggle(ocean.spreadAlongFrames);
+			if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
+				EditorUtility.DisplayDialog("Enable spread along frames.","This will enable/disable the work offload of the wave calculations by spreading the calculations among x frames declared by the slider.","OK");
+			}
 		EditorGUILayout.EndHorizontal();
+		} else {
+			EditorGUILayout.LabelField(""); 
+			GUILayout.Space(2);
+		}
 
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Default shader lod");
@@ -275,8 +276,17 @@ public class OceanGeneratorInspector : Editor {
 			"You can set the number of lods that will be used with the slider: No. of shader lods.","OK");		
 		}
 		EditorGUILayout.EndHorizontal();
+		GUILayout.Space(8);
+		EditorGUILayout.BeginHorizontal();
+		EditorGUILayout.LabelField("Use Fixed Update");
+		ocean.fixedUpdate = EditorGUILayout.Toggle(ocean.fixedUpdate);
+		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
+			EditorUtility.DisplayDialog("Use FixedUpdate()","Enable/disable the use of the FixedUpdate() function for calculation of the waves.\n\n"+
+			"This gives higher frame rates but disables the spread along frames functionality. It is a good alternative when you get jerky waves with vsync on and almost doubles the frame rate compared to regular Update().","OK");		
+		}
 
-		GUILayout.Space(13);
+		EditorGUILayout.EndHorizontal();
+		GUILayout.Space(14);
 		if (GUILayout.Button("Load preset")) {
 			string preset = EditorUtility.OpenFilePanel("Load Ocean preset",Application.dataPath+"/Ocean/Editor/_OceanPresets","preset");
 
@@ -327,7 +337,7 @@ public class OceanGeneratorInspector : Editor {
 		EditorGUILayout.EndHorizontal();
 
 		EditorGUILayout.BeginHorizontal();
-		EditorGUILayout.LabelField("Fixed tiles");
+		EditorGUILayout.LabelField("Fixed tiles", GUILayout.MaxWidth(65));
 		ocean.fixedTiles = EditorGUILayout.Toggle(ocean.fixedTiles);
 		EditorGUILayout.EndHorizontal();
 
@@ -338,22 +348,33 @@ public class OceanGeneratorInspector : Editor {
 		ocean.fTilesLod = (int)EditorGUILayout.Slider(ocean.fTilesLod, 0, 5);
 
 		////------------------------------------------
-		GUILayout.Space(12);
+		GUILayout.Space(10);
 
 		EditorGUI.DropShadowLabel(EditorGUILayout.BeginVertical(), "Reflection & Refraction");
-		GUILayout.Space(16);
+		GUILayout.Space(14);
 		EditorGUILayout.EndVertical();
-		GUILayout.Space(10);
-		EditorGUILayout.BeginHorizontal();
-		EditorGUILayout.LabelField("Render reflection");
-		if (!ocean.shaderLod) ocean.renderReflection = EditorGUILayout.Toggle(ocean.renderReflection);
-		EditorGUILayout.EndHorizontal();
-		GUILayout.Space(4);
-		EditorGUILayout.BeginHorizontal();
-		EditorGUILayout.LabelField("Render refraction");
-		if (!ocean.shaderLod) ocean.renderRefraction = EditorGUILayout.Toggle(ocean.renderRefraction);
-		EditorGUILayout.EndHorizontal();
 		GUILayout.Space(6);
+		EditorGUILayout.BeginHorizontal();
+		EditorGUILayout.LabelField("Reflection",GUILayout.MaxWidth(59));
+		if (!ocean.shaderLod) ocean.renderReflection = EditorGUILayout.Toggle(ocean.renderReflection,GUILayout.MaxWidth(79));
+		EditorGUILayout.LabelField("Refraction",GUILayout.MaxWidth(64));
+		if (!ocean.shaderLod) ocean.renderRefraction = EditorGUILayout.Toggle(ocean.renderRefraction,GUILayout.MaxWidth(79));
+		EditorGUILayout.EndHorizontal();
+
+		GUILayout.Space(8);
+		EditorGUILayout.BeginHorizontal();
+		EditorGUILayout.LabelField("Every x frames:",GUILayout.MinWidth(120));
+		ocean.reflrefrXframe = EditorGUILayout.IntField(ocean.reflrefrXframe,GUILayout.MaxWidth(39));
+		EditorGUILayout.BeginVertical();
+		GUILayout.Space(-1);
+		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
+			EditorUtility.DisplayDialog("Render Reflection/Refraction every x frames.","This will render the reflection and refraction camera every x frames you declare.\n\n"+
+			"Since reflection and refraction are not easy for the eye to catch their changes, we can update them every x frames to gain performance.","OK");
+		}
+		EditorGUILayout.EndVertical();
+		EditorGUILayout.EndHorizontal();
+
+		GUILayout.Space(10);
 		EditorGUILayout.LabelField("Render textures size");
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Width");
@@ -395,49 +416,78 @@ public class OceanGeneratorInspector : Editor {
 		GUILayout.Space(18);
 		EditorGUILayout.EndVertical();
 
-		EditorGUILayout.LabelField("Sun transform");
+		EditorGUILayout.BeginHorizontal();
+		EditorGUILayout.LabelField("Sun: ",GUILayout.MaxWidth(45));
 		ocean.sun = (Transform)EditorGUILayout.ObjectField(ocean.sun, typeof(Transform), true);
+		EditorGUILayout.EndHorizontal();
 
 		EditorGUILayout.LabelField("Sun direction");
 		ocean.SunDir = EditorGUILayout.Vector3Field("", ocean.SunDir);
 
+		EditorGUILayout.BeginHorizontal();
+		EditorGUILayout.LabelField("Load Sun",GUILayout.MaxWidth(59));
+		ocean.loadSun = EditorGUILayout.Toggle(ocean.loadSun,GUILayout.MaxWidth(79));
+		EditorGUILayout.EndHorizontal();
+
 		////------------------------------------------
-		GUILayout.Space(18);
+		GUILayout.Space(10);
 
 		EditorGUI.DropShadowLabel(EditorGUILayout.BeginVertical(), "Water color");
-		GUILayout.Space(16);
+		GUILayout.Space(10);
 		EditorGUILayout.EndVertical();
 
 		GUI.backgroundColor = Color.white;
 		GUI.contentColor = Color.white;
 
-		EditorGUILayout.LabelField("Water color");
+		EditorGUILayout.BeginHorizontal();
+		EditorGUILayout.LabelField("Water color",GUILayout.MaxWidth(90));
 		ocean.waterColor = EditorGUILayout.ColorField(ocean.waterColor);
+		EditorGUILayout.EndHorizontal();
 
-		EditorGUILayout.LabelField("Water surface color");
+		EditorGUILayout.BeginHorizontal();
+		EditorGUILayout.LabelField("Surface color",GUILayout.MaxWidth(90));
 		ocean.surfaceColor = EditorGUILayout.ColorField(ocean.surfaceColor);
+		EditorGUILayout.EndHorizontal();
 
-		GUILayout.Space(5);
-		EditorGUILayout.LabelField("Fake water color(lods)");
+		//GUILayout.Space(5);
+		EditorGUILayout.BeginHorizontal();
+		EditorGUILayout.LabelField("Lods Refr color",GUILayout.MaxWidth(90));
 		ocean.fakeWaterColor = EditorGUILayout.ColorField(ocean.fakeWaterColor);
+		EditorGUILayout.EndHorizontal();
+
 		GUI.backgroundColor = new Color(.5f, .8f, 1f, 1f);
 		GUI.contentColor = new Color(1f, 1f, 1f, 1f);
+		GUILayout.Space(6);
+
+		GUILayout.Space(15);
+
+		EditorGUILayout.BeginHorizontal();
+		EditorGUILayout.LabelField("Foam tiling",GUILayout.MaxWidth(70));
+		ocean.foamUV = EditorGUILayout.Slider(ocean.foamUV, 0.2f, 8f);
+		EditorGUILayout.EndHorizontal();
+		
+		GUILayout.Space(15);
+		EditorGUILayout.BeginHorizontal();
+		EditorGUILayout.LabelField("Bump tiling",GUILayout.MaxWidth(70));
+		ocean.bumpUV = EditorGUILayout.Slider(ocean.bumpUV, 0.2f, 8f);
+		EditorGUILayout.EndHorizontal();
 
 		GUILayout.Space(10);
 		DrawSeparator();
 
-		if (ocean.spreadAlongFrames) {
+		if (ocean.spreadAlongFrames && !ocean.fixedUpdate) {
 			EditorGUILayout.LabelField("Calc waves every x frames:");
 			EditorGUILayout.BeginHorizontal();
 
-			ocean.everyXframe = (int)EditorGUILayout.Slider(ocean.everyXframe, 3, 8);
+			ocean.everyXframe = (int)EditorGUILayout.Slider(ocean.everyXframe, 2, 8);
 			if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 				EditorUtility.DisplayDialog("Calculate waves every x frames.","This will spread the calculation of the waves along the frames you decalre.\n\n"+
-				"When you use Vsyc for frame limitting the recommended values are 3-5. Otherwise you will notice jerky wave movement.","OK");
+				"When you use Vsyc for frame limitting the recommended values are 2-4. Otherwise you will notice jerky wave movement.\n\nYou might want to consider using the fixedUpdate flag whre"+
+				" the waves are getting updated in the FixedUpdate function. This will give better framerates when vsync is used. When fixedUpdate is used the spread along frames function gets disabled.","OK");
 			}
 			if (oldEveryXframe != ocean.everyXframe) {
 				oldEveryXframe = ocean.everyXframe;
-				if (ocean.everyXframe > 3) { ocean.fr1 = 0; ocean.fr2 = 1; ocean.fr3 = 2; ocean.fr4 = 3; } else { ocean.fr1 = 0; ocean.fr2 = 1; ocean.fr3 = 2; ocean.fr4 = 2; }
+				ocean.setSpread();
 			}
 
 			EditorGUILayout.EndHorizontal();
@@ -462,7 +512,7 @@ public class OceanGeneratorInspector : Editor {
 			EditorGUILayout.LabelField("");
 			GUILayout.Space(2);
 		}
-
+		GUILayout.Space(29);
 		DrawSeparator();
 
 		if (GUILayout.Button("Save preset")) {
@@ -521,6 +571,13 @@ public class OceanGeneratorInspector : Editor {
 						swr.Write(ocean.fakeWaterColor.b);//float
 						swr.Write(ocean.fakeWaterColor.a);//float
 						swr.Write(ocean.defaultLOD);//int
+
+						swr.Write(ocean.reflrefrXframe);//int
+						swr.Write(ocean.foamUV);//float
+						swr.Write(ocean.sun.transform.localRotation.eulerAngles.x);//float
+						swr.Write(ocean.sun.transform.localRotation.eulerAngles.y);//float
+						swr.Write(ocean.sun.transform.localRotation.eulerAngles.z);//float
+						swr.Write(ocean.bumpUV);//float
 					}
 
 				}
@@ -534,6 +591,10 @@ public class OceanGeneratorInspector : Editor {
 		GUILayout.FlexibleSpace();
 		EditorGUILayout.EndHorizontal();
 
+
+		GUILayout.FlexibleSpace();
+
+
 		DrawSeparator();
 
 
@@ -544,6 +605,21 @@ public class OceanGeneratorInspector : Editor {
 
 		if (ocean.foamFactor != oldFoamFactor) { for(int i=0; i<3; i++) { if(ocean.mat[i]!= null) ocean.mat[i].SetFloat("_FoamFactor", ocean.foamFactor); }  oldFoamFactor = ocean.foamFactor; }
 		if (ocean.specularity != oldSpecularity) { for(int i=0; i<3; i++) { if(ocean.mat[i]!= null) ocean.mat[i].SetFloat("_Specularity", ocean.specularity); } oldSpecularity = ocean.specularity; }
+
+		if (ocean.foamUV != oldFoamUV) { for(int i=0; i<2; i++) { if(ocean.mat[i]!= null) ocean.mat[i].SetFloat("_FoamSize", ocean.foamUV); } oldFoamUV = ocean.foamUV; }
+		if (ocean.bumpUV != oldBumpUV) { for(int i=0; i<3; i++) { if(ocean.mat[i]!= null) ocean.mat[i].SetFloat("_Size", 0.015625f * ocean.bumpUV); } oldBumpUV = ocean.bumpUV; }
+
+		if (ocean.reflrefrXframe != oldRefrReflXframe) { if(ocean.reflrefrXframe<=0) ocean.reflrefrXframe = 1; oldRefrReflXframe = ocean.reflrefrXframe; }
+		if (oldFixed != ocean.fixedUpdate) {
+			if(ocean.fixedUpdate) { oldSpread = ocean.spreadAlongFrames;  } 
+			if(!ocean.fixedUpdate) {ocean.spreadAlongFrames = oldSpread; }
+			oldFixed = ocean.fixedUpdate;
+		 }
+
+		if(oldSunDir != ocean.sun.transform.forward) {
+			ocean.SunDir = ocean.sun.transform.forward;
+			oldSunDir = ocean.SunDir;
+		}
 
 		if (ocean.renderReflection != oldrefl) { ocean.EnableReflection(ocean.renderReflection); oldrefl = ocean.renderReflection; }
 		if (ocean.renderRefraction != oldrefr) { ocean.EnableRefraction(ocean.renderRefraction); oldrefr = ocean.renderRefraction; }

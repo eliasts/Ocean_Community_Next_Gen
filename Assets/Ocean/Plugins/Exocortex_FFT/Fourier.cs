@@ -327,8 +327,8 @@ using System.Text;
 		private static	float[,][]	_uILookupF	= null;
 
 		private static void	SyncLookupTableLength( int length ) {
-			Debug.Assert( length < 1024*10 );
-			Debug.Assert( length >= 0 );
+			//Debug.Assert( length < 1024*10 );
+			//Debug.Assert( length >= 0 );
 			if( length > _lookupTabletLength ) {
 				int level = (int) Math.Ceiling( Math.Log( length, 2 ) );
 				Fourier.InitializeReverseBits( level );
@@ -768,6 +768,7 @@ using System.Text;
 		/// <param name="length"></param>
 		/// <param name="direction"></param>
 		public static void	FFT( ComplexF[] data, int length, FourierDirection direction ) {
+		/*
 			if( data == null ) {
 				throw new ArgumentNullException( "data" );
 			}
@@ -776,7 +777,8 @@ using System.Text;
 			}
 			if( Fourier.IsPowerOf2( length ) == false ) {
 				throw new ArgumentOutOfRangeException( "length", length, "must be a power of 2" );
-			}
+			}*/
+
 
 			Fourier.SyncLookupTableLength( length );
 
@@ -903,6 +905,7 @@ using System.Text;
 		/// <param name="data"></param>
 		/// <param name="length"></param>
 		/// <param name="direction"></param>
+
 		public static void	FFT( Complex[] data, int length, FourierDirection direction ) {
 			if( data == null ) {
 				throw new ArgumentNullException( "data" );
@@ -1026,12 +1029,13 @@ using System.Text;
 		/// </summary>
 		/// <param name="data"></param>
 		/// <param name="direction"></param>
+		/*
 		public static void	RFFT( float[] data, FourierDirection direction ) {
 			if( data == null ) {
 				throw new ArgumentNullException( "data" );
 			}
 			Fourier.RFFT( data, data.Length, direction );
-		}
+		}*/
 		
 		/// <summary>
 		/// Compute a 1D real-symmetric fast fourier transform.
@@ -1039,6 +1043,7 @@ using System.Text;
 		/// <param name="data"></param>
 		/// <param name="length"></param>
 		/// <param name="direction"></param>
+		/*
 		public static void	RFFT( float[] data, int length, FourierDirection direction ) {
 			if( data == null ) {
 				throw new ArgumentNullException( "data" );
@@ -1095,7 +1100,7 @@ using System.Text;
 				data[1] = c1 * ( hir - data[1] );
 				Fourier.FFT( data, length/2, direction );
 			}
-		}
+		}*/
 		
 		/// <summary>
 		/// Compute a 2D fast fourier transform on a data set of complex numbers (represented as pairs of floats)
@@ -1104,6 +1109,7 @@ using System.Text;
 		/// <param name="xLength"></param>
 		/// <param name="yLength"></param>
 		/// <param name="direction"></param>
+		/*
 		public static void	FFT2( float[] data, int xLength, int yLength, FourierDirection direction ) {
 			if( data == null ) {
 				throw new ArgumentNullException( "data" );
@@ -1136,7 +1142,7 @@ using System.Text;
 					Fourier.LinearFFT_Quick( data, yStart, yInc, yLength, direction );
 				}
 			}
-		}
+		}*/
 
 		/// <summary>
 		/// Compute a 2D fast fourier transform on a data set of complex numbers
@@ -1187,6 +1193,8 @@ using System.Text;
 		/// <param name="xLength"></param>
 		/// <param name="yLength"></param>
 		/// <param name="direction"></param>
+		/// 
+		/*
 		public static void	FFT2( Complex[] data, int xLength, int yLength, FourierDirection direction ) {
 			if( data == null ) {
 				throw new ArgumentNullException( "data" );
@@ -1219,7 +1227,7 @@ using System.Text;
 					Fourier.LinearFFT_Quick( data, yStart, yInc, yLength, direction );
 				}
 			}
-		}
+		}*/
 
 		/// <summary>
 		/// Compute a 3D fast fourier transform on a data set of complex numbers
@@ -1229,6 +1237,7 @@ using System.Text;
 		/// <param name="yLength"></param>
 		/// <param name="zLength"></param>
 		/// <param name="direction"></param>
+		/*
 		public static void	FFT3( ComplexF[] data, int xLength, int yLength, int zLength, FourierDirection direction ) {
 			if( data == null ) {
 				throw new ArgumentNullException( "data" );
@@ -1279,7 +1288,7 @@ using System.Text;
 					}
 				}
 			}
-		}
+		}*/
 
 		/// <summary>
 		/// Compute a 3D fast fourier transform on a data set of complex numbers
@@ -1289,6 +1298,7 @@ using System.Text;
 		/// <param name="yLength"></param>
 		/// <param name="zLength"></param>
 		/// <param name="direction"></param>
+		/*
 		public static void	FFT3( Complex[] data, int xLength, int yLength, int zLength, FourierDirection direction ) {
 			if( data == null ) {
 				throw new ArgumentNullException( "data" );
@@ -1339,6 +1349,6 @@ using System.Text;
 					}
 				}
 			}
-		}
+		}*/
 		
 	}

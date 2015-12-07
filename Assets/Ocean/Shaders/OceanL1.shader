@@ -12,6 +12,7 @@ Shader "Mobile/OceanL1" {
 		_FoamBump ("Foam B(RGB)", 2D) = "bump" {}
 		_FoamFactor("Foam Factor", Range(0,3)) = 1.8
 		_Size ("UVSize", Float) = 0.015625//this is the best value (1/64) to have the same uv scales of normal and foam maps on all ocean sizes
+		_FoamSize ("FoamUVSize", Float) = 2//tiling of the foam texture
 		_SunDir ("SunDir", Vector) = (0.3, -0.6, -1, 0)
 		_WaveOffset ("Wave speed", Float) = 0
 
@@ -41,6 +42,7 @@ Shader "Mobile/OceanL1" {
 			};
 
 			float _Size;
+			float _FoamSize;
 			half4 _SunDir;
 			half4 _FakeUnderwaterColor;
             half _WaveOffset;
@@ -63,7 +65,7 @@ Shader "Mobile/OceanL1" {
     			o.viewDir = mul(rotation, objSpaceViewDir);
     			o.lightDir = mul(rotation, float3(_SunDir.xyz));
 
-				o.buv = half4(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03, o.bumpTexCoord.x + _WaveOffset * 0.04, o.bumpTexCoord.y);
+				o.buv = half4(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03, o.bumpTexCoord.x*1.1 + _WaveOffset * 0.04, o.bumpTexCoord.y*1.1);
 
 				o.normViewDir = normalize(o.viewDir);
 
@@ -97,7 +99,7 @@ Shader "Mobile/OceanL1" {
 				//float power = 4.0;
 				float fresnelTerm = 0.06 + (1.0-0.06)*pow(1.0 - fresnelLookup, 4.0);
 
-				half4 foam = clamp(tex2D(_Foam, i.bumpTexCoord.xy * 1.0)  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z * _FoamFactor;
+				half4 foam = clamp(tex2D(_Foam, i.bumpTexCoord.xy *_FoamSize)  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z * _FoamFactor;
 
 				//float3 halfVec = normalize(i.normViewDir - normalize(i.lightDir));
 
