@@ -1,3 +1,14 @@
+08/12/2015
+
+ - Restructured the multithreading code.
+ - made the FFT plugin multithreading friendly.
+ - The above optimizations give extra speed boos on low spread job frames. This gives now smooth results and very good performance with vsync and 3 frames job spread.
+ 
+ - Had to fix the shader again because some previous hack made the seams of the tiles visible.
+ 
+ - The ocean is now precalculated at the Start() function. This eliminates the annoyance having the boats jumping ugly at the beginning, because now they find their position on the sea.
+ 
+
 06/12/2015
 
   - Ability to skip renders of reflection/refraction. Since reflection and refraction are not easy for the eye to catch their changes, we can update them every x frames to gain performance.

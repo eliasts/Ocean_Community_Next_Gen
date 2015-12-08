@@ -482,7 +482,7 @@ public class OceanGeneratorInspector : Editor {
 			ocean.everyXframe = (int)EditorGUILayout.Slider(ocean.everyXframe, 2, 8);
 			if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 				EditorUtility.DisplayDialog("Calculate waves every x frames.","This will spread the calculation of the waves along the frames you decalre.\n\n"+
-				"When you use Vsyc for frame limitting the recommended values are 2-4. Otherwise you will notice jerky wave movement.\n\nYou might want to consider using the fixedUpdate flag whre"+
+				"When you use Vsyc for frame limitting the recommended values are 2-4. Otherwise you will notice jerky wave movement.\n\nYou might want to consider using the fixedUpdate flag where"+
 				" the waves are getting updated in the FixedUpdate function. This will give better framerates when vsync is used. When fixedUpdate is used the spread along frames function gets disabled.","OK");
 			}
 			if (oldEveryXframe != ocean.everyXframe) {

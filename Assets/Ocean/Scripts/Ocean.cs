@@ -205,6 +205,8 @@ public class Ocean : MonoBehaviour {
 	private Vector3[][] normalsLOD;
 	private Vector4[][] tangentsLOD;
 
+	private Vector3 mv2;
+
 
     static float MySmoothstep(float a, float b, float t) {
         t = Mathf.Clamp01(t);
@@ -344,8 +346,8 @@ public class Ocean : MonoBehaviour {
 
 	public void setSpread() {
 		fr1 =0; fr2 = 1;  fr2B = 2; fr3 = 3; fr4 = 4;
-		if(everyXframe == 4) { fr2B = 1; fr3 = 2; fr4 = 3;  }
-		if(everyXframe == 3) {fr2=0; fr2B = 0; fr3 = 1; fr4 = 2;  }
+		if(everyXframe == 4) {fr2 = 1; fr2B = 1; fr3 = 2; fr4 = 3;  }
+		if(everyXframe == 3) {fr2=1; fr2B = 1; fr3 = 2; fr4 = 2;  }
 		if(everyXframe == 2) { fr2 = 0; fr2B = 0; fr3 = 1; fr4 = 1;  }
 		if(fixedUpdate ) spreadAlongFrames = false;
 	}
@@ -487,6 +489,13 @@ public class Ocean : MonoBehaviour {
 		StartCoroutine(AddMist());
 		shader_LOD(!shaderLod, material, numberLods);
 		preallocateBuffers();
+
+		mv2 = new Vector3 (size.x, 0.0f, 0.0f);
+
+		calcComplex(Time.time, 0, height);
+		Fourier.FFT2 (data, width, height, FourierDirection.Backward);
+		Fourier2.FFT2 (t_x, width, height, FourierDirection.Backward);
+		calcPhase3();
 	}
 	
 	void preallocateBuffers() {
@@ -660,7 +669,7 @@ public class Ocean : MonoBehaviour {
 
 	private Vector3 centerOffset;
 	#if !UNITY_WEBGL
-	private Thread th0, th1,th1b, th2, th3;
+	private Thread th0, th0b,th0c, th0d, th1,th1b, th2, th3;
 	#endif
 	private int lodSkip;
 	
@@ -685,148 +694,159 @@ public class Ocean : MonoBehaviour {
 			#endif
 		}
 	}
+	
 
-	ComplexF coeffA = new ComplexF();
+
+
+	void calcComplex(float time, int ha, int hb) {
+		for (int y = ha; y<hb; y++) {
+			for (int x = 0; x<width; x++) {
+				int idx = width * y + x;
+				float yc = y < hhalf ? y : -height + y;
+				float xc = x < whalf ? x : -width + x;
+				
+				float vec_kx = pix2 * xc / size.x;
+				float vec_ky = pix2  * yc / size.z;
+
+				float sqrtMagnitude=(float)System.Math.Sqrt((vec_kx * vec_kx) + (vec_ky * vec_ky));
+				float iwkt = (float)System.Math.Sqrt(9.81f * sqrtMagnitude)  * time * speed;
+				ComplexF coeffA = new ComplexF ((float)System.Math.Cos(iwkt), (float)System.Math.Sin(iwkt));
+				ComplexF coeffB;
+				coeffB.Re = coeffA.Re; coeffB.Im = -coeffA.Im;
+
+				int ny = y > 0 ? height - y : 0;
+				int nx = x > 0 ? width - x : 0;
+
+				data [idx] = h0 [idx] * coeffA + h0[width * ny + nx].GetConjugate() * coeffB;				
+				t_x [idx] = data [idx] * new ComplexF (0.0f, vec_kx) - data [idx] * vec_ky;
+
+				// Choppy wave calculations
+				if (x + y > 0)
+					data [idx] += data [idx] * vec_kx / sqrtMagnitude;
+			}
+		}
+
+	}
+
+	void calcPhase3() {
+		float scaleB = waveScale / wh;
+		float scaleBinv = 1.0f / scaleB;
+
+		Vector3 mv1; mv1.y = scaleBinv;
+
+		for (int i=0; i<wh; i++) {
+			int iw = i + i / width;
+			vertices [iw] = baseHeight [iw];
+			vertices [iw].x += data [i].Im * scaleA;
+			vertices [iw].y = data [i].Re * scaleB;
+	
+			mv1.x = t_x [i].Re;
+			mv1.z = t_x [i].Im;
+			normals [iw] = Vector3.Normalize(mv1);
+	
+			if (((i + 1) % width)==0) {
+				int iwi=iw+1;
+				int iwidth=i+1-width;
+				vertices [iwi] = baseHeight [iwi];
+				vertices [iwi].x += data [iwidth].Im * scaleA;
+				vertices [iwi].y = data [iwidth].Re * scaleB;
+
+				mv1.x = t_x [iwidth].Re;
+				mv1.z = t_x [iwidth].Im;
+				normals [iwi] = Vector3.Normalize(mv1);
+			}
+		}
+
+
+		for (int i=0; i<g_width; i++) {
+			int io=i+offset;
+			int mod=i % width;
+			vertices [io] = baseHeight [io];
+			vertices [io].x += data [mod].Im * scaleA;
+			vertices [io].y = data [mod].Re * scaleB;
+
+			mv1.x = t_x [mod].Re;
+			mv1.z = t_x [mod].Im;
+			normals [io] = Vector3.Normalize(mv1);		
+		}
+	    
+		
+		for (int i=0; i<gwgh; i++) {
+			
+			//Need to preserve w in refraction/reflection mode
+			if (!reflectionRefractionEnabled) {
+				if (((i + 1) % g_width) == 0) {
+					tangents [i] = Vector3.Normalize((vertices [i - width + 1] + mv2 - vertices [i]));
+				} else {
+					tangents [i] = Vector3.Normalize((vertices [i + 1] - vertices [i]));
+				}
+			
+				tangents [i].w = 1.0f;
+			} else {
+				Vector3 tmp;// = Vector3.zero;
+			
+				if (((i + 1) % g_width) == 0) {
+					tmp = Vector3.Normalize(vertices[i - width + 1] + mv2 - vertices [i]); 
+				} else {
+					tmp = Vector3.Normalize(vertices [i + 1] - vertices [i]);
+				}
+				
+				tangents [i] = new Vector4 (tmp.x, tmp.y, tmp.z, tangents [i].w);
+			}
+		}
+	}
+
+
+	bool precalc;
 
 	#if !UNITY_WEBGL
 	void updWithThreads() {
 
 		int fint = Time.frameCount % everyXframe;
+		
+		if(precalc) {
 
-		if(fint == fr1 || !spreadAlongFrames) {
+			if(fint == fr1 || !spreadAlongFrames) {
 
-			updateOceanMaterial();
+				updateOceanMaterial();
 
-			float time=Time.time;
-
-			th0 = new Thread( () => { 
+				float time=Time.time;
 				if(dynamicWaves) humidity = GetHumidity(time);
 				wind = humidity;
 				SetWaves(wind);
-				
-				for (int y = 0; y<height; y++) {
-					for (int x = 0; x<width; x++) {
-						int idx = width * y + x;
-						float yc = y < hhalf ? y : -height + y;
-						float xc = x < whalf ? x : -width + x;
-				
-						float vec_kx = pix2 * xc / size.x;
-						float vec_ky = pix2  * yc / size.z;
 
-						float sqrtMagnitude=(float)System.Math.Sqrt((vec_kx * vec_kx) + (vec_ky * vec_ky));
-						float iwkt = (float)System.Math.Sqrt(9.81f * sqrtMagnitude)  * time * speed;
+				// *** while it ispossible to call this in 4 threads it is faster using 2 threads ***
+				th0 = new Thread( () => { calcComplex(time, 0, height/2); }); th0.Start();
+				th0b = new Thread( () => {  calcComplex(time, height/2, height); }); th0b.Start();
 
-						//ComplexF coeffA = new ComplexF ((float)System.Math.Cos(iwkt), (float)System.Math.Sin(iwkt));
-						coeffA.Re = (float)System.Math.Cos(iwkt);
-						coeffA.Im = (float)System.Math.Sin(iwkt);
-						ComplexF coeffB;
+			}
 
-						coeffB.Re = coeffA.Re;
-						coeffB.Im = -coeffA.Im;
+			if(fint == fr2 || !spreadAlongFrames) {
 
-						int ny = y > 0 ? height - y : 0;
-						int nx = x > 0 ? width - x : 0;
+				if(th0 != null) th0.Join(); if(th0b != null) th0b.Join();
 
-						data [idx] = h0 [idx] * coeffA + h0[width * ny + nx].GetConjugate() * coeffB;				
-						t_x [idx] = data [idx] * new ComplexF (0.0f, vec_kx) - data [idx] * vec_ky;
+				th1 = new Thread( () => { Fourier.FFT2 (data, width, height, FourierDirection.Backward); } );
+				th1.Start();
+			}
 
-						// Choppy wave calculations
-						if (x + y > 0)
-							data [idx] += data [idx] * vec_kx / sqrtMagnitude;
-					}
-				}
-			} );
-			th0.Start();
-		}
-
-		if(fint == fr2 || !spreadAlongFrames) {
-			if(th0 != null) { while(th0.IsAlive) {} }
-			th1 = new Thread( () => { 
-				Fourier.FFT2 (data, width, height, FourierDirection.Backward);
-			} );
-			th1.Start();
-			if(everyXframe==2) { if(th1 != null) { while(th1.IsAlive) {} } }
-		}
-
-		if(fint == fr2B || !spreadAlongFrames) {
-			if(th1 != null && everyXframe>2) { while(th1.IsAlive) {} }
-			th1b = new Thread( () => { 
-				Fourier.FFT2 (t_x, width, height, FourierDirection.Backward);
-			} );
-			th1b.Start();
-			if(everyXframe==2) { if(th1b != null) { while(th1b.IsAlive) {} } }
-		}
-
-		if(fint == fr3 || !spreadAlongFrames) {
-			if(th1b != null && everyXframe>2) { while(th1b.IsAlive) {} }
-
+			if(fint == fr2B || !spreadAlongFrames) {
+				th1b = new Thread( () => { Fourier2.FFT2 (t_x, width, height, FourierDirection.Backward); } );
+				th1b.Start();
+			}
 		
-			th2 = new Thread( () => { 
-	
-				float scaleB = waveScale / wh;
-				float scaleBinv = 1.0f / scaleB;
+			if(fint == fr3 || !spreadAlongFrames) {
+				if(th1b != null) { th1b.Join(); }//while(th1b.IsAlive) {}
+				if(th1 != null) { th1.Join(); }//while(th1.IsAlive) {}
 
-				for (int i=0; i<wh; i++) {
-					int iw = i + i / width;
-					vertices [iw] = baseHeight [iw];
-					vertices [iw].x += data [i].Im * scaleA;
-					vertices [iw].y = data [i].Re * scaleB;
-
-					normals [iw] = Vector3.Normalize(new Vector3 (t_x [i].Re, scaleBinv, t_x [i].Im));
-	
-					if (((i + 1) % width)==0) {
-						int iwi=iw+1;
-						int iwidth=i+1-width;
-						vertices [iwi] = baseHeight [iwi];
-						vertices [iwi].x += data [iwidth].Im * scaleA;
-						vertices [iwi].y = data [iwidth].Re * scaleB;
-
-						normals [iwi] = Vector3.Normalize(new Vector3 (t_x [iwidth].Re, scaleBinv, t_x [iwidth].Im));
-					}
-				}
-
-
-				for (int i=0; i<g_width; i++) {
-					int io=i+offset;
-					int mod=i % width;
-					vertices [io] = baseHeight [io];
-					vertices [io].x += data [mod].Im * scaleA;
-					vertices [io].y = data [mod].Re * scaleB;
-			
-					normals [io] = Vector3.Normalize(new Vector3 (t_x [mod].Re, scaleBinv, t_x [mod].Im));
-				}
-	    
-		
-				for (int i=0; i<gwgh; i++) {
-			
-					//Need to preserve w in refraction/reflection mode
-					if (!reflectionRefractionEnabled) {
-						if (((i + 1) % g_width) == 0) {
-							tangents [i] = Vector3.Normalize((vertices [i - width + 1] + new Vector3 (size.x, 0.0f, 0.0f) - vertices [i]));
-						} else {
-							tangents [i] = Vector3.Normalize((vertices [i + 1] - vertices [i]));
-						}
-			
-						tangents [i].w = 1.0f;
-					} else {
-						Vector3 tmp;// = Vector3.zero;
-			
-						if (((i + 1) % g_width) == 0) {
-							tmp = Vector3.Normalize(vertices[i - width + 1] + new Vector3 (size.x, 0.0f, 0.0f) - vertices [i]);
-						} else {
-							tmp = Vector3.Normalize(vertices [i + 1] - vertices [i]);
-						}
-				
-						tangents [i] = new Vector4 (tmp.x, tmp.y, tmp.z, tangents [i].w);
-					}
-				}
-			});
-			th2.Start();
+				th2 = new Thread( calcPhase3 );
+				th2.Start();
+			}
 		}
+		
 
 		if(fint == fr4 || !spreadAlongFrames) {	
-
-			if(th2 != null) { while(th2.IsAlive) {} }
+			precalc=true;
+			if(th2 != null) { th2.Join(); }
 			
 			if (followMainCamera && player != null) {
 				centerOffset.x = Mathf.Floor(player.position.x * sizeInv.x) *  size.x;
@@ -847,47 +867,26 @@ public class Ocean : MonoBehaviour {
 					for (int y = 0; y < g_height; y++) {
 						for (int x = 0; x < g_width; x++) {
 							int item=x + g_width * y;
-							if (x + 1 >= g_width) {
-								tangents [item].w = tangents [g_width * y].w;
-								continue;
-							}
-					
-							if (y + 1 >= g_height) {
-								tangents [item].w = tangents [x].w;
-								continue;
-							}
+							if (x + 1 >= g_width) {	tangents [item].w = tangents [g_width * y].w; continue;	}
+							if (y + 1 >= g_height) { tangents [item].w = tangents [x].w; continue; }
 				
 							float right = vertices[(x + 1) + g_width * y].x - vertices[item].x;
-					
 							float foam = right/(size.x / g_width);
 					
-					
-							if (foam < 0.0f)
-								tangents [item].w = 1f;
-							else if (foam < 0.5f)
-								tangents [item].w += 3.0f * deltaTime;
-							else
-								tangents [item].w -= 0.4f * deltaTime;
+							if (foam < 0.0f) tangents [item].w = 1f;
+							else if (foam < 0.5f) tangents [item].w += 3.0f * deltaTime;
+							else tangents [item].w -= 0.4f * deltaTime;
 					
 							if (player != null ){
 								if(ifoamStrength>0) {
 									Vector3 player2Vertex = (playerPosition - vertices[item] - currentPosition);
 									// foam around boat
-									if (player2Vertex.x >= size.x)
-										player2Vertex.x -= size.x;
-						
-									if (player2Vertex.x<= -size.x)
-										player2Vertex.x += size.x;
-						
-									if (player2Vertex.z >= size.z)
-										player2Vertex.z -= size.z;
-						
-									if (player2Vertex.z<= -size.z)
-										player2Vertex.z += size.z;
+									if (player2Vertex.x >= size.x) player2Vertex.x -= size.x;
+									if (player2Vertex.x<= -size.x) player2Vertex.x += size.x;
+									if (player2Vertex.z >= size.z) player2Vertex.z -= size.z;
+									if (player2Vertex.z<= -size.z) player2Vertex.z += size.z;
 									player2Vertex.y = 0;
-						
-									if (player2Vertex.sqrMagnitude < wakeDistance * wakeDistance)
-										tangents[item].w += ifoamStrength * deltaTime;
+									if (player2Vertex.sqrMagnitude < wakeDistance * wakeDistance) tangents[item].w += ifoamStrength * deltaTime;
 								}
 							}
 					
@@ -897,10 +896,10 @@ public class Ocean : MonoBehaviour {
 					}
 				});
 				th3.Start();
-				while(th3.IsAlive) {}
+				th3.Join();
 			}
 
-			tangents [gwgh] = Vector4.Normalize(vertices [gwgh] + new Vector3 (size.x, 0.0f, 0.0f) - vertices [1]);
+			tangents [gwgh] = Vector4.Normalize(vertices [gwgh] + mv2 - vertices [1]);
 
 			lodSkip++;
 			if(lodSkip == 2) lodSkip=0;
@@ -955,6 +954,8 @@ public class Ocean : MonoBehaviour {
 	#endif
 
 
+
+
 	void updNoThreads() {
 
 		updateOceanMaterial();
@@ -979,12 +980,8 @@ public class Ocean : MonoBehaviour {
 
 					float sqrtMagnitude=(float)System.Math.Sqrt((vec_kx * vec_kx) + (vec_ky * vec_ky));
 					float iwkt = (float)System.Math.Sqrt(9.81f * sqrtMagnitude)  * time * speed;
-
-					//ComplexF coeffA = new ComplexF ((float)System.Math.Cos(iwkt), (float)System.Math.Sin(iwkt));
-					coeffA.Re = (float)System.Math.Cos(iwkt);
-					coeffA.Im = (float)System.Math.Sin(iwkt);
+					ComplexF coeffA = new ComplexF ((float)System.Math.Cos(iwkt), (float)System.Math.Sin(iwkt));
 					ComplexF coeffB;
-
 					coeffB.Re = coeffA.Re;
 					coeffB.Im = -coeffA.Im;
 
@@ -1014,13 +1011,18 @@ public class Ocean : MonoBehaviour {
 			float scaleB = waveScale / wh;
 			float scaleBinv = 1.0f / scaleB;
 
+			Vector3 mv1; mv1.y = scaleBinv;
+
 			for (int i=0; i<wh; i++) {
 				int iw = i + i / width;
 				vertices [iw] = baseHeight [iw];
 				vertices [iw].x += data [i].Im * scaleA;
 				vertices [iw].y = data [i].Re * scaleB;
 
-				normals [iw] = Vector3.Normalize(new Vector3 (t_x [i].Re, scaleBinv, t_x [i].Im));
+				mv1.x = t_x [i].Re;
+				mv1.z = t_x [i].Im;
+				normals [iw] = Vector3.Normalize(mv1);
+				//normals [iw] = Vector3.Normalize(new Vector3 (t_x [i].Re, scaleBinv, t_x [i].Im));
 	
 				if (((i + 1) % width)==0) {
 					int iwi=iw+1;
@@ -1029,7 +1031,10 @@ public class Ocean : MonoBehaviour {
 					vertices [iwi].x += data [iwidth].Im * scaleA;
 					vertices [iwi].y = data [iwidth].Re * scaleB;
 
-					normals [iwi] = Vector3.Normalize(new Vector3 (t_x [iwidth].Re, scaleBinv, t_x [iwidth].Im));
+					mv1.x = t_x [iwidth].Re;
+					mv1.z = t_x [iwidth].Im;
+					normals [iwi] = Vector3.Normalize(mv1);
+					//normals [iwi] = Vector3.Normalize(new Vector3 (t_x [iwidth].Re, scaleBinv, t_x [iwidth].Im));
 				}
 			}
 
@@ -1041,7 +1046,10 @@ public class Ocean : MonoBehaviour {
 				vertices [io].x += data [mod].Im * scaleA;
 				vertices [io].y = data [mod].Re * scaleB;
 			
-				normals [io] = Vector3.Normalize(new Vector3 (t_x [mod].Re, scaleBinv, t_x [mod].Im));
+				mv1.x = t_x [mod].Re;
+				mv1.z = t_x [mod].Im;
+				normals [io] = Vector3.Normalize(mv1);		
+				//normals [io] = Vector3.Normalize(new Vector3 (t_x [mod].Re, scaleBinv, t_x [mod].Im));
 			}
 	    
 		
@@ -1050,7 +1058,8 @@ public class Ocean : MonoBehaviour {
 				//Need to preserve w in refraction/reflection mode
 				if (!reflectionRefractionEnabled) {
 					if (((i + 1) % g_width) == 0) {
-						tangents [i] = Vector3.Normalize((vertices [i - width + 1] + new Vector3 (size.x, 0.0f, 0.0f) - vertices [i]));
+						tangents [i] = Vector3.Normalize((vertices [i - width + 1] + mv2 - vertices [i]));
+						//tangents [i] = Vector3.Normalize((vertices [i - width + 1] + new Vector3 (size.x, 0.0f, 0.0f) - vertices [i]));
 					} else {
 						tangents [i] = Vector3.Normalize((vertices [i + 1] - vertices [i]));
 					}
@@ -1060,7 +1069,8 @@ public class Ocean : MonoBehaviour {
 					Vector3 tmp;// = Vector3.zero;
 			
 					if (((i + 1) % g_width) == 0) {
-						tmp = Vector3.Normalize(vertices[i - width + 1] + new Vector3 (size.x, 0.0f, 0.0f) - vertices [i]);
+						tmp = Vector3.Normalize(vertices[i - width + 1] + mv2 - vertices [i]); 
+						//tmp = Vector3.Normalize(vertices[i - width + 1] + new Vector3 (size.x, 0.0f, 0.0f) - vertices [i]);
 					} else {
 						tmp = Vector3.Normalize(vertices [i + 1] - vertices [i]);
 					}
@@ -1091,47 +1101,26 @@ public class Ocean : MonoBehaviour {
 				for (int y = 0; y < g_height; y++) {
 					for (int x = 0; x < g_width; x++) {
 						int item=x + g_width * y;
-						if (x + 1 >= g_width) {
-							tangents [item].w = tangents [g_width * y].w;
-							continue;
-						}
-					
-						if (y + 1 >= g_height) {
-							tangents [item].w = tangents [x].w;
-							continue;
-						}
+						if (x + 1 >= g_width) {	tangents [item].w = tangents [g_width * y].w; continue;	}
+						if (y + 1 >= g_height) { tangents [item].w = tangents [x].w; continue; }
 				
 						float right = vertices[(x + 1) + g_width * y].x - vertices[item].x;
-					
 						float foam = right/(size.x / g_width);
 					
+						if (foam < 0.0f) tangents [item].w = 1f;
+						else if (foam < 0.5f) tangents [item].w += 3.0f * deltaTime;
+						else tangents [item].w -= 0.4f * deltaTime;
 					
-						if (foam < 0.0f)
-							tangents [item].w = 1f;
-						else if (foam < 0.5f)
-							tangents [item].w += 3.0f * deltaTime;
-						else
-							tangents [item].w -= 0.4f * deltaTime;
-					
-						if (player != null ) {
+						if (player != null ){
 							if(ifoamStrength>0) {
 								Vector3 player2Vertex = (playerPosition - vertices[item] - currentPosition);
 								// foam around boat
-								if (player2Vertex.x >= size.x)
-									player2Vertex.x -= size.x;
-						
-								if (player2Vertex.x<= -size.x)
-									player2Vertex.x += size.x;
-						
-								if (player2Vertex.z >= size.z)
-									player2Vertex.z -= size.z;
-						
-								if (player2Vertex.z<= -size.z)
-									player2Vertex.z += size.z;
+								if (player2Vertex.x >= size.x) player2Vertex.x -= size.x;
+								if (player2Vertex.x<= -size.x) player2Vertex.x += size.x;
+								if (player2Vertex.z >= size.z) player2Vertex.z -= size.z;
+								if (player2Vertex.z<= -size.z) player2Vertex.z += size.z;
 								player2Vertex.y = 0;
-						
-								if (player2Vertex.sqrMagnitude < wakeDistance * wakeDistance)
-									tangents[item].w += ifoamStrength * deltaTime;
+								if (player2Vertex.sqrMagnitude < wakeDistance * wakeDistance) tangents[item].w += ifoamStrength * deltaTime;
 							}
 						}
 					
@@ -1141,7 +1130,8 @@ public class Ocean : MonoBehaviour {
 
 			}
 
-			tangents [gwgh] = Vector4.Normalize(vertices [gwgh] + new Vector3 (size.x, 0.0f, 0.0f) - vertices [1]);
+			//tangents [gwgh] = Vector4.Normalize(vertices [gwgh] + new Vector3 (size.x, 0.0f, 0.0f) - vertices [1]);
+			tangents [gwgh] = Vector4.Normalize(vertices [gwgh] + mv2 - vertices [1]);
 
 			lodSkip++;
 			if(lodSkip == 2) lodSkip=0;

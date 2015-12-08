@@ -35,7 +35,7 @@ Shader "Mobile/OceanL2" {
     			float3  viewDir : TEXCOORD2;
     			float3  lightDir : TEXCOORD4;
 				UNITY_FOG_COORDS(7)
-				half4 buv : TEXCOORD5;
+				half2 buv : TEXCOORD5;
 				half3 normViewDir : TEXCOORD6;
 				float3 halfVec : TEXCOORD0;
 			};
@@ -62,7 +62,8 @@ Shader "Mobile/OceanL2" {
     			o.viewDir = mul(rotation, objSpaceViewDir);
     			o.lightDir = mul(rotation, float3(_SunDir.xyz));
 
-				o.buv = half4(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03, o.bumpTexCoord.x*1.1 + _WaveOffset * 0.04, o.bumpTexCoord.y*1.1);
+				//o.buv = half4(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03, o.bumpTexCoord.x + _WaveOffset * 0.04, o.bumpTexCoord.y- _WaveOffset * 0.02);
+				o.buv = half2(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03);
 
 				o.normViewDir = normalize(o.viewDir);
 
@@ -85,8 +86,10 @@ Shader "Mobile/OceanL2" {
 				//half3 normViewDir = normalize(i.viewDir);
 				//half4 buv = half4(i.bumpTexCoord.x + _WaveOffset * 0.05, i.bumpTexCoord.y + _WaveOffset * 0.03, i.bumpTexCoord.x + _WaveOffset * 0.04, i.bumpTexCoord.y - _WaveOffset * 0.02);
                 
-				half3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2.0) + (tex2D(_Bump, i.buv.zw) * 2.0) - 2;
+				//half3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2.0) + (tex2D(_Bump, i.buv.zw) * 2.0) - 2;
+				//half3 tangentNormal = normalize(tangentNormal0);
 
+				half3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2.0) -1;
 				half3 tangentNormal = normalize(tangentNormal0);
 
 				half4 result = half4(0, 0, 0, 1);
