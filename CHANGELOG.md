@@ -2,7 +2,7 @@
 
  - Restructured the multithreading code.
  - made the FFT plugin multithreading friendly.
- - The above optimizations give extra speed boos on low spread job frames. This gives now smooth results and very good performance with vsync and 3 frames job spread.
+ - The above optimizations give extra speed boost on low spread job frames. This gives now smooth results and very good performance with vsync and 3 frames job spread.
  
  - Had to fix the shader again because some previous hack made the seams of the tiles visible.
  
