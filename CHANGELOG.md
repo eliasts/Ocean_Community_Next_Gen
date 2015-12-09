@@ -5,7 +5,7 @@
 - Fixed one more issue with gaps being visible in far away tiles.
 - Revamped the editor and exposed the ability to alter the width of the foam trail produced by the boat and to specify if the lod meshes should skip frames to update.
 - Modified shaders to use floats instead of halfs because this causes precision artefacts on weak devices.
-- started adding to code to improve the buoyancy.
+- started adding code to improve the buoyancy.
 - optimized some math code.
 - added mask mesh to the fishing boat.
 
