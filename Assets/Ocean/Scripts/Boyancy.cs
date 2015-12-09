@@ -107,8 +107,8 @@ public class Boyancy : MonoBehaviour
 
                 float buyancy = mag * (wpos.y);
 
-                if (ocean.enabled) buyancy = mag * (wpos.y - ocean.GetWaterHeightAtLocation (wpos.x, wpos.z));
-			
+				if (ocean.enabled) buyancy = mag * (wpos.y - ocean.GetWaterHeightAtLocation (wpos.x, wpos.z) );
+
 			    if (sink) { buyancy = Mathf.Max(buyancy, -3) + sinkForces[index++]; }
 
 				float damp = rrigidbody.GetPointVelocity (wpos).y;
@@ -122,7 +122,6 @@ public class Boyancy : MonoBehaviour
 					for(int i=0; i<interpolation; i++) { bbuyancy += prevBoya[k][i]; }
 					bbuyancy *= iF;
 				}
-
 				rrigidbody.AddForceAtPosition (-Vector3.up * (bbuyancy + coef * damp), wpos);
 				k++;
 		    }

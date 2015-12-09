@@ -32,6 +32,7 @@ public class OceanGeneratorInspector : Editor {
 	public static int oldRefrReflXframe;
 
 	private string[] defShader = {"default lod","1","2","3","4"};
+	private string[] skiplods = {"off","1","2","3","4"};
 
 
 	private string GetPluginPath() {
@@ -97,7 +98,7 @@ public class OceanGeneratorInspector : Editor {
 		EditorGUILayout.EndVertical();
 
 		EditorGUILayout.BeginHorizontal();
-		EditorGUILayout.LabelField("target"); 
+		EditorGUILayout.LabelField("Target"); 
 		GUILayout.Space(-100);
 		ocean.player = (Transform)EditorGUILayout.ObjectField(ocean.player, typeof(Transform), true, GUILayout.MinWidth(150));
 		EditorGUILayout.EndHorizontal();
@@ -123,27 +124,22 @@ public class OceanGeneratorInspector : Editor {
 		GUILayout.Space(-100);
 		ocean.material2 = (Material)EditorGUILayout.ObjectField(ocean.material2, typeof(Material), true, GUILayout.MinWidth(120));
 		EditorGUILayout.EndHorizontal();
-
-		EditorGUILayout.LabelField("Ocean shader");
-		ocean.oceanShader = (Shader)EditorGUILayout.ObjectField(ocean.oceanShader, typeof(Shader), true);
-
-		
 		EditorGUILayout.BeginHorizontal();
-		EditorGUILayout.LabelField("Interactive foam strength");
+		EditorGUILayout.LabelField("Shader");
+		GUILayout.Space(-100);
+		ocean.oceanShader = (Shader)EditorGUILayout.ObjectField(ocean.oceanShader, typeof(Shader), true, GUILayout.MinWidth(120));
+		EditorGUILayout.EndHorizontal();
+		//GUILayout.Space(2);
+		EditorGUILayout.BeginHorizontal();
+		EditorGUILayout.LabelField("Sun: ",GUILayout.MaxWidth(50));
+		ocean.sun = (Transform)EditorGUILayout.ObjectField(ocean.sun, typeof(Transform), true, GUILayout.MinWidth(140));
 		EditorGUILayout.EndHorizontal();
 
 		EditorGUILayout.BeginHorizontal();
-		ocean.ifoamStrength = (float)EditorGUILayout.Slider(ocean.ifoamStrength, 0, 50);
-		EditorGUILayout.BeginVertical();
-		GUILayout.Space(-1);
-		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
-			EditorUtility.DisplayDialog("Interactive foam strength/duaration.","The strength/duration of the boat that interacts with the ocean.","OK");
-		}
-		EditorGUILayout.EndVertical();
+		EditorGUILayout.LabelField("Load Sun",GUILayout.MaxWidth(59));
+		ocean.loadSun = EditorGUILayout.Toggle(ocean.loadSun,GUILayout.MaxWidth(79));
 		EditorGUILayout.EndHorizontal();
-		GUILayout.Space(-2);
 
-		//GUILayout.Space(4);
 		EditorGUILayout.LabelField("Far LOD Y-offset");
 		EditorGUILayout.BeginHorizontal();
 		ocean.farLodOffset = (float)EditorGUILayout.Slider(ocean.farLodOffset, -30f, 0);
@@ -155,7 +151,11 @@ public class OceanGeneratorInspector : Editor {
 		}
 		EditorGUILayout.EndVertical();
 		EditorGUILayout.EndHorizontal();
-		GUILayout.Space(-2);
+
+
+		//GUILayout.Space(4);
+
+		GUILayout.Space(16);
 		DrawSeparator();
 
 		EditorGUI.DropShadowLabel(EditorGUILayout.BeginVertical(), "Waves settings");
@@ -232,7 +232,7 @@ public class OceanGeneratorInspector : Editor {
 		ocean.foamFactor = (float)EditorGUILayout.Slider(ocean.foamFactor, 0f, 3.0f);
 
 
-		GUILayout.Space(22);
+		GUILayout.Space(24);
 		if(!ocean.fixedUpdate) {
 		EditorGUILayout.BeginHorizontal();
 			EditorGUILayout.LabelField("Spread along frames");
@@ -248,7 +248,6 @@ public class OceanGeneratorInspector : Editor {
 
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Default shader lod");
-		//ocean.defaultLOD = EditorGUILayout.IntField(ocean.defaultLOD);
 		GUILayout.Space(-22);
 		ocean.defaultLOD = EditorGUILayout.Popup(ocean.defaultLOD, defShader,GUILayout.MaxWidth(40));
 		if(ocean.defaultLOD==0) ocean.defaultLOD = 1;
@@ -412,22 +411,42 @@ public class OceanGeneratorInspector : Editor {
 		////------------------------------------------
 		GUILayout.Space(4);
 
-		EditorGUI.DropShadowLabel(EditorGUILayout.BeginVertical(), "Sun reflection");
+		EditorGUI.DropShadowLabel(EditorGUILayout.BeginVertical(), "Interactive Foam");
 		GUILayout.Space(18);
 		EditorGUILayout.EndVertical();
 
+		
 		EditorGUILayout.BeginHorizontal();
-		EditorGUILayout.LabelField("Sun: ",GUILayout.MaxWidth(45));
-		ocean.sun = (Transform)EditorGUILayout.ObjectField(ocean.sun, typeof(Transform), true);
+		EditorGUILayout.LabelField("Interactive foam strength");
 		EditorGUILayout.EndHorizontal();
 
-		EditorGUILayout.LabelField("Sun direction");
-		ocean.SunDir = EditorGUILayout.Vector3Field("", ocean.SunDir);
+		EditorGUILayout.BeginHorizontal();
+		ocean.ifoamStrength = (float)EditorGUILayout.Slider(ocean.ifoamStrength, 0, 50);
+		EditorGUILayout.BeginVertical();
+		GUILayout.Space(-1);
+		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
+			EditorUtility.DisplayDialog("Interactive foam strength/duaration.","The strength/duration of the foam produced by the boat that interacts with the ocean.","OK");
+		}
+		EditorGUILayout.EndVertical();
+		EditorGUILayout.EndHorizontal();
+
 
 		EditorGUILayout.BeginHorizontal();
-		EditorGUILayout.LabelField("Load Sun",GUILayout.MaxWidth(59));
-		ocean.loadSun = EditorGUILayout.Toggle(ocean.loadSun,GUILayout.MaxWidth(79));
+		EditorGUILayout.LabelField("Interactive foam width");
 		EditorGUILayout.EndHorizontal();
+
+		EditorGUILayout.BeginHorizontal();
+		ocean.ifoamWidth = (float)EditorGUILayout.Slider(ocean.ifoamWidth, 2, 0.1f);
+		EditorGUILayout.BeginVertical();
+		GUILayout.Space(-1);
+		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
+			EditorUtility.DisplayDialog("Interactive foam width.","The width of the boat's trail foam. (Lower values produce higher width).","OK");
+		}
+		EditorGUILayout.EndVertical();
+		EditorGUILayout.EndHorizontal();
+
+
+
 
 		////------------------------------------------
 		GUILayout.Space(10);
@@ -463,13 +482,13 @@ public class OceanGeneratorInspector : Editor {
 
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Foam tiling",GUILayout.MaxWidth(70));
-		ocean.foamUV = EditorGUILayout.Slider(ocean.foamUV, 0.2f, 8f);
+		ocean.foamUV = (int)EditorGUILayout.Slider(ocean.foamUV, 1, 8);
 		EditorGUILayout.EndHorizontal();
 		
 		GUILayout.Space(15);
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Bump tiling",GUILayout.MaxWidth(70));
-		ocean.bumpUV = EditorGUILayout.Slider(ocean.bumpUV, 0.2f, 8f);
+		ocean.bumpUV = (int)EditorGUILayout.Slider(ocean.bumpUV, 1, 8);
 		EditorGUILayout.EndHorizontal();
 
 		GUILayout.Space(10);
@@ -512,7 +531,16 @@ public class OceanGeneratorInspector : Editor {
 			EditorGUILayout.LabelField("");
 			GUILayout.Space(2);
 		}
-		GUILayout.Space(29);
+		GUILayout.Space(7);
+		EditorGUILayout.BeginHorizontal();
+		EditorGUILayout.LabelField("Lod skip frames");
+		GUILayout.Space(-22);
+		ocean.lodSkipFrames = EditorGUILayout.Popup(ocean.lodSkipFrames, skiplods,GUILayout.MaxWidth(50));
+		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
+			EditorUtility.DisplayDialog("Skip mesh lod updates.","How many frames should be skipped before updating the mesh lods.","OK");
+		}
+		EditorGUILayout.EndHorizontal();
+
 		DrawSeparator();
 
 		if (GUILayout.Button("Save preset")) {
@@ -578,6 +606,8 @@ public class OceanGeneratorInspector : Editor {
 						swr.Write(ocean.sun.transform.localRotation.eulerAngles.y);//float
 						swr.Write(ocean.sun.transform.localRotation.eulerAngles.z);//float
 						swr.Write(ocean.bumpUV);//float
+						swr.Write(ocean.ifoamWidth);//float
+						swr.Write(ocean.lodSkipFrames);//int
 					}
 
 				}

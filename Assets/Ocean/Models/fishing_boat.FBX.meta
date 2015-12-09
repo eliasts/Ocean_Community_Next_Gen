@@ -6,10 +6,15 @@ ModelImporter:
   serializedVersion: 18
   fileIDToRecycleName:
     100000: //RootNode
+    100002: fmask
     400000: //RootNode
+    400002: fmask
     2300000: //RootNode
+    2300002: fmask
     3300000: //RootNode
+    3300002: fmask
     4300000: sboat007
+    4300002: fmask
   materials:
     importMaterials: 1
     materialName: 0
@@ -30,7 +35,7 @@ ModelImporter:
     animationWrapMode: 0
     extraExposedTransformPaths: []
     clipAnimations: []
-    isReadable: 1
+    isReadable: 0
   meshes:
     lODScreenPercentages: []
     globalScale: 1
