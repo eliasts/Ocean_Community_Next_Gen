@@ -25,9 +25,9 @@ public class Ocean : MonoBehaviour {
 	private bool ticked = false;
 	public float farLodOffset = 0;
 	private float flodoff1,flodoff2, flodoff3;
-	//the boats foam strength
+	//the boat's foam strength
 	public float ifoamStrength = 18f;
-	//the boats foam width
+	//the boat's foam width
 	public float ifoamWidth = 1f;
 	public bool shaderLod = true;
 	public bool useShaderLods = false;
@@ -1575,7 +1575,7 @@ public class Ocean : MonoBehaviour {
 
 	//get choppy fast.
 	public float GetWaterChoppyness() {
-        return data[hIndex].Re * waveScale / wh;
+        return data[hIndex].Re * choppy_scale / wh;
     }
 
 	static float Lerp (float from, float to, float value) {
