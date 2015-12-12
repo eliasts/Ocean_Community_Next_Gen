@@ -3,6 +3,7 @@
 - Buoyancy has been rewritten with very good and fast results.
 - Custom inspector for buoyancy with additional variables.
 - You can save/load a buoyancy setup for a vessel.
+- Partially rewrite of the boat controller script. Boats behave more realistic now.
 - Choppy waves, wind and wave slopes are able to influence the vessel's condition. This adds a lot of realism.
 - The shader has been rechecked again. Higher performance is back in now. The previous mobile fix added some unneeded overhead.
 - More multithreading optimizations.

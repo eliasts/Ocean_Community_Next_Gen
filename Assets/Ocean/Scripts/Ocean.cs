@@ -539,7 +539,7 @@ public class Ocean : MonoBehaviour {
 				int ny = y > 0 ? height - y : 0;
 				int nx = x > 0 ? width - x : 0;
 
-				data [idx] = h0 [idx] * coeffA + h0[width * ny + nx].GetConjugate() * coeffB;				
+				data [idx] = h0 [idx] * coeffA + h0[width * ny + nx].GetConjugate() * coeffB;
 				t_x [idx] = data [idx] * new ComplexF (0.0f, vec_kx) - data [idx] * vec_ky;
 
 				// Choppy wave calculations
