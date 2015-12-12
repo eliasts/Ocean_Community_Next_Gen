@@ -182,8 +182,8 @@ using System.Text;
 		//-------------------------------------------------------------------------------------
 
 		static private int	ReverseBits( int index, int numberOfBits ) {
-			Debug.Assert( numberOfBits >= cMinBits );
-			Debug.Assert( numberOfBits <= cMaxBits );
+			//Debug.Assert( numberOfBits >= cMinBits );
+			//Debug.Assert( numberOfBits <= cMaxBits );
 
 			int reversedIndex = 0;
 			for( int i = 0; i < numberOfBits; i ++ ) {
@@ -197,8 +197,8 @@ using System.Text;
 		
 		static private int[][]	_reversedBits	= new int[ cMaxBits ][];
 		static private int[]		GetReversedBits( int numberOfBits ) {
-			Debug.Assert( numberOfBits >= cMinBits );
-			Debug.Assert( numberOfBits <= cMaxBits );
+			//Debug.Assert( numberOfBits >= cMinBits );
+			//Debug.Assert( numberOfBits <= cMaxBits );
 			if( _reversedBits[ numberOfBits - 1 ] == null ) {
 				int		maxBits = Pow2( numberOfBits );
 				int[]	reversedBits = new int[ maxBits ];
@@ -219,13 +219,13 @@ using System.Text;
 		//-------------------------------------------------------------------------------------
 
 		static private void ReorderArray( float[] data ) {
-			Debug.Assert( data != null );
+			//Debug.Assert( data != null );
 
 			int length = data.Length / 2;
 			
-			Debug.Assert(IsPowerOf2( length ) == true );
-			Debug.Assert( length >= cMinLength );
-			Debug.Assert( length <= cMaxLength );
+			//Debug.Assert(IsPowerOf2( length ) == true );
+			//Debug.Assert( length >= cMinLength );
+			//Debug.Assert( length <= cMaxLength );
 
 			int[] reversedBits = GetReversedBits( Log2( length ) );
 			for( int i = 0; i < length; i ++ ) {
@@ -238,13 +238,13 @@ using System.Text;
 		}
 
 		static private void ReorderArray( double[] data ) {
-			Debug.Assert( data != null );
+			//Debug.Assert( data != null );
 
 			int length = data.Length / 2;
 			
-			Debug.Assert(IsPowerOf2( length ) == true );
-			Debug.Assert( length >= cMinLength ); 
-			Debug.Assert( length <= cMaxLength );
+			//Debug.Assert(IsPowerOf2( length ) == true );
+			//Debug.Assert( length >= cMinLength ); 
+			//Debug.Assert( length <= cMaxLength );
 
 			int[] reversedBits = GetReversedBits( Log2( length ) );
 			for( int i = 0; i < length; i ++ ) {
@@ -257,13 +257,13 @@ using System.Text;
 		}
 
 		static private void ReorderArray( Complex[] data ) {
-			Debug.Assert( data != null );
+			//Debug.Assert( data != null );
 	
 			int length = data.Length;
 			
-			Debug.Assert(IsPowerOf2( length ) == true );
-			Debug.Assert( length >= cMinLength );
-			Debug.Assert( length <= cMaxLength );
+			//Debug.Assert(IsPowerOf2( length ) == true );
+			//Debug.Assert( length >= cMinLength );
+			//Debug.Assert( length <= cMaxLength );
 			
 			int[] reversedBits = GetReversedBits( Log2( length ) );
 			for( int i = 0; i < length; i ++ ) {
@@ -277,13 +277,13 @@ using System.Text;
 		}
 
 		static private void ReorderArray( ComplexF[] data ) {
-			Debug.Assert( data != null );
+			//Debug.Assert( data != null );
 
 			int length = data.Length;
 			 
-			Debug.Assert(IsPowerOf2( length ) == true );
-			Debug.Assert( length >= cMinLength );
-			Debug.Assert( length <= cMaxLength );
+			//Debug.Assert(IsPowerOf2( length ) == true );
+			//Debug.Assert( length >= cMinLength );
+			//Debug.Assert( length <= cMaxLength );
 
 			int[] reversedBits = GetReversedBits( Log2( length ) );
 			for( int i = 0; i < length; i ++ ) {
@@ -327,8 +327,8 @@ using System.Text;
 		private static	float[,][]	_uILookupF	= null;
 
 		private static void	SyncLookupTableLength( int length ) {
-			//Debug.Assert( length < 1024*10 );
-			//Debug.Assert( length >= 0 );
+			////Debug.Assert( length < 1024*10 );
+			////Debug.Assert( length >= 0 );
 			if( length > _lookupTabletLength ) {
 				int level = (int) Math.Ceiling( Math.Log( length, 2 ) );
 				InitializeReverseBits( level );
@@ -424,7 +424,7 @@ using System.Text;
 		static private float[]	_bufferF		= new float[ 0 ];
 
 		static private void		LockBufferF( int length, ref float[] buffer ) {
-			//Debug.Assert( _bufferFLocked == false );
+			////Debug.Assert( _bufferFLocked == false );
 			//_bufferFLocked = true;
 			if( length >= _bufferF.Length ) {
 				_bufferF	= new float[ length ];
@@ -432,18 +432,18 @@ using System.Text;
 			buffer =	_bufferF;
 		}
 		static private void		UnlockBufferF( ref float[] buffer ) {
-			Debug.Assert( _bufferF == buffer );
-			//Debug.Assert( _bufferFLocked == true );
+			//Debug.Assert( _bufferF == buffer );
+			////Debug.Assert( _bufferFLocked == true );
 			//_bufferFLocked = false;
 			buffer = null;
 		}
 		/*
 		private static void	LinearFFT( float[] data, int start, int inc, int length, FourierDirection direction ) {
-			Debug.Assert( data != null );
-			Debug.Assert( start >= 0 );
-			Debug.Assert( inc >= 1 );
-			Debug.Assert( length >= 1 );
-			Debug.Assert( ( start + inc * ( length - 1 ) ) * 2 < data.Length );
+			//Debug.Assert( data != null );
+			//Debug.Assert( start >= 0 );
+			//Debug.Assert( inc >= 1 );
+			//Debug.Assert( length >= 1 );
+			//Debug.Assert( ( start + inc * ( length - 1 ) ) * 2 < data.Length );
 			
 			// copy to buffer
 			float[]	buffer = null;
@@ -466,11 +466,11 @@ using System.Text;
 		}*/
 		/*
 		private static void	LinearFFT_Quick( float[] data, int start, int inc, int length, FourierDirection direction ) {
-			//Debug.Assert( data != null );
-			//Debug.Assert( start >= 0 );
-			//Debug.Assert( inc >= 1 );
-			//Debug.Assert( length >= 1 );
-			//Debug.Assert( ( start + inc * ( length - 1 ) ) * 2 < data.Length );
+			////Debug.Assert( data != null );
+			////Debug.Assert( start >= 0 );
+			////Debug.Assert( inc >= 1 );
+			////Debug.Assert( length >= 1 );
+			////Debug.Assert( ( start + inc * ( length - 1 ) ) * 2 < data.Length );
 			
 			// copy to buffer
 			float[]	buffer = null;
@@ -499,8 +499,8 @@ using System.Text;
 		static private ComplexF[]	_bufferCF		= new ComplexF[ 0 ];
 
 		static private void		LockBufferCF( int length, ref ComplexF[] buffer ) {
-			Debug.Assert( length >= 0 );
-			//Debug.Assert( _bufferCFLocked == false );
+			//Debug.Assert( length >= 0 );
+			////Debug.Assert( _bufferCFLocked == false );
 			
 			//_bufferCFLocked = true;
 			if( length != _bufferCF.Length ) {
@@ -509,19 +509,19 @@ using System.Text;
 			buffer =	_bufferCF;
 		}
 		static private void		UnlockBufferCF( ref ComplexF[] buffer ) {
-			Debug.Assert( _bufferCF == buffer );
-			//Debug.Assert( _bufferCFLocked == true );
+			//Debug.Assert( _bufferCF == buffer );
+			////Debug.Assert( _bufferCFLocked == true );
 			
 			//_bufferCFLocked = false;
 			buffer = null;
 		}
 
 		private static void	LinearFFT( ComplexF[] data, int start, int inc, int length, FourierDirection direction ) {
-			Debug.Assert( data != null );
-			Debug.Assert( start >= 0 );
-			Debug.Assert( inc >= 1 );
-			Debug.Assert( length >= 1 );
-			Debug.Assert( ( start + inc * ( length - 1 ) ) < data.Length );
+			//Debug.Assert( data != null );
+			//Debug.Assert( start >= 0 );
+			//Debug.Assert( inc >= 1 );
+			//Debug.Assert( length >= 1 );
+			//Debug.Assert( ( start + inc * ( length - 1 ) ) < data.Length );
 			
 			// copy to buffer
 			ComplexF[]	buffer = null;
@@ -544,11 +544,11 @@ using System.Text;
 		}
 
 		private static void	LinearFFT_Quick( ComplexF[] data, int start, int inc, int length, FourierDirection direction ) {
-			/*Debug.Assert( data != null );
-			Debug.Assert( start >= 0 );
-			Debug.Assert( inc >= 1 );
-			Debug.Assert( length >= 1 );
-			Debug.Assert( ( start + inc * ( length - 1 ) ) < data.Length );	*/
+			/*//Debug.Assert( data != null );
+			//Debug.Assert( start >= 0 );
+			//Debug.Assert( inc >= 1 );
+			//Debug.Assert( length >= 1 );
+			//Debug.Assert( ( start + inc * ( length - 1 ) ) < data.Length );	*/
 			
 			// copy to buffer
 			ComplexF[]	buffer = null;
@@ -577,8 +577,8 @@ using System.Text;
 		static private Complex[]	_bufferC		= new Complex[ 0 ];
 
 		static private void		LockBufferC( int length, ref Complex[] buffer ) {
-			Debug.Assert( length >= 0 );
-			//Debug.Assert( _bufferCLocked == false );
+			//Debug.Assert( length >= 0 );
+			////Debug.Assert( _bufferCLocked == false );
 			
 			//_bufferCLocked = true;
 			if( length >= _bufferC.Length ) {
@@ -587,19 +587,19 @@ using System.Text;
 			buffer =	_bufferC;
 		}
 		static private void		UnlockBufferC( ref Complex[] buffer ) {
-			Debug.Assert( _bufferC == buffer );
-			//Debug.Assert( _bufferCLocked == true );
+			//Debug.Assert( _bufferC == buffer );
+			////Debug.Assert( _bufferCLocked == true );
 			
 			//_bufferCLocked = false;
 			buffer = null;
 		}
 
 		private static void	LinearFFT( Complex[] data, int start, int inc, int length, FourierDirection direction ) {
-			Debug.Assert( data != null );
-			Debug.Assert( start >= 0 );
-			Debug.Assert( inc >= 1 );
-			Debug.Assert( length >= 1 );
-			Debug.Assert( ( start + inc * ( length - 1 ) ) < data.Length );
+			//Debug.Assert( data != null );
+			//Debug.Assert( start >= 0 );
+			//Debug.Assert( inc >= 1 );
+			//Debug.Assert( length >= 1 );
+			//Debug.Assert( ( start + inc * ( length - 1 ) ) < data.Length );
 			
 			// copy to buffer
 			Complex[]	buffer = null;
@@ -622,11 +622,11 @@ using System.Text;
 		}
 
 		private static void	LinearFFT_Quick( Complex[] data, int start, int inc, int length, FourierDirection direction ) {
-			/*Debug.Assert( data != null );
-			Debug.Assert( start >= 0 );
-			Debug.Assert( inc >= 1 );
-			Debug.Assert( length >= 1 );
-			Debug.Assert( ( start + inc * ( length - 1 ) ) < data.Length );*/
+			/*//Debug.Assert( data != null );
+			//Debug.Assert( start >= 0 );
+			//Debug.Assert( inc >= 1 );
+			//Debug.Assert( length >= 1 );
+			//Debug.Assert( ( start + inc * ( length - 1 ) ) < data.Length );*/
 			
 			// copy to buffer
 			Complex[]	buffer = null;
@@ -660,9 +660,9 @@ using System.Text;
 		///
 		/*
 		public static void	FFT( float[] data, int length, FourierDirection direction ) {
-			Debug.Assert( data != null );
-			Debug.Assert( data.Length >= length*2 );
-			Debug.Assert( IsPowerOf2( length ) == true );
+			//Debug.Assert( data != null );
+			//Debug.Assert( data.Length >= length*2 );
+			//Debug.Assert( IsPowerOf2( length ) == true );
 
 			SyncLookupTableLength( length );
 			
@@ -717,9 +717,9 @@ using System.Text;
 		/// 
 		/*
 		public static void	FFT_Quick( float[] data, int length, FourierDirection direction ) {
-			//Debug.Assert( data != null );
-			//Debug.Assert( data.Length >= length*2 );
-			//Debug.Assert( IsPowerOf2( length ) == true );
+			////Debug.Assert( data != null );
+			////Debug.Assert( data.Length >= length*2 );
+			////Debug.Assert( IsPowerOf2( length ) == true );
 			//SyncLookupTableLength( length );
 			
 			int ln = Log2( length );

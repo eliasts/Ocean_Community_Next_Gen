@@ -7,12 +7,16 @@ ModelImporter:
   fileIDToRecycleName:
     100000: //RootNode
     100002: fmask
+    100004: sboat007
     400000: //RootNode
     400002: fmask
+    400004: sboat007
     2300000: //RootNode
     2300002: fmask
+    2300004: sboat007
     3300000: //RootNode
     3300002: fmask
+    3300004: sboat007
     4300000: sboat007
     4300002: fmask
   materials:

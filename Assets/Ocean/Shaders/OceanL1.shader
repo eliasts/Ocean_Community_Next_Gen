@@ -20,6 +20,7 @@ Shader "Mobile/OceanL1" {
 	}
 	
 	
+ 		//water bump/foam
 	    SubShader {
         Tags { "RenderType" = "Opaque" "Queue"="Geometry"}
         LOD 3
@@ -28,24 +29,26 @@ Shader "Mobile/OceanL1" {
 			#pragma vertex vert
 			#pragma fragment frag
 			#pragma multi_compile_fog
+			#pragma target 2.0
 			#include "UnityCG.cginc"
 
 			struct v2f {
     			float4 pos : SV_POSITION;
+				half3 floatVec : TEXCOORD0;
     			float3  bumpTexCoord : TEXCOORD1;
-    			float3  viewDir : TEXCOORD2;
-    			float3  lightDir : TEXCOORD4;
+    			half3  viewDir : TEXCOORD2;
+    			half3  lightDir : TEXCOORD3;
+				half4 buv : TEXCOORD4;
+				half3 normViewDir : TEXCOORD5;
+
 				UNITY_FOG_COORDS(7)
-				float4 buv : TEXCOORD5;
-				float3 normViewDir : TEXCOORD6;
-				float3 floatVec : TEXCOORD0;
 			};
 
-			float _Size;
-			float _FoamSize;
-			float4 _SunDir;
-			float4 _FakeUnderwaterColor;
-            float _WaveOffset;
+			half _Size;
+			half _FoamSize;
+			half4 _SunDir;
+			half4 _FakeUnderwaterColor;
+            half _WaveOffset;
             
 			v2f vert (appdata_tan v) {
     			v2f o;
@@ -54,16 +57,13 @@ Shader "Mobile/OceanL1" {
     			o.bumpTexCoord.xy = v.vertex.xz*_Size;///float2(_Size.x, _Size.z)*5;
     			o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
     			o.bumpTexCoord.z = v.tangent.w;
-    
-  				float4 projSource = float4(v.vertex.x, 0.0, v.vertex.z, 1.0);
-    			float4 tmpProj = mul( UNITY_MATRIX_MVP, projSource);
 
-    			float3 objSpaceViewDir = ObjSpaceViewDir(v.vertex);
-    			float3 binormal = cross( normalize(v.normal), normalize(v.tangent.xyz) );
-				float3x3 rotation = float3x3( v.tangent.xyz, binormal, v.normal );
+    			half3 objSpaceViewDir = ObjSpaceViewDir(v.vertex);
+    			half3 binormal = cross( normalize(v.normal), normalize(v.tangent.xyz) );
+				half3x3 rotation = half3x3( v.tangent.xyz, binormal, v.normal );
     
     			o.viewDir = mul(rotation, objSpaceViewDir);
-    			o.lightDir = mul(rotation, float3(_SunDir.xyz));
+    			o.lightDir = mul(rotation, half3(_SunDir.xyz));
 
 				o.buv = float4(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03, o.bumpTexCoord.x + _WaveOffset * 0.04, o.bumpTexCoord.y- _WaveOffset * 0.02);
 
@@ -78,32 +78,32 @@ Shader "Mobile/OceanL1" {
 
 			sampler2D _Bump;
 			sampler2D _Foam;
-			float _FoamFactor;
-			float4 _WaterColor;//Lod1;
-			float4 _SurfaceColor;
-			float _Specularity;
-            float4 _SunColor;
+			half _FoamFactor;
+			half4 _WaterColor;//Lod1;
+			half4 _SurfaceColor;
+			half _Specularity;
+            half4 _SunColor;
 
-			float4 frag (v2f i) : COLOR {
+			half4 frag (v2f i) : COLOR {
 				//float3 normViewDir = normalize(i.viewDir);
-				//float4 buv = float4(i.bumpTexCoord.x + _WaveOffset * 0.05, i.bumpTexCoord.y + _WaveOffset * 0.03, i.bumpTexCoord.x + _WaveOffset * 0.04, i.bumpTexCoord.y - _WaveOffset * 0.02);
+			  // float4 buv = float4(i.bumpTexCoord.x + _WaveOffset * 0.05, i.bumpTexCoord.y + _WaveOffset * 0.03, i.bumpTexCoord.x + _WaveOffset * 0.04, i.bumpTexCoord.y - _WaveOffset * 0.02);
                 
-				float3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2.0) + (tex2D(_Bump, i.buv.zw) * 2.0) - 2;
+				half3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2.0) + (tex2D(_Bump, i.buv.zw) * 2.0) - 2;
 
-				float3 tangentNormal = normalize(tangentNormal0);
+				half3 tangentNormal = normalize(tangentNormal0);
 
-				float4 result = float4(0, 0, 0, 1);
+				half4 result = half4(0, 0, 0, 1);
                 
-				float fresnelLookup = dot(tangentNormal, i.normViewDir);
+				half fresnelLookup = dot(tangentNormal, i.normViewDir);
 				//float bias = 0.06;
 				//float power = 4.0;
-				float fresnelTerm = 0.06 + (1.0-0.06)*pow(1.0 - fresnelLookup, 4.0);
+				half fresnelTerm = 0.06 + (1.0-0.06)*pow(1.0 - fresnelLookup, 4.0);
 
-				float4 foam = clamp(tex2D(_Foam, i.bumpTexCoord.xy *_FoamSize)  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z * _FoamFactor;
+				half foam = clamp(tex2D(_Foam, i.bumpTexCoord.xy *_FoamSize)  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z * _FoamFactor;
 
 				//float3 floatVec = normalize(i.normViewDir - normalize(i.lightDir));
 
-				float specular = pow(max(dot(i.floatVec,  tangentNormal) , 0.0), 250.0 * _Specularity ) *(1.2-foam);
+				half specular = pow(max(dot(i.floatVec,  tangentNormal) , 0.0), 250.0 * _Specularity ) *(1.2-foam);
                 
 				result.rgb = lerp(_WaterColor*_FakeUnderwaterColor, _SunColor.rgb*_SurfaceColor*0.85, fresnelTerm*0.65) + clamp(foam.r, 0.0, 1.0)*_SunColor.b + specular*_SunColor.rgb;
 

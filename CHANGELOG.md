@@ -1,3 +1,15 @@
+12/12/2015 Major update
+
+- Buoyancy has been rewritten with very good and fast results.
+- Custom inspector for buoyancy with additional variables.
+- You can save/load a buoyancy setup for a vessel.
+- Choppy waves, wind and wave slopes are able to influence the vessel's condition. This adds a lot of realism.
+- The shader has been rechecked again. Higher performance is back in now. The previous mobile fix added some unneeded overhead.
+- More multithreading optimizations.
+- Math optimizations.
+- The Editor Inspector has been improved and prepared for the future additions.
+
+
 09/12/2015
 
 - Improved the multithreading code a lot. Now the 2 frame spread gets a 14% speed increase and the 3 frame spread gets an 11% speed increase. The rest stays the same.

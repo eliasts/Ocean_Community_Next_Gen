@@ -113,9 +113,9 @@ using System.Diagnostics;
 		/// <param name="array"></param>
 		/// <param name="offset"></param>
 		static public void Shift( Complex[] array, int offset ) {
-			Debug.Assert( array != null );
-			Debug.Assert( offset >= 0 );
-			Debug.Assert( offset < array.Length );
+			//Debug.Assert( array != null );
+			//Debug.Assert( offset >= 0 );
+			//Debug.Assert( offset < array.Length );
 
 			if( offset == 0 ) {
 				return;
@@ -138,9 +138,9 @@ using System.Diagnostics;
 		/// <param name="array"></param>
 		/// <param name="offset"></param>
 		static public void Shift( ComplexF[] array, int offset ) {
-			Debug.Assert( array != null );
-			Debug.Assert( offset >= 0 );
-			Debug.Assert( offset < array.Length );
+			//Debug.Assert( array != null );
+			//Debug.Assert( offset >= 0 );
+			//Debug.Assert( offset < array.Length );
 
 			if( offset == 0 ) {
 				return;
@@ -148,7 +148,7 @@ using System.Diagnostics;
 
 			int			length		= array.Length;
 			ComplexF[]	workspace	= null;
-			ComplexArray.LockWorkspaceF( length, ref workspace );
+			LockWorkspaceF( length, ref workspace );
 
 			for( int i = 0; i < length; i ++ ) {
 				workspace[ ( i + offset ) % length ] = array[ i ];
@@ -157,7 +157,7 @@ using System.Diagnostics;
 				array[ i ] = workspace[ i ];
 			}
 
-			ComplexArray.UnlockWorkspaceF( ref workspace );
+			UnlockWorkspaceF( ref workspace );
 		}
 
 		//---------------------------------------------------------------------------------------------
@@ -337,10 +337,10 @@ using System.Diagnostics;
 		/// <param name="start"></param>
 		/// <param name="length"></param>
 		static public void Scale( Complex[] array, double scale, int start, int length ) {
-			Debug.Assert( array != null );
-			Debug.Assert( start >= 0 );
-			Debug.Assert( length >= 0 );
-			Debug.Assert( ( start + length ) < array.Length );
+			//Debug.Assert( array != null );
+			//Debug.Assert( start >= 0 );
+			//Debug.Assert( length >= 0 );
+			//Debug.Assert( ( start + length ) < array.Length );
 
 			for( int i = 0; i < length; i ++ ) {
 				array[i + start] *= scale;
@@ -353,7 +353,7 @@ using System.Diagnostics;
 		/// <param name="array"></param>
 		/// <param name="scale"></param>
 		static public void Scale( Complex[] array, Complex scale ) {
-			Debug.Assert( array != null );
+			//Debug.Assert( array != null );
 
 			int length = array.Length;
 			for( int i = 0; i < length; i ++ ) {
@@ -368,10 +368,10 @@ using System.Diagnostics;
 		/// <param name="start"></param>
 		/// <param name="length"></param>
 		static public void Scale( Complex[] array, Complex scale, int start, int length ) {
-			Debug.Assert( array != null );
-			Debug.Assert( start >= 0 );
-			Debug.Assert( length >= 0 );
-			Debug.Assert( ( start + length ) < array.Length );
+			//Debug.Assert( array != null );
+			//Debug.Assert( start >= 0 );
+			//Debug.Assert( length >= 0 );
+			//Debug.Assert( ( start + length ) < array.Length );
 
 			for( int i = 0; i < length; i ++ ) {
 				array[i + start] *= scale;
@@ -384,7 +384,7 @@ using System.Diagnostics;
 		/// <param name="array"></param>
 		/// <param name="scale"></param>
 		static public void Scale( ComplexF[] array, float scale ) {
-			Debug.Assert( array != null );
+			//Debug.Assert( array != null );
 
 			int length = array.Length;
 			for( int i = 0; i < length; i ++ ) {
@@ -399,10 +399,10 @@ using System.Diagnostics;
 		/// <param name="start"></param>
 		/// <param name="length"></param>
 		static public void Scale( ComplexF[] array, float scale, int start, int length ) {
-			Debug.Assert( array != null );
-			Debug.Assert( start >= 0 );
-			Debug.Assert( length >= 0 );
-			Debug.Assert( ( start + length ) < array.Length );
+			//Debug.Assert( array != null );
+			//Debug.Assert( start >= 0 );
+			//Debug.Assert( length >= 0 );
+			//Debug.Assert( ( start + length ) < array.Length );
 
 			for( int i = 0; i < length; i ++ ) {
 				array[i + start] *= scale;
@@ -415,7 +415,7 @@ using System.Diagnostics;
 		/// <param name="array"></param>
 		/// <param name="scale"></param>
 		static public void Scale( ComplexF[] array, ComplexF scale ) {
-			Debug.Assert( array != null );
+			//Debug.Assert( array != null );
 
 			int length = array.Length;
 			for( int i = 0; i < length; i ++ ) {
@@ -430,10 +430,10 @@ using System.Diagnostics;
 		/// <param name="start"></param>
 		/// <param name="length"></param>
 		static public void Scale( ComplexF[] array, ComplexF scale, int start, int length ) {
-			Debug.Assert( array != null );
-			Debug.Assert( start >= 0 );
-			Debug.Assert( length >= 0 );
-			Debug.Assert( ( start + length ) < array.Length );
+			//Debug.Assert( array != null );
+			//Debug.Assert( start >= 0 );
+			//Debug.Assert( length >= 0 );
+			//Debug.Assert( ( start + length ) < array.Length );
 
 			for( int i = 0; i < length; i ++ ) {
 				array[i + start] *= scale;
@@ -458,11 +458,11 @@ using System.Diagnostics;
 		/// <param name="rhs"></param>
 		/// <param name="result"></param>
 		static public void Multiply( Complex[] lhs, Complex[] rhs, Complex[] result ) {
-			Debug.Assert( lhs != null );
-			Debug.Assert( rhs != null );
-			Debug.Assert( result != null );
-			Debug.Assert( lhs.Length == rhs.Length );
-			Debug.Assert( lhs.Length == result.Length );
+			//Debug.Assert( lhs != null );
+			//Debug.Assert( rhs != null );
+			//Debug.Assert( result != null );
+			//Debug.Assert( lhs.Length == rhs.Length );
+			//Debug.Assert( lhs.Length == result.Length );
 
 			int length = lhs.Length;
 			for( int i = 0; i < length; i ++ ) {
@@ -486,11 +486,11 @@ using System.Diagnostics;
 		/// <param name="rhs"></param>
 		/// <param name="result"></param>
 		static public void Multiply( ComplexF[] lhs, ComplexF[] rhs, ComplexF[] result ) {
-			Debug.Assert( lhs != null );
-			Debug.Assert( rhs != null );
-			Debug.Assert( result != null );
-			Debug.Assert( lhs.Length == rhs.Length );
-			Debug.Assert( lhs.Length == result.Length );
+			//Debug.Assert( lhs != null );
+			//Debug.Assert( rhs != null );
+			//Debug.Assert( result != null );
+			//Debug.Assert( lhs.Length == rhs.Length );
+			//Debug.Assert( lhs.Length == result.Length );
 
 			int length = lhs.Length;
 			for( int i = 0; i < length; i ++ ) {
@@ -516,11 +516,11 @@ using System.Diagnostics;
 		/// <param name="rhs"></param>
 		/// <param name="result"></param>
 		static public void Divide( Complex[] lhs, Complex[] rhs, Complex[] result ) {
-			Debug.Assert( lhs != null );
-			Debug.Assert( rhs != null );
-			Debug.Assert( result != null );
-			Debug.Assert( lhs.Length == rhs.Length );
-			Debug.Assert( lhs.Length == result.Length );
+			//Debug.Assert( lhs != null );
+			//Debug.Assert( rhs != null );
+			//Debug.Assert( result != null );
+			//Debug.Assert( lhs.Length == rhs.Length );
+			//Debug.Assert( lhs.Length == result.Length );
 
 			int length = lhs.Length;
 			for( int i = 0; i < length; i ++ ) {
@@ -544,11 +544,11 @@ using System.Diagnostics;
 		/// <param name="rhs"></param>
 		/// <param name="result"></param>
 		static public void Divide( ComplexF[] lhs, ComplexF[] rhs, ComplexF[] result ) {
-			Debug.Assert( lhs != null );
-			Debug.Assert( rhs != null );
-			Debug.Assert( result != null );
-			Debug.Assert( lhs.Length == rhs.Length );
-			Debug.Assert( lhs.Length == result.Length );
+			//Debug.Assert( lhs != null );
+			//Debug.Assert( rhs != null );
+			//Debug.Assert( result != null );
+			//Debug.Assert( lhs.Length == rhs.Length );
+			//Debug.Assert( lhs.Length == result.Length );
 
 			ComplexF zero = ComplexF.Zero;
 			int length = lhs.Length;
@@ -594,9 +594,9 @@ using System.Diagnostics;
 		/// <param name="dest"></param>
 		/// <param name="source"></param>
 		static public void Copy( Complex[] dest, Complex[] source ) {
-			Debug.Assert( dest != null );
-			Debug.Assert( source != null );
-			Debug.Assert( dest.Length == source.Length );
+			//Debug.Assert( dest != null );
+			//Debug.Assert( source != null );
+			//Debug.Assert( dest.Length == source.Length );
 			for( int i = 0; i < dest.Length; i ++ ) {
 				dest[i] = source[i];
 			}
@@ -608,13 +608,19 @@ using System.Diagnostics;
 		/// <param name="dest"></param>
 		/// <param name="source"></param>
 		static public void Copy( ComplexF[] dest, ComplexF[] source ) {
-			Debug.Assert( dest != null );
-			Debug.Assert( source != null );
-			Debug.Assert( dest.Length == source.Length );
+			//Debug.Assert( dest != null );
+			//Debug.Assert( source != null );
+			//Debug.Assert( dest.Length == source.Length );
 			for( int i = 0; i < dest.Length; i ++ ) {
 				dest[i] = source[i];
 			}
 		}
+		/*
+		static public void Average( ComplexF[] dest, ComplexF[] source ) {
+			for( int i = 0; i < dest.Length; i ++ ) {
+				dest[i] = (source[i] + dest[i])*0.5f;
+			}
+		}*/
 
 		/// <summary>
 		/// Reverse the elements in the array

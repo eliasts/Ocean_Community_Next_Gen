@@ -11,7 +11,8 @@ public class BoatController : MonoBehaviour{
 	[SerializeField] private float m_boatAudioMinPitch = 0.4F;
 	[SerializeField] private float m_boatAudioMaxPitch = 1.2F;
 
-	[SerializeField] private float m_accelerationFactor = 2.0F;
+	[SerializeField] private float m_FinalSpeed = 100F;
+	[SerializeField] private float m_InertiaFactor = 0.005F;
 	[SerializeField] private float m_turningFactor = 2.0F;
     [SerializeField] private float m_accelerationTorqueFactor = 35F;
 	[SerializeField] private float m_turningTorqueFactor = 35F;
@@ -21,27 +22,29 @@ public class BoatController : MonoBehaviour{
     private Rigidbody m_rigidbody;
 	private Vector2 m_androidInputInit;
 
+	private float accel=0;
+	private float accelBreak;
 
-     void Start()   {
+     void Start()  {
        // base.Start();
 
         m_rigidbody = GetComponent<Rigidbody>();
        // m_rigidbody.drag = 1;
       //  m_rigidbody.angularDrag = 1;
+	  accelBreak = m_FinalSpeed*0.3f;
 
 		initPosition ();
 	}
 
-	public void initPosition()
-	{
+	public void initPosition()	{
 		#if UNITY_ANDROID && !UNITY_EDITOR
 		m_androidInputInit.x = Input.acceleration.y;
 		m_androidInputInit.y = Input.acceleration.x;
 		#endif
 	}
 
-	void Update()
-	{
+
+	void Update()	{
 		#if UNITY_ANDROID && !UNITY_EDITOR
 		Vector2 touchInput = Vector2.zero;
 		touchInput.x =  -(Input.acceleration.y - m_androidInputInit.y);
@@ -56,17 +59,24 @@ public class BoatController : MonoBehaviour{
 		#endif
 	}
 
-	public void setInputs(float iVerticalInput, float iHorizontalInput)
-	{
+	public void setInputs(float iVerticalInput, float iHorizontalInput)	{
 		m_verticalInput = iVerticalInput;
 		m_horizontalInput = iHorizontalInput;
 	}
 
-	 void FixedUpdate()
-	{
+	 void FixedUpdate()	{
 		//base.FixedUpdate();
+
+		if(m_verticalInput>0) {
+			if(accel<m_FinalSpeed) { accel+=(m_FinalSpeed * m_InertiaFactor); accel*=m_verticalInput;}
+		} else if(m_verticalInput==0) {
+			if(accel>0) { accel-=m_FinalSpeed * m_InertiaFactor; }
+			if(accel<0) { accel+=m_FinalSpeed * m_InertiaFactor; }
+		}else if(m_verticalInput<0){
+			if(accel>-accelBreak) { accel-=m_FinalSpeed * m_InertiaFactor*2;  }
+		}
 		
-		m_rigidbody.AddRelativeForce(Vector3.forward * m_verticalInput * m_accelerationFactor);
+		m_rigidbody.AddRelativeForce(Vector3.forward  * accel);
 
         m_rigidbody.AddRelativeTorque(
 			m_verticalInput * -m_accelerationTorqueFactor,
@@ -86,7 +96,7 @@ public class BoatController : MonoBehaviour{
 				if (currentAngleY > 180.0f)
 					currentAngleY -= 360.0f;
 
-				float localEulerAngleY = Mathf.Lerp(currentAngleY, motorRotationAngle, Time.deltaTime * 10);
+				float localEulerAngleY = Lerp(currentAngleY, motorRotationAngle, Time.deltaTime * 10);
 				m_motors[i].transform.localEulerAngles = new Vector3(
 					m_motors[i].transform.localEulerAngles.x,
 					localEulerAngleY,
@@ -94,15 +104,26 @@ public class BoatController : MonoBehaviour{
 				);
             }
         }
-
+		
 		if (m_enableAudio && m_boatAudioSource != null) 
 		{
-			float pitchLevel = m_verticalInput * m_boatAudioMaxPitch;
-			if (pitchLevel < m_boatAudioMinPitch)
-				pitchLevel = m_boatAudioMinPitch;
-			float smoothPitchLevel = Mathf.Lerp(m_boatAudioSource.pitch, pitchLevel, Time.deltaTime);
+			
+			float pitchLevel =  m_boatAudioMaxPitch*Mathf.Abs(m_verticalInput);
+			if(m_verticalInput<0) pitchLevel*=0.7f;
+
+			if (pitchLevel < m_boatAudioMinPitch) pitchLevel = m_boatAudioMinPitch;
+
+
+			float smoothPitchLevel = Lerp(m_boatAudioSource.pitch, pitchLevel, Time.deltaTime*0.5f);
 
 			m_boatAudioSource.pitch = smoothPitchLevel;
 		}
     }
+
+	static float Lerp (float from, float to, float value) {
+		if (value < 0.0f) return from;
+		else if (value > 1.0f) return to;
+		return (to - from) * value + from;
+	}
+
 }

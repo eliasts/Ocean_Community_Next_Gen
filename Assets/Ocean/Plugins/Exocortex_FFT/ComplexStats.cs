@@ -54,13 +54,13 @@ using System.Diagnostics;
 		/// <param name="data"></param>
 		/// <returns></returns>
 		static public  ComplexF		Sum( ComplexF[] data ) {
-			Debug.Assert( data != null );
+			//Debug.Assert( data != null );
 			return	SumRecursion( data, 0, data.Length );
 		}
 		static private ComplexF		SumRecursion( ComplexF[] data, int start, int end ) {
-			Debug.Assert( 0 <= start, "start = " + start );
-			Debug.Assert( start < end, "start = " + start + " and end = " + end );
-			Debug.Assert( end <= data.Length, "end = " + end + " and data.Length = " + data.Length );
+			//Debug.Assert( 0 <= start, "start = " + start );
+			//Debug.Assert( start < end, "start = " + start + " and end = " + end );
+			//Debug.Assert( end <= data.Length, "end = " + end + " and data.Length = " + data.Length );
 			if( ( end - start ) <= 1000 ) {
 				ComplexF sum = ComplexF.Zero;
 				for( int i = start; i < end; i ++ ) {
@@ -81,13 +81,13 @@ using System.Diagnostics;
 		/// <param name="data"></param>
 		/// <returns></returns>
 		static public  Complex		Sum( Complex[] data ) {
-			Debug.Assert( data != null );
+			//Debug.Assert( data != null );
 			return	SumRecursion( data, 0, data.Length );
 		}
 		static private Complex		SumRecursion( Complex[] data, int start, int end ) {
-			Debug.Assert( 0 <= start, "start = " + start );
-			Debug.Assert( start < end, "start = " + start + " and end = " + end );
-			Debug.Assert( end <= data.Length, "end = " + end + " and data.Length = " + data.Length );
+			//Debug.Assert( 0 <= start, "start = " + start );
+			//Debug.Assert( start < end, "start = " + start + " and end = " + end );
+			//Debug.Assert( end <= data.Length, "end = " + end + " and data.Length = " + data.Length );
 			if( ( end - start ) <= 1000 ) {
 				Complex sum = Complex.Zero;
 				for( int i = start; i < end; i ++ ) {
@@ -111,13 +111,13 @@ using System.Diagnostics;
 		/// <param name="data"></param>
 		/// <returns></returns>
 		static public ComplexF		SumOfSquares( ComplexF[] data ) {
-			Debug.Assert( data != null );
+			//Debug.Assert( data != null );
 			return	SumOfSquaresRecursion( data, 0, data.Length );
 		}
 		static private ComplexF		SumOfSquaresRecursion( ComplexF[] data, int start, int end ) {
-			Debug.Assert( 0 <= start, "start = " + start );
-			Debug.Assert( start < end, "start = " + start + " and end = " + end );
-			Debug.Assert( end <= data.Length, "end = " + end + " and data.Length = " + data.Length );
+			//Debug.Assert( 0 <= start, "start = " + start );
+			//Debug.Assert( start < end, "start = " + start + " and end = " + end );
+			//Debug.Assert( end <= data.Length, "end = " + end + " and data.Length = " + data.Length );
 			if( ( end - start ) <= 1000 ) {
 				ComplexF sumOfSquares = ComplexF.Zero;
 				for( int i = start; i < end; i ++ ) {
@@ -138,13 +138,13 @@ using System.Diagnostics;
 		/// <param name="data"></param>
 		/// <returns></returns>
 		static public Complex		SumOfSquares( Complex[] data ) {
-			Debug.Assert( data != null );
+			//Debug.Assert( data != null );
 			return	SumOfSquaresRecursion( data, 0, data.Length );
 		}
 		static private Complex		SumOfSquaresRecursion( Complex[] data, int start, int end ) {
-			Debug.Assert( 0 <= start, "start = " + start );
-			Debug.Assert( start < end, "start = " + start + " and end = " + end );
-			Debug.Assert( end <= data.Length, "end = " + end + " and data.Length = " + data.Length );
+			//Debug.Assert( 0 <= start, "start = " + start );
+			//Debug.Assert( start < end, "start = " + start + " and end = " + end );
+			//Debug.Assert( end <= data.Length, "end = " + end + " and data.Length = " + data.Length );
 			if( ( end - start ) <= 1000 ) {
 				Complex sumOfSquares = Complex.Zero;
 				for( int i = start; i < end; i ++ ) {
@@ -186,7 +186,7 @@ using System.Diagnostics;
 		/// <param name="data"></param>
 		/// <returns></returns>
 		static public ComplexF	Variance( ComplexF[] data ) {
-			Debug.Assert( data != null );
+			//Debug.Assert( data != null );
 			if( data.Length == 0 ) {
 				throw new DivideByZeroException( "length of data is zero" );
 			}
@@ -198,7 +198,7 @@ using System.Diagnostics;
 		/// <param name="data"></param>
 		/// <returns></returns>
 		static public Complex	Variance( Complex[] data ) {
-			Debug.Assert( data != null );
+			//Debug.Assert( data != null );
 			if( data.Length == 0 ) {
 				throw new DivideByZeroException( "length of data is zero" );
 			}
@@ -211,7 +211,7 @@ using System.Diagnostics;
 		/// <param name="data"></param>
 		/// <returns></returns>
 		static public ComplexF	StdDev( ComplexF[] data ) {
-			Debug.Assert( data != null );
+			//Debug.Assert( data != null );
 			if( data.Length == 0 ) {
 				throw new DivideByZeroException( "length of data is zero" );
 			}
@@ -223,7 +223,7 @@ using System.Diagnostics;
 		/// <param name="data"></param>
 		/// <returns></returns>
 		static public Complex	StdDev( Complex[] data ) {
-			Debug.Assert( data != null );
+			//Debug.Assert( data != null );
 			if( data.Length == 0 ) {
 				throw new DivideByZeroException( "length of data is zero" );
 			}
@@ -240,17 +240,17 @@ using System.Diagnostics;
 		/// <param name="beta"></param>
 		/// <returns></returns>
 		static public float	RMSError( ComplexF[] alpha, ComplexF[] beta ) {
-			Debug.Assert( alpha != null );
-			Debug.Assert( beta != null );
-			Debug.Assert( beta.Length == alpha.Length );
+			//Debug.Assert( alpha != null );
+			//Debug.Assert( beta != null );
+			//Debug.Assert( beta.Length == alpha.Length );
 
 			return (float) Math.Sqrt( SumOfSquaredErrorRecursion( alpha, beta, 0, alpha.Length ) );
 		}
 		static private float	SumOfSquaredErrorRecursion( ComplexF[] alpha, ComplexF[] beta, int start, int end ) {
-			Debug.Assert( 0 <= start, "start = " + start );
-			Debug.Assert( start < end, "start = " + start + " and end = " + end );
-			Debug.Assert( end <= alpha.Length, "end = " + end + " and alpha.Length = " + alpha.Length );
-			Debug.Assert( beta.Length == alpha.Length );
+			//Debug.Assert( 0 <= start, "start = " + start );
+			//Debug.Assert( start < end, "start = " + start + " and end = " + end );
+			//Debug.Assert( end <= alpha.Length, "end = " + end + " and alpha.Length = " + alpha.Length );
+			//Debug.Assert( beta.Length == alpha.Length );
 			if( ( end - start ) <= 1000 ) {
 				float sumOfSquaredError = 0;
 				for( int i = start; i < end; i ++ ) {
@@ -273,17 +273,17 @@ using System.Diagnostics;
 		/// <param name="beta"></param>
 		/// <returns></returns>
 		static public double	RMSError( Complex[] alpha, Complex[] beta ) {
-			Debug.Assert( alpha != null );
-			Debug.Assert( beta != null );
-			Debug.Assert( beta.Length == alpha.Length );
+			//Debug.Assert( alpha != null );
+			//Debug.Assert( beta != null );
+			//Debug.Assert( beta.Length == alpha.Length );
 
 			return Math.Sqrt( SumOfSquaredErrorRecursion( alpha, beta, 0, alpha.Length ) );
 		}
 		static private double	SumOfSquaredErrorRecursion( Complex[] alpha, Complex[] beta, int start, int end ) {
-			Debug.Assert( 0 <= start, "start = " + start );
-			Debug.Assert( start < end, "start = " + start + " and end = " + end );
-			Debug.Assert( end <= alpha.Length, "end = " + end + " and alpha.Length = " + alpha.Length );
-			Debug.Assert( beta.Length == alpha.Length );
+			//Debug.Assert( 0 <= start, "start = " + start );
+			//Debug.Assert( start < end, "start = " + start + " and end = " + end );
+			//Debug.Assert( end <= alpha.Length, "end = " + end + " and alpha.Length = " + alpha.Length );
+			//Debug.Assert( beta.Length == alpha.Length );
 			if( ( end - start ) <= 1000 ) {
 				double sumOfSquaredError = 0;
 				for( int i = start; i < end; i ++ ) {
