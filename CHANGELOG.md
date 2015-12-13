@@ -1,3 +1,10 @@
+13/12/2015 Hotfix update
+
+- I had to rewrite the Get water height and get choppiness functions. They had some bugs and were not accurate enough.
+- Added an option to buoyancy script to use a more accurate but slower function.
+- The buoyant object can work also with rigidbodies now.
+
+
 12/12/2015 Major update
 
 - Buoyancy has been rewritten with very good and fast results.

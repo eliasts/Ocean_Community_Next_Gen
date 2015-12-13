@@ -39,6 +39,16 @@ public class BuoyancyInspector  : Editor{
 
 		Boyancy boyancy = target as Boyancy;
 		DrawSeparator();
+
+		EditorGUILayout.BeginHorizontal();
+		EditorGUILayout.LabelField("More Accurate", GUILayout.MaxWidth(130));
+		boyancy.moreAccurate = EditorGUILayout.Toggle(boyancy.moreAccurate);
+		GUILayout.Space(175);
+		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
+			EditorUtility.DisplayDialog("More accurate Calculation","If a more accurate function of the Water height function should be used.\n\nIt is however 2.5x times slower.","OK");
+		}
+		EditorGUILayout.EndHorizontal();
+
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Buoyancy");
 		GUILayout.Space(-100);
@@ -277,6 +287,7 @@ public class BuoyancyInspector  : Editor{
 					swr.Write(boyancy.xAngleAddsSliding);//bool
 					swr.Write(boyancy.svisible);//bool
 					swr.Write(boyancy.slideFactor);//float
+					swr.Write(boyancy.moreAccurate);//bool
 				}
 
 			}
@@ -345,7 +356,7 @@ public class BuoyancyInspector  : Editor{
 							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.xAngleAddsSliding = br.ReadBoolean();
 							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.svisible = br.ReadBoolean();
 							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.slideFactor = br.ReadSingle();
-
+							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.moreAccurate = br.ReadBoolean();
 
 							//try to asign a renderer for visibility checks if there is none assigned in the boyancy inspector.
 							if(boyancy._renderer == null) {

@@ -38,7 +38,7 @@ public class Ocean : MonoBehaviour {
 	public bool fixedUpdate = false;
 	public int lodSkipFrames = 1;
 	private int lodSkip = 0;
-	public int hIndex;
+	public static int hIndex;
 	//if the buoyancy script is safe to check height location
 	//tells other scripts that want to access water height data that it is safe to do now.
 	//this applies only if the spread job over x frames is used!
@@ -46,7 +46,7 @@ public class Ocean : MonoBehaviour {
 
 	private Vector3 centerOffset;
 	#if !UNITY_WEBGL
-	private Thread th0, th0b, th1,th1b, th1c,th1d, th1e, th1f, th2, th3;
+	private Thread th0, th0b, th1,th1b, th2, th3, th3b;
 	#endif
 
 	public int defaultLOD = 4;
@@ -279,6 +279,7 @@ public class Ocean : MonoBehaviour {
 
 		scaleA = choppy_scale / wh;
 
+
 		flodoff3 = farLodOffset/2;
 		flodoff2 = farLodOffset/4;
 		flodoff1 = farLodOffset/6;
@@ -452,7 +453,7 @@ public class Ocean : MonoBehaviour {
 			}
 
 			if(fint == fr2B || !spreadAlongFrames) {
-					if(th0 != null) th0.Join(); if(th0b != null) th0b.Join();
+					if(th0 != null) { if(th0.IsAlive) th0.Join(); } if(th0b != null) { if(th0b.IsAlive) th0b.Join();}
 					th1 = new Thread( () => { Fourier.FFT2 (data, width, height, FourierDirection.Backward); } );
 					th1.Start();
 			}
@@ -463,7 +464,7 @@ public class Ocean : MonoBehaviour {
 			}
 
 			if(fint == fr4 || !spreadAlongFrames ) {
-					if(th1b != null) { th1b.Join(); } if(th1 != null) { th1.Join(); }
+					if(th1b != null) {if(th1b.IsAlive) th1b.Join(); } if(th1 != null) {if(th1.IsAlive) th1.Join(); }
 					th2 = new Thread( calcPhase3 );
 					th2.Start();
 			}
@@ -639,8 +640,10 @@ public class Ocean : MonoBehaviour {
 			Vector3 playerPosition =  player.position;
 			Vector3 currentPosition = transform.position;
 
+			
+
 			th3 = new Thread( () => { 
-				for (int y = 0; y < g_height; y++) {
+				for (int y = 0; y < g_height/2; y++) {
 					for (int x = 0; x < g_width; x++) {
 						int item=x + g_width * y;
 						if (x + 1 >= g_width) {	tangents [item].w = tangents [g_width * y].w; continue;	}
@@ -671,11 +674,57 @@ public class Ocean : MonoBehaviour {
 				}
 			});
 			th3.Start();
-			th3.Join();
-			if(th2 != null) th2.Join();
+
+			th3b = new Thread( () => { 
+				for (int y = g_height/2; y < g_height; y++) {
+					for (int x = 0; x < g_width; x++) {
+						int item=x + g_width * y;
+						if (x + 1 >= g_width) {	tangents [item].w = tangents [g_width * y].w; continue;	}
+						if (y + 1 >= g_height) { tangents [item].w = tangents [x].w; continue; }
+				
+						float right = vertices[(x + 1) + g_width * y].x - vertices[item].x;
+						float foam = right/(size.x / g_width);
+					
+						if (foam < 0.0f) tangents [item].w = 1f;
+						else if (foam < 0.5f) tangents [item].w += 3.0f * deltaTime;
+						else tangents [item].w -= 0.4f * deltaTime;
+					
+						if (player != null ){
+							if(ifoamStrength>0) {
+								Vector3 player2Vertex = (playerPosition - vertices[item] - currentPosition) * ifoamWidth;
+								// foam around boat
+								if (player2Vertex.x >= size.x) player2Vertex.x -= size.x;
+								if (player2Vertex.x<= -size.x) player2Vertex.x += size.x;
+								if (player2Vertex.z >= size.z) player2Vertex.z -= size.z;
+								if (player2Vertex.z<= -size.z) player2Vertex.z += size.z;
+								player2Vertex.y = 0;
+								if (player2Vertex.sqrMagnitude < wakeDistance * wakeDistance) tangents[item].w += ifoamStrength * deltaTime;
+							}
+						}
+					
+						tangents [item].w = Mathf.Clamp (tangents[item].w, 0.0f, 2.0f);
+					}
+				}
+			});
+			th3b.Start();
+			
+			//not needed
+			//th3b.Join();
+			//th3.Join();
+
+
+			if(th2 != null) { if(th2.IsAlive) th2.Join();}
 		}
 
 		tangents [gwgh] = Vector4.Normalize(vertices [gwgh] + mv2 - vertices [1]);
+
+		updateTiles();
+	}
+
+
+
+
+	void updateTiles() {
 
 		if(lodSkipFrames>0) {
 			lodSkip++;
@@ -730,7 +779,6 @@ public class Ocean : MonoBehaviour {
 		if(ticked) ticked = false;
 	}
 
-
 	void calcPhase4N() {
 		if (followMainCamera && player != null) {
 			centerOffset.x = Mathf.Floor(player.position.x * sizeInv.x) *  size.x;
@@ -778,55 +826,8 @@ public class Ocean : MonoBehaviour {
 		}
 
 		tangents [gwgh] = Vector4.Normalize(vertices [gwgh] + mv2 - vertices [1]);
-		if(lodSkipFrames>0) {
-			lodSkip++;
-			if(lodSkip >= lodSkipFrames+1) lodSkip=0;
-		}
-
-		for (int L0D=0; L0D<max_LOD; L0D++) {
-			//this will skip one update of the tiles higher then Lod0
-			if(L0D>0 && lodSkip==0 && !ticked) { break;  }
-				
-			int den = (int)System.Math.Pow (2f, L0D);
-			int idx = 0;
-
-			for (int y=0; y<g_height; y+=den) {
-				for (int x=0; x<g_width; x+=den) {
-					int idx2 = g_width * y + x;
-					verticesLOD[L0D] [idx] = vertices [idx2];
-					//lower the far lods to eliminate gaps in the horizon when having big waves
-					if(L0D>0) {
-						if(farLodOffset!=0) {
-							if(L0D==1) verticesLOD[L0D] [idx].y += flodoff1;
-							if(L0D==2) verticesLOD[L0D] [idx].y += flodoff2;
-							if(L0D==3) verticesLOD[L0D] [idx].y += flodoff3;
-							if(L0D>=4) verticesLOD[L0D] [idx].y += farLodOffset;
-						}
-					}
-
-					tangentsLOD[L0D] [idx] = tangents [idx2];
-					normalsLOD[L0D] [idx++] = normals [idx2];
-				}			
-			}
-
-			for (int k=0; k< tiles_LOD[L0D].Count; k++) {
-				//update mesh only if visible
-				if(!ticked) {
-					if(rtiles_LOD[L0D][k].isVisible) {
-						Mesh meshLOD = tiles_LOD [L0D][k];
-						meshLOD.vertices = verticesLOD[L0D];
-						meshLOD.normals = normalsLOD[L0D];
-						meshLOD.tangents = tangentsLOD[L0D];
-					}
-				} else {
-						Mesh meshLOD = tiles_LOD [L0D][k];
-						meshLOD.vertices = verticesLOD[L0D];
-						meshLOD.normals = normalsLOD[L0D];
-						meshLOD.tangents = tangentsLOD[L0D];
-				}
-			}	
-		}
-		if(ticked) ticked = false;
+		
+		updateTiles();
 	}
 
 
@@ -1541,42 +1542,9 @@ public class Ocean : MonoBehaviour {
 		if(g>=0)return (int)g; else return (int)g-1;
 	}
 
-	
-	//added alternative ways for Mathf.FloorToInt since it is slow
-	public float GetWaterHeightAtLocation(float x, float y) {
-        x = x / size.x;
-		//x = (x - (int)System.Math.Floor(x)) * width;//correct,faster
-		x = (x - MyFloorInt(x)) * width;
-
-        y = y / size.z;
-		//y = (y - (int)System.Math.Floor(y)) * height;
-		y = (y - MyFloorInt(y)) * height;
-
-		//int idx = width * (int)System.Math.Floor(y) + (int)System.Math.Floor(x);
-		int idx = width * MyFloorInt(y) + MyFloorInt(x);
-		hIndex = idx;
-        return data[idx].Re * waveScale / wh;
-    }
-
-	public float GetChoppyAtLocation(float x, float y) {
-        x = x / size.x;
-		//x = (x - (int)System.Math.Floor(x)) * width;//correct,faster
-		x = (x - MyFloorInt(x)) * width;
-
-        y = y / size.z;
-		//y = (y - (int)System.Math.Floor(y)) * height;
-		y = (y - MyFloorInt(y)) * height;
-
-		//int idx = width * (int)System.Math.Floor(y) + (int)System.Math.Floor(x);
-		int idx = width * MyFloorInt(y) + MyFloorInt(x);
-		hIndex = idx;
-        return data[idx].Re * choppy_scale / wh;
-    }
-
-	//get choppy fast.
-	public float GetWaterChoppyness() {
-        return data[hIndex].Re * choppy_scale / wh;
-    }
+	static int MyCeilInt(float g) {
+		if(g>=0)return (int)g+1; else return (int)g;
+	}
 
 	static float Lerp (float from, float to, float value) {
 		if (value < 0.0f) return from;
@@ -1584,19 +1552,57 @@ public class Ocean : MonoBehaviour {
 		return (to - from) * value + from;
 	}
 
-/*
+
+	
+	//faster but less accurate then version2
+	public float GetWaterHeightAtLocation(float x, float y) {
+        x = x / size.x;
+		x = (x - MyFloorInt(x)) * width;
+
+        y = y / size.z;
+		y = (y - MyFloorInt(y)) * height;
+
+		int idx = width * MyFloorInt(y) + MyFloorInt(x);
+		hIndex = idx;
+        return data[idx].Re * waveScale / wh;
+    }
+
+	//faster but less accurate then version2
+	public float GetChoppyAtLocation(float x, float y) {
+        x = x / size.x;
+		x = (x - MyFloorInt(x)) * width;
+
+        y = y / size.z;
+		y = (y - MyFloorInt(y)) * height;
+
+		int idx = width * MyFloorInt(y) + MyFloorInt(x);
+        return data[idx].Im * scaleA;
+    }
+
+	//faster but less accurate then version2
+	//should be called directly after GetWaterHeightAtLocation otherwise use GetChoppyAtLocation
+	public float GetChoppyAtLocationFast() {
+        return data[hIndex].Im * scaleA;
+    }
+
+
+	//more accurate but slower
+	public static  int  fy;
+	public static float h1, h2, yy;
+
 	public float GetWaterHeightAtLocation2 (float x, float y) {
-		x = x / size.x;
-		x = (x - (int)System.Math.Floor(x)) * width;
-   
-		y = y / size.z;
-		y = (y - (int)System.Math.Floor(y)) * height;
- 
+        x = x / size.x;
+		x = (x - MyFloorInt(x)) * width;
+
+        y = y / size.z;
+		y = (y - MyFloorInt(y)) * height;
+		yy = y;
+
 		//do quad interp
-		int fx = (int)System.Math.Floor(x);
-		int fy = (int)System.Math.Floor(y);
-		int cx = (int)System.Math.Ceiling(x)%width;
-		int cy = (int)System.Math.Ceiling(y)%height;
+		int fx = MyFloorInt(x);
+		fy = MyFloorInt(y);
+		int cx = MyCeilInt(x)%width;
+		int cy = MyCeilInt(y)%height;
    
 		//find data points for all four points
 		float FFd = data[width * fy + fx].Re * waveScale / wh;
@@ -1606,31 +1612,32 @@ public class Ocean : MonoBehaviour {
    
 		//interp across x's
 		float xs = x - fx;
-		float h1 = Lerp(FFd, CFd, xs);
-		float h2 = Lerp(FCd, CCd, xs);
-   
+		h1 = Lerp(FFd, CFd, xs);
+		h2 = Lerp(FCd, CCd, xs);
+
 		//interp across y
 		return Lerp(h1, h2, y - fy);
 	}
  
-	public float GetWaterChoppyness2 (float x, float y) {
-		x = x / size.x;
-		x = (x - (int)System.Math.Floor(x)) * width;
-   
-		y = y / size.z;
-		y = (y - (int)System.Math.Floor(y)) * height;
+	//more accurate but slower
+	public float GetChoppyAtLocation2 (float x, float y) {
+        x = x / size.x;
+		x = (x - MyFloorInt(x)) * width;
+
+        y = y / size.z;
+		y = (y - MyFloorInt(y)) * height;
  
 		//do quad interp
-		int fx = (int)System.Math.Floor(x);
-		int fy = (int)System.Math.Floor(y);
-		int cx = (int)System.Math.Ceiling(x)%width;
-		int cy = (int)System.Math.Ceiling(y)%height;
+		int fx = MyFloorInt(x);
+		int fy = MyFloorInt(y);
+		int cx = MyCeilInt(x)%width;
+		int cy = MyCeilInt(y)%height;
    
 		//find data points for all four points
-		float FFd = data[width * fy + fx].Im * choppy_scale / wh;
-		float CFd = data[width * fy + cx].Im * choppy_scale / wh;
-		float CCd = data[width * cy + cx].Im * choppy_scale / wh;
-		float FCd = data[width * cy + fx].Im * choppy_scale / wh;
+		float FFd = data[width * fy + fx].Im * scaleA;
+		float CFd = data[width * fy + cx].Im * scaleA;
+		float CCd = data[width * cy + cx].Im * scaleA;
+		float FCd = data[width * cy + fx].Im * scaleA;
    
 		//interp across x's
 		float xs = x - fx;
@@ -1640,7 +1647,14 @@ public class Ocean : MonoBehaviour {
 		//interp across y
 		return Lerp(h1, h2, y - fy);     
 	}
-*/
+
+	
+	//more accurate but slower
+	//should be called directly after GetWaterHeightAtLocation2 otherwise use GetChoppyAtLocation2
+	public float GetChoppyAtLocation2Fast () {
+		return Lerp(h1, h2, yy - fy);     
+	}
+
 
 	float GaussianRnd () {
 		float x1 = Random.value;

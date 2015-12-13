@@ -5,6 +5,7 @@ public class Boyancy : MonoBehaviour {
 
 	private Ocean ocean;
 
+	public bool moreAccurate = false;
 	public float magnitude = 2f;
 	public float ypos = 0.0f;
 	private List<Vector3> blobs;
@@ -50,6 +51,7 @@ public class Boyancy : MonoBehaviour {
 	private int prevAngleX, currAngleX;
 
 	private float bbboyancy;
+	private float prevBuoyancy;
 	
 
     void Start () {
@@ -161,7 +163,13 @@ public class Boyancy : MonoBehaviour {
 
 						if (ocean.enabled) {
 							if(ocean.canCheckBuoyancyNow) {
-								buyancy = magnitude * (wpos.y - ocean.GetWaterHeightAtLocation (wpos.x, wpos.z));
+								if(moreAccurate) {
+									buyancy = magnitude * (wpos.y - ocean.GetWaterHeightAtLocation2 (wpos.x, wpos.z));
+								}else {
+									buyancy = magnitude * (wpos.y - ocean.GetWaterHeightAtLocation (wpos.x, wpos.z));
+									buyancy = Lerp(prevBuoyancy, buyancy, 0.5f);
+									prevBuoyancy = buyancy;
+								}
 								bbboyancy = buyancy;
 							} else {
 								buyancy = bbboyancy;
@@ -192,6 +200,7 @@ public class Boyancy : MonoBehaviour {
 				if(interpolate) { tick++; if(tick==intplt) tick=0; }
 
 				tack++; if (tack == (int)Random.Range(2, 9) ) tack=0;
+				if(tack>9) tack =1;
 
 				//if the boat has high speed do not influence it (choppyness and wind)
 				//if it has lower then fact then influence it depending on the speed .
@@ -203,8 +212,13 @@ public class Boyancy : MonoBehaviour {
 					//if the object gets its position affected by the force of the choppy waves. Useful for smaller objects).
 					if(ChoppynessAffectsPosition) {
 						if(!cvisible || visible) {
-							if(tack==0) rrigidbody.AddRelativeForce (Vector3.forward * (ocean.GetWaterChoppyness() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, ForceMode.Force);
-							else rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetWaterChoppyness() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, cpos);
+							if(moreAccurate) {
+								if(tack==0) rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocation2Fast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, transform.position);
+								else rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocation2Fast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, cpos);
+							} else {
+								if(tack==0) rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocationFast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, transform.position);
+								else rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocationFast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, cpos);
+							}
 						}
 					}
 					//if the object gets its position affected by the wind. Useful for smaller objects).
@@ -260,6 +274,10 @@ public class Boyancy : MonoBehaviour {
 	    sink = isActive;	
 	}
 
-
+	static float Lerp (float from, float to, float value) {
+		if (value < 0.0f) return from;
+		else if (value > 1.0f) return to;
+		return (to - from) * value + from;
+	}
 
 }
