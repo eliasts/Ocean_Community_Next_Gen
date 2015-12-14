@@ -50,6 +50,15 @@ public class BuoyancyInspector  : Editor{
 		EditorGUILayout.EndHorizontal();
 
 		EditorGUILayout.BeginHorizontal();
+		EditorGUILayout.LabelField("Use FixedUpdate", GUILayout.MaxWidth(130));
+		boyancy.useFixedUpdate = EditorGUILayout.Toggle(boyancy.useFixedUpdate);
+		GUILayout.Space(175);
+		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
+			EditorUtility.DisplayDialog("Use FixedUpdate()","If this object should be simulated in the FixedUpdate function. Can be better timed but it is more accurate if unchecked.","OK");
+		}
+		EditorGUILayout.EndHorizontal();
+
+		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Buoyancy");
 		GUILayout.Space(-100);
 		boyancy.magnitude = EditorGUILayout.Slider(boyancy.magnitude, 0, 20);
@@ -288,6 +297,7 @@ public class BuoyancyInspector  : Editor{
 					swr.Write(boyancy.svisible);//bool
 					swr.Write(boyancy.slideFactor);//float
 					swr.Write(boyancy.moreAccurate);//bool
+					swr.Write(boyancy.useFixedUpdate);//bool
 				}
 
 			}
@@ -357,6 +367,7 @@ public class BuoyancyInspector  : Editor{
 							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.svisible = br.ReadBoolean();
 							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.slideFactor = br.ReadSingle();
 							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.moreAccurate = br.ReadBoolean();
+							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.useFixedUpdate = br.ReadBoolean();
 
 							//try to asign a renderer for visibility checks if there is none assigned in the boyancy inspector.
 							if(boyancy._renderer == null) {

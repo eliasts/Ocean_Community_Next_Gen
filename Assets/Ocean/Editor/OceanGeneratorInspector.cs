@@ -33,7 +33,7 @@ public class OceanGeneratorInspector : Editor {
 	public static string presetPath;
 	public static int currentPreset, oldpreset, oldmodeset;
 
-	private string[] defShader = {"default lod","1","2","3","4"};
+	private string[] defShader = {"default lod","1","2","3","4","5"};
 	private string[] skiplods = {"off","1","2","3","4"};
 	private string[] mode = {"Mobile Setting","Desktop Setting"};
 	public static string[] presets, presetpaths;
@@ -303,8 +303,8 @@ public class OceanGeneratorInspector : Editor {
 			ocean.defaultLOD = EditorGUILayout.Popup(ocean.defaultLOD, defShader,GUILayout.MaxWidth(40));
 			if(ocean.defaultLOD==0) ocean.defaultLOD = 1;
 			if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
-				EditorUtility.DisplayDialog("Default shader Quality.","Decalre the shader lod(quality) that is getting loaded by default when the simulation starts.\n\n"+
-				"4: high quality. (reflection/reflection/wave bump/foam bump/foam)\n\n3: medium quality. (wave bump/foam)\n\n2: low quality. (wave bump)\n\n1: medium quality-transparent variation. (wave bump/foam bump/foam)\n\n"+
+				EditorUtility.DisplayDialog("Default shader Quality.","Decalre the shader lod(quality) that is getting loaded by default when the simulation starts.\n\n5: high quality. (reflection/refraction/wave bump/foam bump/double foam)\n\n"+
+				"4: normal quality. (reflection/refraction/wave bump/foam)\n\n3: medium quality. (wave bump/foam)\n\n2: low quality. (wave bump)\n\n1: medium quality-transparent variation. (wave bump/foam bump/foam)\n\n"+
 				"For older mobile devices the medium quality shader is recommended (3)","OK");
 			}
 			EditorGUILayout.EndHorizontal();
@@ -744,6 +744,9 @@ public class OceanGeneratorInspector : Editor {
 					swr.Write(ocean.bumpUV);//float
 					swr.Write(ocean.ifoamWidth);//float
 					swr.Write(ocean.lodSkipFrames);//int
+					swr.Write(ocean.material.name);//string
+					swr.Write(ocean.material1.name);//string
+					swr.Write(ocean.material2.name);//string
 				}
 
 			}

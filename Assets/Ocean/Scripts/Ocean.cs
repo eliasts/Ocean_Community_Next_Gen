@@ -49,7 +49,7 @@ public class Ocean : MonoBehaviour {
 	private Thread th0, th0b, th1,th1b, th2, th3, th3b;
 	#endif
 
-	public int defaultLOD = 4;
+	public int defaultLOD = 5;
 
 	public bool fixedTiles;
 	public int fTilesDistance = 2;
@@ -132,6 +132,8 @@ public class Ocean : MonoBehaviour {
 	public Material material2;
 
 	public Material[] mat = new Material[3];
+
+	private bool mat1HasRefl, mat1HasRefr, mat2HasRefl, mat2HasRefr;
 
 	public bool followMainCamera = true;
 	private int max_LOD = 6;
@@ -431,14 +433,13 @@ public class Ocean : MonoBehaviour {
 
 		if(fint==0) start=true;
 
-		if(start) {
 
+		if(start) {
 			float time=Time.time;
 
 			if(fint == fr1 || !spreadAlongFrames) {
-				canCheckBuoyancyNow = true;
 				calcPhase4();
-
+				
 				updateOceanMaterial();
 				if(dynamicWaves) humidity = GetHumidity(time);
 				wind = humidity;
@@ -447,9 +448,9 @@ public class Ocean : MonoBehaviour {
 			}
 
 			if(fint == fr2 || !spreadAlongFrames) {
+				canCheckBuoyancyNow = false;
 				th0 = new Thread( () => { calcComplex(time, 0, height/2); }); th0.Start();
 				th0b = new Thread( () => {  calcComplex(time, height/2, height); }); th0b.Start();
-				canCheckBuoyancyNow = false;
 			}
 
 			if(fint == fr2B || !spreadAlongFrames) {
@@ -486,7 +487,7 @@ public class Ocean : MonoBehaviour {
 			float time=Time.time;
 
 			if(fint == fr1 || !spreadAlongFrames) {
-				canCheckBuoyancyNow = true;
+
 				calcPhase4N();
 
 				updateOceanMaterial();
@@ -497,8 +498,8 @@ public class Ocean : MonoBehaviour {
 			}
 
 			if(fint == fr2 || !spreadAlongFrames) {
-				calcComplex(time, 0, height);
 				canCheckBuoyancyNow = false;
+				calcComplex(time, 0, height);
 			}
 
 			if(fint == fr2B || !spreadAlongFrames) {
@@ -554,8 +555,8 @@ public class Ocean : MonoBehaviour {
 	void calcPhase3() {
 		float scaleB = waveScale / wh;
 		float scaleBinv = 1.0f / scaleB;
-
-		Vector3 mv1; mv1.y = scaleBinv;
+		float magnitude = 1;
+		float mag2 = scaleBinv*scaleBinv;
 
 		for (int i=0; i<wh; i++) {
 			int iw = i + i / width;
@@ -563,9 +564,12 @@ public class Ocean : MonoBehaviour {
 			vertices [iw].x += data [i].Im * scaleA;
 			vertices [iw].y = data [i].Re * scaleB;
 	
-			mv1.x = t_x [i].Re;
-			mv1.z = t_x [i].Im;
-			normals [iw] = Vector3.Normalize(mv1);
+			normals[iw].x = t_x [i].Re;
+			normals[iw].z = t_x [i].Im;
+			normals[iw].y = scaleBinv;
+			//normalize
+			magnitude = (float)System.Math.Sqrt(normals[iw].x *normals[iw].x + mag2 + normals[iw].z * normals[iw].z);
+			if(magnitude>0){ normals[iw].x /= magnitude; normals[iw].y /= magnitude; normals[iw].z /= magnitude; }
 	
 			if (((i + 1) % width)==0) {
 				int iwi=iw+1;
@@ -574,9 +578,12 @@ public class Ocean : MonoBehaviour {
 				vertices [iwi].x += data [iwidth].Im * scaleA;
 				vertices [iwi].y = data [iwidth].Re * scaleB;
 
-				mv1.x = t_x [iwidth].Re;
-				mv1.z = t_x [iwidth].Im;
-				normals [iwi] = Vector3.Normalize(mv1);
+				normals[iwi].x = t_x [iwidth].Re;
+				normals[iwi].z = t_x [iwidth].Im;
+				normals[iwi].y = scaleBinv;
+				//normalize
+				magnitude = (float)System.Math.Sqrt(normals[iwi].x *normals[iwi].x + mag2 + normals[iwi].z * normals[iwi].z);
+				if(magnitude>0){ normals[iwi].x /= magnitude; normals[iwi].y /= magnitude; normals[iwi].z /= magnitude; }
 			}
 		}
 
@@ -588,20 +595,24 @@ public class Ocean : MonoBehaviour {
 			vertices [io].x += data [mod].Im * scaleA;
 			vertices [io].y = data [mod].Re * scaleB;
 
-			mv1.x = t_x [mod].Re;
-			mv1.z = t_x [mod].Im;
-			normals [io] = Vector3.Normalize(mv1);		
+			normals[io].x = t_x [mod].Re;
+			normals[io].z = t_x [mod].Im;
+			normals[io].y = scaleBinv;
+			//normalize
+			magnitude = (float)System.Math.Sqrt(normals[io].x *normals[io].x + mag2 + normals[io].z * normals[io].z);
+			if(magnitude>0){ normals[io].x /= magnitude; normals[io].y /= magnitude; normals[io].z /= magnitude; }
 		}
 	    
+		canCheckBuoyancyNow = true;
 		
 		for (int i=0; i<gwgh; i++) {
 			
 			//Need to preserve w in refraction/reflection mode
 			if (!reflectionRefractionEnabled) {
 				if (((i + 1) % g_width) == 0) {
-					tangents [i] = Vector3.Normalize((vertices [i - width + 1] + mv2 - vertices [i]));
+					tangents [i] = Vector3Normalize(vertices [i - width + 1] + mv2 - vertices [i]);
 				} else {
-					tangents [i] = Vector3.Normalize((vertices [i + 1] - vertices [i]));
+					tangents [i] = Vector3Normalize(vertices [i + 1] - vertices [i]);
 				}
 			
 				tangents [i].w = 1.0f;
@@ -609,16 +620,16 @@ public class Ocean : MonoBehaviour {
 				Vector3 tmp;// = Vector3.zero;
 			
 				if (((i + 1) % g_width) == 0) {
-					tmp = Vector3.Normalize(vertices[i - width + 1] + mv2 - vertices [i]); 
+					tmp = Vector3Normalize(vertices[i - width + 1] + mv2 - vertices [i]); 
 				} else {
-					tmp = Vector3.Normalize(vertices [i + 1] - vertices [i]);
+					tmp = Vector3Normalize(vertices [i + 1] - vertices [i]);
 				}
 				
 				tangents [i] = new Vector4 (tmp.x, tmp.y, tmp.z, tangents [i].w);
 			}
 		}
 
-		canCheckBuoyancyNow = true;
+		
 	}
 
 
@@ -1009,12 +1020,21 @@ public class Ocean : MonoBehaviour {
 
 		//set the uv scaling of normal and foam maps to 1/64 so they scale the same on all sizes!
 		material.SetFloat ("_Size", 0.015625f * bumpUV);
-		if(material1 != null) material1.SetFloat ("_Size", 0.015625f * bumpUV);
-		if(material2 != null) material2.SetFloat ("_Size", 0.015625f * bumpUV);
-
 		material.SetFloat ("_FoamSize", foamUV);
-		if(material1 != null) material1.SetFloat ("_FoamSize", foamUV);
-				
+		mat1HasRefl=false; mat1HasRefr=false; mat2HasRefl=false; mat2HasRefr=false;
+
+		if(material1 != null) {
+			material1.SetFloat ("_Size", 0.015625f * bumpUV);
+			material1.SetFloat ("_FoamSize", foamUV);
+			if(material1.HasProperty("_Reflection")) { mat1HasRefl=true; }
+			if(material1.HasProperty("_Refraction")) { mat1HasRefr=true; }
+		}
+		if(material2 != null) {
+			material2.SetFloat ("_Size", 0.015625f * bumpUV);
+			if(material2.HasProperty("_Reflection")) { mat2HasRefl=true; }
+			if(material2.HasProperty("_Refraction")) { mat2HasRefr=true;  }
+		}
+
 		//Hack to make this object considered by the renderer - first make a plane
 		//covering the watertiles so we get a decent bounding box, then
 		//scale all the vertices to 0 to make it invisible.
@@ -1133,6 +1153,8 @@ public class Ocean : MonoBehaviour {
 			reflectionCamera.transform.position = oldpos;
             GL.invertCulling = false;
             material.SetTexture( "_Reflection", m_ReflectionTexture );
+			if(mat1HasRefl) material1.SetTexture( "_Reflection", m_ReflectionTexture );
+			if(mat2HasRefl) material2.SetTexture( "_Reflection", m_ReflectionTexture );
 		}
 		
 		// Render refraction
@@ -1152,6 +1174,8 @@ public class Ocean : MonoBehaviour {
 			refractionCamera.transform.rotation = cam.transform.rotation;
 			refractionCamera.Render();
 			material.SetTexture( "_Refraction", m_RefractionTexture );
+			if(mat1HasRefr) material1.SetTexture( "_Refraction", m_RefractionTexture );
+			if(mat2HasRefr) material2.SetTexture( "_Refraction", m_RefractionTexture );
 		}
 	}
 
@@ -1301,23 +1325,14 @@ public class Ocean : MonoBehaviour {
 		reflectionMat.m33 = 1F;
 	}
 
-	void ReflectionQuality (string quality) {
-        OnDisable();
-		if(quality == "Low"){
-			renderTexWidth = 128;
-			renderTexHeight = 128;
-		}else{
-            renderTexWidth = 512;
-			renderTexHeight = 512;
-		}
-	}
-	
+
 	public void shader_LOD(bool isActive, Material mat , int lod = 1) {
 		if(!isActive){
 			renderReflection = false;
 			renderRefraction = false;
 			mat.SetTexture ("_Reflection", null);
 			mat.SetTexture ("_Refraction", null);
+			killReflRefr();
 			oceanShader.maximumLOD = lod;
 		}else{
 			OnDisable(); 
@@ -1328,9 +1343,17 @@ public class Ocean : MonoBehaviour {
 				renderRefraction = false;
 				mat.SetTexture ("_Reflection", null);
 				mat.SetTexture ("_Refraction", null);
+				killReflRefr();
 			}
 		}
     }
+
+	public void killReflRefr() {
+		if(mat1HasRefr) material1.SetTexture ("_Refraction", null);
+		if(mat1HasRefl) material1.SetTexture ("_Reflection", null);
+		if(mat2HasRefr) material2.SetTexture ("_Refraction", null);
+		if(mat2HasRefl) material2.SetTexture ("_Reflection", null);
+	}
 
 	public void matSetLod(Material mat, int lod) {
 		if(mat != null) mat.shader.maximumLOD = lod;
@@ -1340,6 +1363,7 @@ public class Ocean : MonoBehaviour {
 	    renderReflection = isActive;
 		if(!isActive){
 			material.SetTexture ("_Reflection", null);
+			killReflRefr();
 		}else{
 			OnDisable();
 		}
@@ -1349,14 +1373,14 @@ public class Ocean : MonoBehaviour {
 	    renderRefraction = isActive;
 		if(!isActive){
 			material.SetTexture ("_Refraction", null);
+			killReflRefr();
 		}else{
 			OnDisable();
 		}
     }
 
 	public void UpdateWaterColor() {
-		material.SetColor ("_WaterColor", waterColor);
-		material.SetColor ("_SurfaceColor", surfaceColor);
+		for(int i=0; i<3; i++) { if(mat[i]!=null) { mat[i].SetColor("_WaterColor", waterColor); mat[i].SetColor("_SurfaceColor", surfaceColor);} }
 	}
 
 	void Mist (bool isActive) {
@@ -1448,7 +1472,19 @@ public class Ocean : MonoBehaviour {
 				if(br.BaseStream.Position != br.BaseStream.Length) bumpUV = br.ReadSingle();
 				if(br.BaseStream.Position != br.BaseStream.Length) ifoamWidth = br.ReadSingle();
 				if(br.BaseStream.Position != br.BaseStream.Length) lodSkipFrames = br.ReadInt32();
-			
+				if(br.BaseStream.Position != br.BaseStream.Length) {
+					string nm = br.ReadString();
+					if(nm!= null) {Material mtr = (Material)Resources.Load("oceanMaterials/"+nm, typeof(Material)); if(mtr!= null) { material = mtr; mat[0] = material;} }
+				}
+				if(br.BaseStream.Position != br.BaseStream.Length) {
+					string nm1 = br.ReadString();
+					if(nm1!= null) { Material mtr = (Material)Resources.Load("oceanMaterials/"+nm1, typeof(Material)); if(mtr!= null) { material1 = mtr; mat[1] = material1;} }
+				}
+				if(br.BaseStream.Position != br.BaseStream.Length) {
+					string nm2 = br.ReadString();
+					if(nm2!= null) {Material mtr = (Material)Resources.Load("oceanMaterials/"+nm2, typeof(Material)); if(mtr!= null) { material2 = mtr; mat[2] = material2;} }
+				}
+
 				setSpread();
 				return true;
 			}
@@ -1533,7 +1569,28 @@ public class Ocean : MonoBehaviour {
 			
 		}
 	}
-	
+
+	void normalizeVector3D(Vector3 vec3) {
+		float magnitude = (float)System.Math.Sqrt(vec3.x *vec3. x + vec3.y * vec3.y + vec3.z * vec3.z);
+		if(magnitude>0){
+			vec3.x /= magnitude;
+			vec3.y /= magnitude;
+			vec3.z /= magnitude;
+		}
+	}
+
+	Vector3 Vector3Normalize(Vector3 in3) {
+		Vector3 vec3 = new Vector3(in3.x, in3.y, in3.z);
+		float magnitude = (float)System.Math.Sqrt(in3.x *in3. x + in3.y * in3.y + in3.z * in3.z);
+		if(magnitude>0){
+			vec3.x /= magnitude;
+			vec3.y /= magnitude;
+			vec3.z /= magnitude;
+		}
+		return vec3;
+	}
+
+
 	public void SetWaves (float wind) {
 		waveScale = Lerp(0, scale, wind);
     }

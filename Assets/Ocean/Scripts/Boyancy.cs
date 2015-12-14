@@ -5,6 +5,7 @@ public class Boyancy : MonoBehaviour {
 
 	private Ocean ocean;
 
+	public bool useFixedUpdate = false;
 	public bool moreAccurate = false;
 	public float magnitude = 2f;
 	public float ypos = 0.0f;
@@ -127,9 +128,18 @@ public class Boyancy : MonoBehaviour {
 
 	bool ticked;
 
-   void FixedUpdate() {
+	void Update() {
+		if(!useFixedUpdate) update();
+    }
 
-        if (ocean != null) {
+	void FixedUpdate() {
+		if(useFixedUpdate) update();
+    }
+
+
+	void update() {
+
+		if (ocean != null) {
 			if(ticked) {
 
 			bool visible = _renderer.isVisible;
@@ -163,10 +173,13 @@ public class Boyancy : MonoBehaviour {
 
 						if (ocean.enabled) {
 							if(ocean.canCheckBuoyancyNow) {
+								float off = 0;
+								 if(ocean.choppy_scale>0) off = ocean.GetChoppyAtLocation(wpos.x, wpos.z);
 								if(moreAccurate) {
-									buyancy = magnitude * (wpos.y - ocean.GetWaterHeightAtLocation2 (wpos.x, wpos.z));
+									
+									buyancy = magnitude * (wpos.y - ocean.GetWaterHeightAtLocation2 (wpos.x-off, wpos.z));
 								}else {
-									buyancy = magnitude * (wpos.y - ocean.GetWaterHeightAtLocation (wpos.x, wpos.z));
+									buyancy = magnitude * (wpos.y - ocean.GetWaterHeightAtLocation (wpos.x-off, wpos.z));
 									buyancy = Lerp(prevBuoyancy, buyancy, 0.5f);
 									prevBuoyancy = buyancy;
 								}
@@ -213,11 +226,11 @@ public class Boyancy : MonoBehaviour {
 					if(ChoppynessAffectsPosition) {
 						if(!cvisible || visible) {
 							if(moreAccurate) {
-								if(tack==0) rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocation2Fast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, transform.position);
-								else rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocation2Fast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, cpos);
+								if(tack==0) rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocation2Fast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, cpos);
+								else rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocation2Fast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, transform.position);
 							} else {
-								if(tack==0) rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocationFast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, transform.position);
-								else rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocationFast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, cpos);
+								if(tack==0) rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocationFast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, cpos);
+								else rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocationFast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, transform.position);
 							}
 						}
 					}
@@ -266,13 +279,10 @@ public class Boyancy : MonoBehaviour {
 				transform.position = new Vector3(transform.position.x, ocean.GetWaterHeightAtLocation(transform.position.x, transform.position.z), transform.position.z);
 			} 
 		}
-
-    }
-
-	public void Sink(bool isActive)
-	{
-	    sink = isActive;	
 	}
+
+
+	public void Sink(bool isActive)	{ sink = isActive; }
 
 	static float Lerp (float from, float to, float value) {
 		if (value < 0.0f) return from;

@@ -1,7 +1,18 @@
+15/12/2015
+
+- Major Bugfix in the buoyancy script. Now Buoyancy will work much better.
+- Buoyancy fixes on boats to work well with various sizes of the ocean.
+- More shader modifications. Added one more lod and improved foam on higher quality lods.
+- Math optimizations on Vector3 Normalize gave some extra performance boost.
+- Added 2 more lod materials and shaders that support reflection and refraction.
+- Now the highest quality shader lod is lod5.
+- Now the ocean materials  are saved in the ocean presets. This required to put them in the Resources folder!
+
+
 13/12/2015 Hotfix update
 
 - I had to rewrite the Get water height and get choppiness functions. They had some bugs and were not accurate enough.
-- Added an option to buoyancy script to use a more accurate but slower function.
+- Added an option to the buoyancy script to use a more accurate but slower function.
 - The simple buoyant object can work also with rigidbodies now.
 
 

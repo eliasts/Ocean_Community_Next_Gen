@@ -9,7 +9,6 @@ Shader "Mobile/OceanL1" {
 
 		_Bump ("Bump (RGB)", 2D) = "bump" {}
 		_Foam("Foam (RGB)", 2D) = "white" {}
-		_FoamBump ("Foam B(RGB)", 2D) = "bump" {}
 		_FoamFactor("Foam Factor", Range(0,3)) = 1.8
 		_Size ("UVSize", Float) = 0.015625//this is the best value (1/64) to have the same uv scales of normal and foam maps on all ocean sizes
 		_FoamSize ("FoamUVSize", Float) = 2//tiling of the foam texture
