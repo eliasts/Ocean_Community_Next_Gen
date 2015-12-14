@@ -2,6 +2,7 @@
 
 - Major Bugfix in the buoyancy script. Now Buoyancy will work much better.
 - Buoyancy fixes on boats to work well with various sizes of the ocean.
+- Ability to run the buoyancy simulation of an object in fixed or regular update.
 - More shader modifications. Added one more lod and improved foam on higher quality lods.
 - Math optimizations on Vector3 Normalize gave some extra performance boost.
 - Added 2 more lod materials and shaders that support reflection and refraction.
