@@ -17,7 +17,7 @@ public class Ocean : MonoBehaviour {
 	public string _name;//the name of the ocean preset
 	private const float pix2 =  2.0f * Mathf.PI;
 	public bool spreadAlongFrames = true;
-	//values 3 or 4 are recommended when vsync is used!
+	//values 2, 3 or 4 are recommended when vsync is used!
 	public int everyXframe = 5;
 	//render reflection and refraction every x frame
 	public int reflrefrXframe = 3;
@@ -1636,7 +1636,6 @@ public class Ocean : MonoBehaviour {
         return data[idx].Im * scaleA;
     }
 
-	//faster but less accurate then version2
 	//should be called directly after GetWaterHeightAtLocation otherwise use GetChoppyAtLocation
 	public float GetChoppyAtLocationFast() {
         return data[hIndex].Im * scaleA;
@@ -1706,7 +1705,6 @@ public class Ocean : MonoBehaviour {
 	}
 
 	
-	//more accurate but slower
 	//should be called directly after GetWaterHeightAtLocation2 otherwise use GetChoppyAtLocation2
 	public float GetChoppyAtLocation2Fast () {
 		return Lerp(h1, h2, yy - fy);     
