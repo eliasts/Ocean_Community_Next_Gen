@@ -998,11 +998,11 @@ public class Ocean : MonoBehaviour {
 			if(sun != null){
 		        SunDir = sun.transform.forward;
 				if(SunDir != oldSunDir) {
-					if(useShaderLods) { for(int i=0; i<numberLods; i++) { if(mat[i] != null) mat[i].SetVector ("_SunDir", SunDir); } } else {if(material != null) material.SetVector ("_SunDir", SunDir);}
+					if(useShaderLods) { for(int i=0; i<numberLods; i++) { if(mat[i] != null) mat[i].SetVector ("_SunDir", SunDir); } } else { if(material != null) material.SetVector ("_SunDir", SunDir);}
 					oldSunDir = SunDir;
 				   }
 				if(sunLight.color != oldSunColor) {
-					if(useShaderLods) { for(int i=0; i<numberLods; i++) { if(mat[i] != null) mat[i].SetColor("_SunColor", sunLight.color); } } else { material.SetColor("_SunColor", sunLight.color); }
+					if(useShaderLods) { for(int i=0; i<numberLods; i++) { if(mat[i] != null) mat[i].SetColor("_SunColor", sunLight.color); } } else { if(material != null) material.SetColor("_SunColor", sunLight.color); }
 					oldSunColor = sunLight.color; 
 				}
 			}
@@ -1019,8 +1019,7 @@ public class Ocean : MonoBehaviour {
 	void SetupOffscreenRendering () {
 
 		//set the uv scaling of normal and foam maps to 1/64 so they scale the same on all sizes!
-		material.SetFloat ("_Size", 0.015625f * bumpUV);
-		material.SetFloat ("_FoamSize", foamUV);
+		if(material!=null) { material.SetFloat ("_Size", 0.015625f * bumpUV); material.SetFloat ("_FoamSize", foamUV); }
 		mat1HasRefl=false; mat1HasRefr=false; mat2HasRefl=false; mat2HasRefr=false;
 
 		if(material1 != null) {
@@ -1152,9 +1151,9 @@ public class Ocean : MonoBehaviour {
 			reflectionCamera.Render();
 			reflectionCamera.transform.position = oldpos;
             GL.invertCulling = false;
-            material.SetTexture( "_Reflection", m_ReflectionTexture );
-			if(mat1HasRefl) material1.SetTexture( "_Reflection", m_ReflectionTexture );
-			if(mat2HasRefl) material2.SetTexture( "_Reflection", m_ReflectionTexture );
+            if(material!=null) material.SetTexture( "_Reflection", m_ReflectionTexture );
+			if(mat1HasRefl) { if(material1!=null)  material1.SetTexture( "_Reflection", m_ReflectionTexture ); }
+			if(mat2HasRefl) { if(material2!=null)  material2.SetTexture( "_Reflection", m_ReflectionTexture ); }
 		}
 		
 		// Render refraction
@@ -1173,9 +1172,10 @@ public class Ocean : MonoBehaviour {
 			refractionCamera.transform.position = cam.transform.position;
 			refractionCamera.transform.rotation = cam.transform.rotation;
 			refractionCamera.Render();
-			material.SetTexture( "_Refraction", m_RefractionTexture );
-			if(mat1HasRefr) material1.SetTexture( "_Refraction", m_RefractionTexture );
-			if(mat2HasRefr) material2.SetTexture( "_Refraction", m_RefractionTexture );
+			if(material!=null) material.SetTexture( "_Refraction", m_RefractionTexture );
+
+			if(mat1HasRefr) { if(material1!=null) material1.SetTexture( "_Refraction", m_RefractionTexture ); }
+			if(mat2HasRefr) { if(material2!=null) material2.SetTexture( "_Refraction", m_RefractionTexture ); }
 		}
 	}
 
@@ -1330,29 +1330,31 @@ public class Ocean : MonoBehaviour {
 		if(!isActive){
 			renderReflection = false;
 			renderRefraction = false;
-			mat.SetTexture ("_Reflection", null);
-			mat.SetTexture ("_Refraction", null);
+			if(mat!=null) {  mat.SetTexture ("_Reflection", null); mat.SetTexture ("_Refraction", null); }
 			killReflRefr();
-			oceanShader.maximumLOD = lod;
+			if(oceanShader!=null) oceanShader.maximumLOD = lod;
 		}else{
 			OnDisable(); 
-			oceanShader.maximumLOD = defaultLOD;
+			if(oceanShader!=null)  oceanShader.maximumLOD = defaultLOD;
 			//disable refraction and reflection for shaderlods != 4
 			if(defaultLOD<4) {
 				renderReflection = false;
 				renderRefraction = false;
-				mat.SetTexture ("_Reflection", null);
-				mat.SetTexture ("_Refraction", null);
+				if(mat!=null) {  mat.SetTexture ("_Reflection", null); mat.SetTexture ("_Refraction", null); }
 				killReflRefr();
 			}
 		}
     }
 
 	public void killReflRefr() {
-		if(mat1HasRefr) material1.SetTexture ("_Refraction", null);
-		if(mat1HasRefl) material1.SetTexture ("_Reflection", null);
-		if(mat2HasRefr) material2.SetTexture ("_Refraction", null);
-		if(mat2HasRefl) material2.SetTexture ("_Reflection", null);
+		if(material1!= null) {
+			if(mat1HasRefr) material1.SetTexture ("_Refraction", null);
+			if(mat1HasRefl) material1.SetTexture ("_Reflection", null);
+		}
+		if(material2!= null) {
+			if(mat2HasRefr) material2.SetTexture ("_Refraction", null);
+			if(mat2HasRefl) material2.SetTexture ("_Reflection", null);
+		}
 	}
 
 	public void matSetLod(Material mat, int lod) {
@@ -1362,7 +1364,7 @@ public class Ocean : MonoBehaviour {
 	public void EnableReflection(bool isActive) {
 	    renderReflection = isActive;
 		if(!isActive){
-			material.SetTexture ("_Reflection", null);
+			if(material!=null) material.SetTexture ("_Reflection", null);
 			killReflRefr();
 		}else{
 			OnDisable();
@@ -1372,7 +1374,7 @@ public class Ocean : MonoBehaviour {
 	public void EnableRefraction(bool isActive) {
 	    renderRefraction = isActive;
 		if(!isActive){
-			material.SetTexture ("_Refraction", null);
+			if(material!=null)  material.SetTexture ("_Refraction", null);
 			killReflRefr();
 		}else{
 			OnDisable();

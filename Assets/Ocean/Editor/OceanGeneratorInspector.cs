@@ -634,9 +634,11 @@ public class OceanGeneratorInspector : Editor {
 			oldFixed = ocean.fixedUpdate;
 		 }
 
-		if(oldSunDir != ocean.sun.transform.forward) {
-			ocean.SunDir = ocean.sun.transform.forward;
-			oldSunDir = ocean.SunDir;
+		if(ocean.sun!= null) {
+			if(oldSunDir != ocean.sun.transform.forward) {
+				ocean.SunDir = ocean.sun.transform.forward;
+				oldSunDir = ocean.SunDir;
+			}
 		}
 
 		if (ocean.renderReflection != oldrefl) { ocean.EnableReflection(ocean.renderReflection); oldrefl = ocean.renderReflection; }

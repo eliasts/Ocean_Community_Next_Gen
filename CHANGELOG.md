@@ -1,3 +1,8 @@
+15/12/2015 second part
+
+- uploaded project with 'Library' folder to avoid losing prefab connections.
+
+
 15/12/2015
 
 - Major Bugfix in the buoyancy script. Now Buoyancy will work much better.
