@@ -21,7 +21,7 @@ private Vector3 oldPos;
 	void Update () {
 		if(ocean.canCheckBuoyancyNow) {
 			float off = 0;
-			if(hasChoppy) off = ocean.GetChoppyAtLocation(transform.position.x, transform.position.z);
+			if(hasChoppy) off = ocean.GetChoppyAtLocation2(transform.position.x, transform.position.z);
 
 			float targetY = ocean.GetWaterHeightAtLocation2(transform.position.x-off, transform.position.z) + buoyancy;
 			transform.position = new Vector3(transform.position.x, targetY, transform.position.z);

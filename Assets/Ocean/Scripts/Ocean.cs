@@ -136,6 +136,7 @@ public class Ocean : MonoBehaviour {
 	private bool mat1HasRefl, mat1HasRefr, mat2HasRefl, mat2HasRefr;
 
 	public bool followMainCamera = true;
+	//this is hardcoded 
 	private int max_LOD = 6;
 	private ComplexF[] h0;
 	private ComplexF[] t_x;
@@ -244,7 +245,7 @@ public class Ocean : MonoBehaviour {
 
 		sunLight = sun.GetComponent<Light>();
 
-		bounds = new Bounds(new Vector3(size.x/2f,0f,size.z/2f),new Vector3(size.x+size.x*0.1f,0,size.z+size.z*0.1f));
+		bounds = new Bounds(new Vector3(size.x/2f,0f,size.z/2f),new Vector3(size.x+size.x*0.12f,0,size.z+size.z*0.12f));
 
         // normal map size
         //n_width = 128;
@@ -435,7 +436,7 @@ public class Ocean : MonoBehaviour {
 
 
 		if(start) {
-			float time=Time.time;
+			float time = Time.time;
 
 			if(fint == fr1 || !spreadAlongFrames) {
 				calcPhase4();
@@ -481,13 +482,10 @@ public class Ocean : MonoBehaviour {
 		int fint = Time.frameCount % everyXframe;
 		if(fint==0) start2=true;
 
-		
-
 		if(start2) {
-			float time=Time.time;
+			float time = Time.time;
 
 			if(fint == fr1 || !spreadAlongFrames) {
-
 				calcPhase4N();
 
 				updateOceanMaterial();
@@ -517,10 +515,10 @@ public class Ocean : MonoBehaviour {
 	}
 
 
-
-
+	
 
 	void calcComplex(float time, int ha, int hb) {
+		ComplexF coeffA = new ComplexF(0,0);
 		for (int y = ha; y<hb; y++) {
 			for (int x = 0; x<width; x++) {
 				int idx = width * y + x;
@@ -534,7 +532,9 @@ public class Ocean : MonoBehaviour {
 
 				float iwkt = (float)System.Math.Sqrt(9.81f * sqrtMagnitude)  * time * speed;
 
-				ComplexF coeffA = new ComplexF ((float)System.Math.Cos(iwkt), (float)System.Math.Sin(iwkt));
+				//ComplexF coeffA = new ComplexF ((float)System.Math.Cos(iwkt), (float)System.Math.Sin(iwkt));
+				coeffA.Re = (float)System.Math.Cos(iwkt); coeffA.Im = (float)System.Math.Sin(iwkt);
+
 				ComplexF coeffB;
 				coeffB.Re = coeffA.Re; coeffB.Im = -coeffA.Im;
 
@@ -549,7 +549,6 @@ public class Ocean : MonoBehaviour {
 					data [idx] += data [idx] * vec_kx / sqrtMagnitude;
 			}
 		}
-
 	}
 
 	void calcPhase3() {
@@ -629,20 +628,13 @@ public class Ocean : MonoBehaviour {
 			}
 		}
 
-		
 	}
+
 
 
 	void calcPhase4() {
 		 
-			
-		if (followMainCamera && player != null) {
-			centerOffset.x = Mathf.Floor(player.position.x * sizeInv.x) *  size.x;
-			centerOffset.z = Mathf.Floor(player.position.z * sizeInv.y) *  size.z;
-			centerOffset.y = transform.position.y;
-			if(transform.position != centerOffset) { ticked = true;  transform.position = centerOffset; }
-		}		
-		
+		calculateCenterOffset();
 		//Vector3 playerRelPos =  player.position - transform.position;
 
 		//In reflection mode, use tangent w for foam strength
@@ -718,14 +710,12 @@ public class Ocean : MonoBehaviour {
 				}
 			});
 			th3b.Start();
-			
 			//not needed
 			//th3b.Join();
 			//th3.Join();
-
-
-			if(th2 != null) { if(th2.IsAlive) th2.Join();}
 		}
+
+		if(th2 != null) { if(th2.IsAlive) th2.Join();}
 
 		tangents [gwgh] = Vector4.Normalize(vertices [gwgh] + mv2 - vertices [1]);
 
@@ -733,7 +723,14 @@ public class Ocean : MonoBehaviour {
 	}
 
 
-
+	void calculateCenterOffset() {
+		if (followMainCamera && player != null) {
+			centerOffset.x = Mathf.Floor(player.position.x * sizeInv.x) *  size.x;
+			centerOffset.z = Mathf.Floor(player.position.z * sizeInv.y) *  size.z;
+			centerOffset.y = transform.position.y;
+			if(transform.position != centerOffset) { ticked = true;  transform.position = centerOffset; }
+		}
+	}
 
 	void updateTiles() {
 
@@ -746,7 +743,7 @@ public class Ocean : MonoBehaviour {
 				
 			//this will skip one update of the tiles higher then Lod0
 			if(L0D>0 && lodSkip==0 && !ticked) { break; }
-				
+
 			int den = (int)System.Math.Pow (2f, L0D);
 			int idx = 0;
 
@@ -763,7 +760,6 @@ public class Ocean : MonoBehaviour {
 							if(L0D>=4) verticesLOD[L0D] [idx].y += farLodOffset;
 						}
 					}
-
 					tangentsLOD[L0D] [idx] = tangents [idx2];
 					normalsLOD[L0D] [idx++] = normals [idx2];
 				}			
@@ -791,12 +787,7 @@ public class Ocean : MonoBehaviour {
 	}
 
 	void calcPhase4N() {
-		if (followMainCamera && player != null) {
-			centerOffset.x = Mathf.Floor(player.position.x * sizeInv.x) *  size.x;
-			centerOffset.z = Mathf.Floor(player.position.z * sizeInv.y) *  size.z;
-			centerOffset.y = transform.position.y;
-			if(transform.position != centerOffset) { ticked = true;  transform.position = centerOffset; }
-		}		
+		calculateCenterOffset();	
 		//Vector3 playerRelPos =  player.position - transform.position;
 
 		//In reflection mode, use tangent w for foam strength
@@ -1406,7 +1397,7 @@ public class Ocean : MonoBehaviour {
 					if(br.BaseStream.Position != br.BaseStream.Length) height = br.ReadInt32();
 					if(br.BaseStream.Position != br.BaseStream.Length) fixedTiles = br.ReadBoolean();
 					if(br.BaseStream.Position != br.BaseStream.Length) fTilesDistance = br.ReadInt32();
-					if(br.BaseStream.Position != br.BaseStream.Length) fTilesLod = br.ReadInt32();
+					if(br.BaseStream.Position != br.BaseStream.Length) fTilesLod = br.ReadInt32(); 
 				} else {
 					if(br.BaseStream.Position != br.BaseStream.Length) br.ReadInt32();
 					if(br.BaseStream.Position != br.BaseStream.Length) br.ReadSingle();
@@ -1495,12 +1486,6 @@ public class Ocean : MonoBehaviour {
 
 
 
-
-    static float MySmoothstep(float a, float b, float t) {
-        t = Mathf.Clamp01(t);
-        return a + (t*t*(3-2*t))*(b - a);
-    }
-
 	private float GetHumidity(float time) {
 		int intTime = (int)(time * timeFreq);
 		int intPrevTime = (int)(prevTime * timeFreq);
@@ -1541,6 +1526,7 @@ public class Ocean : MonoBehaviour {
 		return Lerp(prevOffsetValue, nextOffsetValue, frac);
 	}
 
+	//should use a pooling system
 	IEnumerator AddMist () {
 		while(true){
 			if(player != null && mistEnabled){
@@ -1595,6 +1581,11 @@ public class Ocean : MonoBehaviour {
 
 	public void SetWaves (float wind) {
 		waveScale = Lerp(0, scale, wind);
+    }
+
+    static float MySmoothstep(float a, float b, float t) {
+        t = Mathf.Clamp01(t);
+        return a + (t*t*(3-2*t))*(b - a);
     }
 
 	static int MyFloorInt(float g) {

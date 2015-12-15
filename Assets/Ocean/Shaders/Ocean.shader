@@ -21,6 +21,7 @@ Shader "Mobile/Ocean" {
 		_FakeUnderwaterColor ("Water Color LOD1", Color) = (0.196, 0.262, 0.196, 1)
 		_WaterLod1Alpha ("Water Transparency", Range(0,1)) = 0.95
 	}
+
 	//water bump/foam bump/double foam/refelection/refraction
 	SubShader {
 	    Tags { "RenderType" = "Opaque" "Queue"="Geometry"}
@@ -61,6 +62,8 @@ Shader "Mobile/Ocean" {
     			o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 
 				o.bumpTexCoord.z = v.tangent.w;
+
+
  
   				half4 projSource = half4(v.vertex.x, 0.0, v.vertex.z, 1.0);
     			half4 tmpProj = mul( UNITY_MATRIX_MVP, projSource);
@@ -79,6 +82,9 @@ Shader "Mobile/Ocean" {
 				o.buv = float4(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03, o.bumpTexCoord.x + _WaveOffset * 0.04, o.bumpTexCoord.y - _WaveOffset * 0.02);
 
 				//o.buv = float4(o.bumpTexCoord.x + _Time.x * 0.03, o.bumpTexCoord.y + _SinTime.x * 0.2, o.bumpTexCoord.x + _Time.y * 0.04, o.bumpTexCoord.y + _SinTime.y * 0.5);
+				//World UV's !!!
+				//o.worldPos = mul(_Object2World, v.vertex).xyz;	
+				//o.bumpuv.xyzw = o.worldPos.xzxz  * _WaveTiling*0.005  + frac(_Time.xxxx * _WaveDirection);
 
 				o.normViewDir = normalize(o.viewDir);
                 

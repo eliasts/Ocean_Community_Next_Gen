@@ -1,6 +1,8 @@
 15/12/2015 second part
 
 - uploaded project with 'Library' folder to avoid losing prefab connections.
+- small bug fixes.
+- small performance increase.
 
 
 15/12/2015

@@ -268,8 +268,8 @@ public class Boyancy : MonoBehaviour {
 						}
 				
 						if((int)accel!=0) rrigidbody.AddRelativeForce (Vector3.forward * accel, ForceMode.Acceleration);
-						if(accel>0) { accel-= 0.2f;	if(accel<0) accel=0; }
-						if(accel<0) { accel+= 0.2f; if(accel>0) accel=0; }
+						if(accel>0) { accel-= 0.1f;	if(accel<0) accel=0; }
+						if(accel<0) { accel+= 0.1f; if(accel>0) accel=0; }
 					}
 				}
 
