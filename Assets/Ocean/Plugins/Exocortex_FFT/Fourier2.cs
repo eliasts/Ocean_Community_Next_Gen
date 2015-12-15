@@ -600,7 +600,7 @@ using System.Text;
 					LinearFFT_Quick( data, xStart, xInc, xLength, direction );
 				}
 			}
-			
+		
 			if( yLength > 1 ) {
 				SyncLookupTableLength( yLength );
 				for( int x = 0; x < xLength; x ++ ) {

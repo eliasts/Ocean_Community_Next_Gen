@@ -134,20 +134,30 @@ public class Boyancy : MonoBehaviour {
 		if(useFixedUpdate) update();
     }
 
-	//put object on the correct heigth of the sea surface when it has visibilty checks on and it became visible again.
-    void OnBecameVisible() {
-        if(cvisible || wvisible || svisible) {
-			float off = ocean.GetChoppyAtLocation(transform.position.x, transform.position.z);
-			float y = ocean.GetWaterHeightAtLocation2 (transform.position.x-off, transform.position.z);
-			transform.position = new Vector3(transform.position.x, y, transform.position.z);
-		}
-    }
+
+
+	bool visible, lastvisible;
+	int lastFrame=-15;
 
 	void update() {
 
 		if (ocean != null) {
 
-			bool visible = _renderer.isVisible;
+			visible = _renderer.isVisible;
+
+			//put object on the correct heigth of the sea surface when it has visibilty checks on and it became visible again.
+			if(visible != lastvisible) {
+				if(visible && !lastvisible) {
+					if(Time.frameCount-lastFrame>15) {
+						float off = ocean.GetChoppyAtLocation(transform.position.x, transform.position.z);
+						float y = ocean.GetWaterHeightAtLocation2 (transform.position.x-off, transform.position.z);
+						transform.position = new Vector3(transform.position.x, y, transform.position.z);
+						lastFrame = Time.frameCount;
+					}
+				}
+				lastvisible = visible;
+			}
+
 
 			if(cvisible) {
 				if(useGravity) {
