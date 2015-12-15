@@ -126,8 +126,6 @@ public class Boyancy : MonoBehaviour {
 
 	}
 
-	bool ticked;
-
 	void Update() {
 		if(!useFixedUpdate) update();
     }
@@ -136,148 +134,150 @@ public class Boyancy : MonoBehaviour {
 		if(useFixedUpdate) update();
     }
 
+	//put object on the correct heigth of the sea surface when it has visibilty checks on and it became visible again.
+    void OnBecameVisible() {
+        if(cvisible || wvisible || svisible) {
+			float off = ocean.GetChoppyAtLocation(transform.position.x, transform.position.z);
+			float y = ocean.GetWaterHeightAtLocation2 (transform.position.x-off, transform.position.z);
+			transform.position = new Vector3(transform.position.x, y, transform.position.z);
+		}
+    }
 
 	void update() {
 
 		if (ocean != null) {
-			if(ticked) {
 
 			bool visible = _renderer.isVisible;
 
-				if(cvisible) {
-					if(useGravity) {
-						if(!visible) {
-								rrigidbody.useGravity=false;
-								if(wvisible && svisible) return;
-						} else {
-								rrigidbody.useGravity = true;
-							}
-					}else {
-						if(!visible) { if(wvisible && svisible) return;} 
-					}
+			if(cvisible) {
+				if(useGravity) {
+					if(!visible) {
+							rrigidbody.useGravity=false;
+							if(wvisible && svisible) return;
+					} else {
+							rrigidbody.useGravity = true;
+						}
+				}else {
+					if(!visible) { if(wvisible && svisible) return;} 
 				}
+			}
 
-				float coef = dampCoeff;
-				int index = 0, k=0;
+			float coef = dampCoeff;
+			int index = 0, k=0;
 
-				int ran = (int)Random.Range(0, blobs.Count-1);
+			int ran = (int)Random.Range(0, blobs.Count-1);
 		
-				for(int j = 0; j<blobs.Count; j++) {
+			for(int j = 0; j<blobs.Count; j++) {
 
-					wpos = transform.TransformPoint (blobs[j]);
-					//get a random blob to apply a force with the choppy waves
-					if(ChoppynessAffectsPosition) { if(j == ran)  cpos = wpos; }
+				wpos = transform.TransformPoint (blobs[j]);
+				//get a random blob to apply a force with the choppy waves
+				if(ChoppynessAffectsPosition) { if(j == ran)  cpos = wpos; }
 
-					if(!cvisible || visible) {
-						float buyancy = magnitude * (wpos.y);
+				if(!cvisible || visible) {
+					float buyancy = magnitude * (wpos.y);
 
-						if (ocean.enabled) {
-							if(ocean.canCheckBuoyancyNow) {
-								float off = 0;
-								 if(ocean.choppy_scale>0) off = ocean.GetChoppyAtLocation(wpos.x, wpos.z);
-								if(moreAccurate) {
-									
-									buyancy = magnitude * (wpos.y - ocean.GetWaterHeightAtLocation2 (wpos.x-off, wpos.z));
-								}else {
-									buyancy = magnitude * (wpos.y - ocean.GetWaterHeightAtLocation (wpos.x-off, wpos.z));
-									buyancy = Lerp(prevBuoyancy, buyancy, 0.5f);
-									prevBuoyancy = buyancy;
-								}
-								bbboyancy = buyancy;
-							} else {
-								buyancy = bbboyancy;
-							}
-						}
-
-						if (sink) { buyancy = System.Math.Max(buyancy, -3) + sinkForces[index++]; }
-
-						float damp = rrigidbody.GetPointVelocity (wpos).y;
-
-						float bbuyancy = buyancy;
-
-						//interpolate last (int interpolation) frames to smooth out the jerkiness
-						//interpolation will be used only if the renderer is visible
-						if(interpolate) {
-							if(visible) {
-								prevBoya[k][tick] = buyancy;
-								bbuyancy=0;
-								for(int i=0; i<intplt; i++) { bbuyancy += prevBoya[k][i]; }
-								bbuyancy *= iF;
-							}
-						}
-						rrigidbody.AddForceAtPosition (-Vector3.up * (bbuyancy + coef * damp), wpos);
-						k++;
-					}
-				}
-
-				if(interpolate) { tick++; if(tick==intplt) tick=0; }
-
-				tack++; if (tack == (int)Random.Range(2, 9) ) tack=0;
-				if(tack>9) tack =1;
-
-				//if the boat has high speed do not influence it (choppyness and wind)
-				//if it has lower then fact then influence it depending on the speed .
-				float fact = rrigidbody.velocity.magnitude * 0.02f;
-
-				//this code is quick and dirty
-				if(fact<1) {
-					float fact2 = 1-fact;
-					//if the object gets its position affected by the force of the choppy waves. Useful for smaller objects).
-					if(ChoppynessAffectsPosition) {
-						if(!cvisible || visible) {
+					if (ocean.enabled) {
+						if(ocean.canCheckBuoyancyNow) {
+							float off = 0;
+								if(ocean.choppy_scale>0) off = ocean.GetChoppyAtLocation(wpos.x, wpos.z);
 							if(moreAccurate) {
-								if(tack==0) rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocation2Fast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, cpos);
-								else rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocation2Fast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, transform.position);
-							} else {
-								if(tack==0) rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocationFast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, cpos);
-								else rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocationFast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, transform.position);
+									
+								buyancy = magnitude * (wpos.y - ocean.GetWaterHeightAtLocation2 (wpos.x-off, wpos.z));
+							}else {
+								buyancy = magnitude * (wpos.y - ocean.GetWaterHeightAtLocation (wpos.x-off, wpos.z));
+								buyancy = Lerp(prevBuoyancy, buyancy, 0.5f);
+								prevBuoyancy = buyancy;
 							}
+							bbboyancy = buyancy;
+						} else {
+							buyancy = bbboyancy;
 						}
 					}
-					//if the object gets its position affected by the wind. Useful for smaller objects).
-					if(WindAffectsPosition) {
-						if(!wvisible || visible) {
-							if(tack==1) rrigidbody.AddForceAtPosition(new Vector3(ocean.pWindx, 0 , ocean.pWindy) * WindFactor*fact2, cpos);
-							else rrigidbody.AddForceAtPosition(new Vector3(ocean.pWindx, 0 , ocean.pWindy) * WindFactor*fact2, transform.position);
+
+					if (sink) { buyancy = System.Math.Max(buyancy, -3) + sinkForces[index++]; }
+
+					float damp = rrigidbody.GetPointVelocity (wpos).y;
+
+					float bbuyancy = buyancy;
+
+					//interpolate last (int interpolation) frames to smooth out the jerkiness
+					//interpolation will be used only if the renderer is visible
+					if(interpolate) {
+						if(visible) {
+							prevBoya[k][tick] = buyancy;
+							bbuyancy=0;
+							for(int i=0; i<intplt; i++) { bbuyancy += prevBoya[k][i]; }
+							bbuyancy *= iF;
+						}
+					}
+					rrigidbody.AddForceAtPosition (-Vector3.up * (bbuyancy + coef * damp), wpos);
+					k++;
+				}
+			}
+
+			if(interpolate) { tick++; if(tick==intplt) tick=0; }
+
+			tack++; if (tack == (int)Random.Range(2, 9) ) tack=0;
+			if(tack>9) tack =1;
+
+			//if the boat has high speed do not influence it (choppyness and wind)
+			//if it has lower then fact then influence it depending on the speed .
+			float fact = rrigidbody.velocity.magnitude * 0.02f;
+
+			//this code is quick and dirty
+			if(fact<1) {
+				float fact2 = 1-fact;
+				//if the object gets its position affected by the force of the choppy waves. Useful for smaller objects).
+				if(ChoppynessAffectsPosition) {
+					if(!cvisible || visible) {
+						if(moreAccurate) {
+							if(tack==0) rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocation2Fast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, cpos);
+							else rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocation2Fast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, transform.position);
+						} else {
+							if(tack==0) rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocationFast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, cpos);
+							else rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocationFast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, transform.position);
 						}
 					}
 				}
+				//if the object gets its position affected by the wind. Useful for smaller objects).
+				if(WindAffectsPosition) {
+					if(!wvisible || visible) {
+						if(tack==1) rrigidbody.AddForceAtPosition(new Vector3(ocean.pWindx, 0 , ocean.pWindy) * WindFactor*fact2, cpos);
+						else rrigidbody.AddForceAtPosition(new Vector3(ocean.pWindx, 0 , ocean.pWindy) * WindFactor*fact2, transform.position);
+					}
+				}
+			}
 
-				//the object will slide down a steep wave
-				//modify it to your own needs since it is a quick and dirty method.
-				if(xAngleAddsSliding) {
-					if(!svisible || visible) {
-						float xangle = transform.localRotation.eulerAngles.x;
-						currAngleX = (int)xangle;
+			//the object will slide down a steep wave
+			//modify it to your own needs since it is a quick and dirty method.
+			if(xAngleAddsSliding) {
+				if(!svisible || visible) {
+					float xangle = transform.localRotation.eulerAngles.x;
+					currAngleX = (int)xangle;
 
-						if(prevAngleX != currAngleX) {
+					if(prevAngleX != currAngleX) {
 						
-							float fangle=0f;
+						float fangle=0f;
 
-							if(xangle>270 && xangle<355) {
-								fangle = (360-xangle)*0.1f;
-								accel -= fangle* slideFactor; if(accel<-20) accel=-20;
-								}
-
-							if(xangle>5 && xangle<90) {
-								fangle = xangle*0.1f;
-								accel += fangle* slideFactor;  if(accel>20) accel=20;
+						if(xangle>270 && xangle<355) {
+							fangle = (360-xangle)*0.1f;
+							accel -= fangle* slideFactor; if(accel<-20) accel=-20;
 							}
 
-							prevAngleX = currAngleX;
+						if(xangle>5 && xangle<90) {
+							fangle = xangle*0.1f;
+							accel += fangle* slideFactor;  if(accel>20) accel=20;
 						}
-				
-						if((int)accel!=0) rrigidbody.AddRelativeForce (Vector3.forward * accel, ForceMode.Acceleration);
-						if(accel>0) { accel-= 0.1f;	if(accel<0) accel=0; }
-						if(accel<0) { accel+= 0.1f; if(accel>0) accel=0; }
-					}
-				}
 
-			}else {
-				//on the 1st tick position the floating objects on the corect height of the sea surface
-				ticked = true;
-				transform.position = new Vector3(transform.position.x, ocean.GetWaterHeightAtLocation(transform.position.x, transform.position.z), transform.position.z);
-			} 
+						prevAngleX = currAngleX;
+					}
+				
+					if((int)accel!=0) rrigidbody.AddRelativeForce (Vector3.forward * accel, ForceMode.Acceleration);
+					if(accel>0) { accel-= 0.05f;	if(accel<0) accel=0; }
+					if(accel<0) { accel+= 0.05f; if(accel>0) accel=0; }
+				}
+			}
+
 		}
 	}
 

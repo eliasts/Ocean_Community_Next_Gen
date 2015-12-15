@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<doc>
+  <members>
+    <assembly>
+      <name>UnityEngine.Advertisements</name>
+    </assembly>
+    <member name="T:UnityEngine.Advertisements.Advertisement">
+      <summary>
+        <para>Unity Ads.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.Advertisements.Advertisement.debugLevel">
+      <summary>
+        <para>Controls the amount of logging output from the advertisement system.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.Advertisements.Advertisement.gameId">
+      <summary>
+        <para>Returns the game identifier for the current platform.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.Advertisements.Advertisement.isInitialized">
+      <summary>
+        <para>Returns whether the advertisement system is initialized successfully.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.Advertisements.Advertisement.isShowing">
+      <summary>
+        <para>Returns whether an advertisement is currently being shown.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.Advertisements.Advertisement.isSupported">
+      <summary>
+        <para>Returns if the current platform is supported by the advertisement system.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.Advertisements.Advertisement.testMode">
+      <summary>
+        <para>Returns whether the testing mode is enabled.</para>
+      </summary>
+    </member>
+    <member name="T:UnityEngine.Advertisements.Advertisement.DebugLevel">
+      <summary>
+        <para>Player debug message level.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.Advertisements.Advertisement.DebugLevel.Debug">
+      <summary>
+        <para>Prints all debugging messages.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.Advertisements.Advertisement.DebugLevel.Error">
+      <summary>
+        <para>Prints all error messages.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.Advertisements.Advertisement.DebugLevel.Info">
+      <summary>
+        <para>Prints all informational messages.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.Advertisements.Advertisement.DebugLevel.None">
+      <summary>
+        <para>Prints out no debugging output.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.Advertisements.Advertisement.DebugLevel.Warning">
+      <summary>
+        <para>Prints out warnings.</para>
+      </summary>
+    </member>
+    <member name="M:UnityEngine.Advertisements.Advertisement.Initialize(System.String)">
+      <summary>
+        <para>Manually initializes the advertisement system. Normally this is done from editor, and you should only call this method if you have disabled UnityAds from the Editor settings in Connect window.</para>
+      </summary>
+      <param name="appId">Your game id. You can see a list of your registered games at the UnityAds admin site.</param>
+      <param name="testMode">In test mode, you will see test advertisement. Can be overruled by settings in the admin site for game.</param>
+    </member>
+    <member name="M:UnityEngine.Advertisements.Advertisement.Initialize(System.String,System.Boolean)">
+      <summary>
+        <para>Manually initializes the advertisement system. Normally this is done from editor, and you should only call this method if you have disabled UnityAds from the Editor settings in Connect window.</para>
+      </summary>
+      <param name="appId">Your game id. You can see a list of your registered games at the UnityAds admin site.</param>
+      <param name="testMode">In test mode, you will see test advertisement. Can be overruled by settings in the admin site for game.</param>
+    </member>
+    <member name="M:UnityEngine.Advertisements.Advertisement.IsReady">
+      <summary>
+        <para>Returns whether an advertisement is ready to be shown. Zones are configured per game in the UnityAds admin site, where you can also set your default zone.</para>
+      </summary>
+      <param name="zoneId">Optional zone identifier. If not specified, your default zone specified in UnityAds server-side admin settings will be used.</param>
+    </member>
+    <member name="M:UnityEngine.Advertisements.Advertisement.IsReady(System.String)">
+      <summary>
+        <para>Returns whether an advertisement is ready to be shown. Zones are configured per game in the UnityAds admin site, where you can also set your default zone.</para>
+      </summary>
+      <param name="zoneId">Optional zone identifier. If not specified, your default zone specified in UnityAds server-side admin settings will be used.</param>
+    </member>
+    <member name="M:UnityEngine.Advertisements.Advertisement.Show">
+      <summary>
+        <para>Show an advertisement in your project.</para>
+      </summary>
+      <param name="zoneId">Optional zone identifier. If not specified, your default zone specified in the admin settings will be used.</param>
+      <param name="options">Specify e.g. callback handler to be called when video has finished.</param>
+    </member>
+    <member name="M:UnityEngine.Advertisements.Advertisement.Show(System.String)">
+      <summary>
+        <para>Show an advertisement in your project.</para>
+      </summary>
+      <param name="zoneId">Optional zone identifier. If not specified, your default zone specified in the admin settings will be used.</param>
+      <param name="options">Specify e.g. callback handler to be called when video has finished.</param>
+    </member>
+    <member name="M:UnityEngine.Advertisements.Advertisement.Show(System.String,UnityEngine.Advertisements.ShowOptions)">
+      <summary>
+        <para>Show an advertisement in your project.</para>
+      </summary>
+      <param name="zoneId">Optional zone identifier. If not specified, your default zone specified in the admin settings will be used.</param>
+      <param name="options">Specify e.g. callback handler to be called when video has finished.</param>
+    </member>
+    <member name="T:UnityEngine.Advertisements.ShowOptions">
+      <summary>
+        <para>Collection of options that can be passed to Advertisements.Show to modify advertisement behaviour.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.Advertisements.ShowOptions.gamerSid">
+      <summary>
+        <para>Add a string to specify an identifier for a specific user in the game.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEngine.Advertisements.ShowOptions.resultCallback">
+      <summary>
+        <para>Callback to recieve the result of the advertisement.</para>
+      </summary>
+    </member>
+    <member name="T:UnityEngine.Advertisements.ShowResult">
+      <summary>
+        <para>ShowResult is passed to ShowOptions.resultCallback after the advertisement has completed.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.Advertisements.ShowResult.Failed">
+      <summary>
+        <para>Indicates that the advertisement failed to complete.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.Advertisements.ShowResult.Finished">
+      <summary>
+        <para>Indicates that the advertisement completed successfully.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.Advertisements.ShowResult.Skipped">
+      <summary>
+        <para>Indicates that the advertisement was skipped.</para>
+      </summary>
+    </member>
+  </members>
+</doc>

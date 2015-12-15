@@ -51,23 +51,8 @@ using System.Text;
 
 		//======================================================================================
 
-		static private void Swap( ref float a, ref float b ) {
-			float temp = a;
-			a = b;
-			b = temp;
-		}
-		static private void Swap( ref double a, ref double b ) {
-			double temp = a;
-			a = b;
-			b = temp;
-		}
 		static private void Swap( ref ComplexF a, ref ComplexF b ) {
 			ComplexF temp = a;
-			a = b;
-			b = temp;
-		}
-		static private void Swap( ref Complex a, ref Complex b ) {
-			Complex temp = a;
 			a = b;
 			b = temp;
 		}
@@ -218,63 +203,7 @@ using System.Text;
 
 		//-------------------------------------------------------------------------------------
 
-		static private void ReorderArray( float[] data ) {
-			//Debug.Assert( data != null );
 
-			int length = data.Length / 2;
-			
-			//Debug.Assert(IsPowerOf2( length ) == true );
-			//Debug.Assert( length >= cMinLength );
-			//Debug.Assert( length <= cMaxLength );
-
-			int[] reversedBits = GetReversedBits( Log2( length ) );
-			for( int i = 0; i < length; i ++ ) {
-				int swap = reversedBits[ i ];
-				if( swap > i ) {
-				Swap( ref data[ (i<<1) ], ref data[ (swap<<1) ] );
-				Swap( ref data[ (i<<1) + 1 ], ref data[ (swap<<1) + 1 ] );
-				}
-			}
-		}
-
-		static private void ReorderArray( double[] data ) {
-			//Debug.Assert( data != null );
-
-			int length = data.Length / 2;
-			
-			//Debug.Assert(IsPowerOf2( length ) == true );
-			//Debug.Assert( length >= cMinLength ); 
-			//Debug.Assert( length <= cMaxLength );
-
-			int[] reversedBits = GetReversedBits( Log2( length ) );
-			for( int i = 0; i < length; i ++ ) {
-				int swap = reversedBits[ i ];
-				if( swap > i ) {
-				Swap( ref data[ i<<1 ], ref data[ swap<<1 ] );
-				Swap( ref data[ i<<1 + 1 ], ref data[ swap<<1 + 1 ] );
-				}
-			}
-		}
-
-		static private void ReorderArray( Complex[] data ) {
-			//Debug.Assert( data != null );
-	
-			int length = data.Length;
-			
-			//Debug.Assert(IsPowerOf2( length ) == true );
-			//Debug.Assert( length >= cMinLength );
-			//Debug.Assert( length <= cMaxLength );
-			
-			int[] reversedBits = GetReversedBits( Log2( length ) );
-			for( int i = 0; i < length; i ++ ) {
-				int swap = reversedBits[ i ]; 
-				if( swap > i ) {
-					Complex temp = data[ i ];
-					data[ i ] = data[ swap ];
-					data[ swap ] = temp;
-				}
-			}
-		}
 
 		static private void ReorderArray( ComplexF[] data ) {
 			//Debug.Assert( data != null );
@@ -417,26 +346,6 @@ using System.Text;
 			}
 		}
 		
-		//======================================================================================
-		//======================================================================================
-
-		//static private bool		_bufferFLocked	= false;
-		static private float[]	_bufferF		= new float[ 0 ];
-
-		static private void		LockBufferF( int length, ref float[] buffer ) {
-			////Debug.Assert( _bufferFLocked == false );
-			//_bufferFLocked = true;
-			if( length >= _bufferF.Length ) {
-				_bufferF	= new float[ length ];
-			}
-			buffer =	_bufferF;
-		}
-		static private void		UnlockBufferF( ref float[] buffer ) {
-			//Debug.Assert( _bufferF == buffer );
-			////Debug.Assert( _bufferFLocked == true );
-			//_bufferFLocked = false;
-			buffer = null;
-		}
 
 		//======================================================================================
 		
@@ -515,83 +424,6 @@ using System.Text;
 			UnlockBufferCF( ref buffer );
 		}
 
-		//======================================================================================
-		//======================================================================================
-		
-		//static private bool			_bufferCLocked	= false;
-		static private Complex[]	_bufferC		= new Complex[ 0 ];
-
-		static private void		LockBufferC( int length, ref Complex[] buffer ) {
-			//Debug.Assert( length >= 0 );
-			////Debug.Assert( _bufferCLocked == false );
-			
-			//_bufferCLocked = true;
-			if( length >= _bufferC.Length ) {
-				_bufferC	= new Complex[ length ];
-			}
-			buffer =	_bufferC;
-		}
-		static private void		UnlockBufferC( ref Complex[] buffer ) {
-			//Debug.Assert( _bufferC == buffer );
-			////Debug.Assert( _bufferCLocked == true );
-			
-			//_bufferCLocked = false;
-			buffer = null;
-		}
-
-		private static void	LinearFFT( Complex[] data, int start, int inc, int length, FourierDirection direction ) {
-			//Debug.Assert( data != null );
-			//Debug.Assert( start >= 0 );
-			//Debug.Assert( inc >= 1 );
-			//Debug.Assert( length >= 1 );
-			//Debug.Assert( ( start + inc * ( length - 1 ) ) < data.Length );
-			
-			// copy to buffer
-			Complex[]	buffer = null;
-			LockBufferC( length, ref buffer );
-			int j = start;
-			for( int i = 0; i < length; i ++ ) {
-				buffer[ i ] = data[ j ];
-				j += inc;
-			}
-
-			FFT( buffer, length, direction );
-
-			// copy from buffer
-			j = start;
-			for( int i = 0; i < length; i ++ ) {
-				data[ j ] = buffer[ i ];
-				j += inc;
-			}
-			UnlockBufferC( ref buffer );
-		}
-
-		private static void	LinearFFT_Quick( Complex[] data, int start, int inc, int length, FourierDirection direction ) {
-			/*//Debug.Assert( data != null );
-			//Debug.Assert( start >= 0 );
-			//Debug.Assert( inc >= 1 );
-			//Debug.Assert( length >= 1 );
-			//Debug.Assert( ( start + inc * ( length - 1 ) ) < data.Length );*/
-			
-			// copy to buffer
-			Complex[]	buffer = null;
-			LockBufferC( length, ref buffer );
-			int j = start;
-			for( int i = 0; i < length; i ++ ) {
-				buffer[ i ] = data[ j ];
-				j += inc;
-			}
-
-			FFT_Quick( buffer, length, direction );
-
-			// copy from buffer
-			j = start;
-			for( int i = 0; i < length; i ++ ) {
-				data[ j ] = buffer[ i ];
-				j += inc;
-			}
-			UnlockBufferC( ref buffer );
-		}
 
 		//======================================================================================
 
@@ -734,130 +566,7 @@ using System.Text;
 			FFT( data, data.Length, direction );
 		}
 		
-		/// <summary>
-		/// Compute a 1D fast Fourier transform of a dataset of complex numbers.
-		/// </summary>
-		/// <param name="data"></param>
-		/// <param name="length"></param>
-		/// <param name="direction"></param>
 
-		public static void	FFT( Complex[] data, int length, FourierDirection direction ) {
-			if( data == null ) {
-				throw new ArgumentNullException( "data" );
-			}
-			if( data.Length < length ) {
-				throw new ArgumentOutOfRangeException( "length", length, "must be at least as large as 'data.Length' parameter" );
-			}
-			if( IsPowerOf2( length ) == false ) {
-				throw new ArgumentOutOfRangeException( "length", length, "must be a power of 2" );
-			}
-
-			SyncLookupTableLength( length );
-
-			int ln = Log2( length );
-			
-			// reorder array
-			ReorderArray( data );
-			
-			// successive doubling
-			int N = 1;
-			int signIndex = ( direction == FourierDirection.Forward ) ? 0 : 1;
-			
-			for( int level = 1; level <= ln; level ++ ) {
-				int M = N;
-				N <<= 1;
-
-				double[] uRLookup = _uRLookup[ level, signIndex ];
-				double[] uILookup = _uILookup[ level, signIndex ];
-
-				for( int j = 0; j < M; j ++ ) {
-					double uR = uRLookup[j];
-					double uI = uILookup[j];
-
-					for( int even = j; even < length; even += N ) {
-						int odd	 = even + M;
-						
-						double	r = data[ odd ].Re;
-						double	i = data[ odd ].Im;
-
-						double	odduR = r * uR - i * uI;
-						double	odduI = r * uI + i * uR;
-
-						r = data[ even ].Re;
-						i = data[ even ].Im;
-						
-						data[ even ].Re	= r + odduR;
-						data[ even ].Im	= i + odduI;
-						
-						data[ odd ].Re	= r - odduR;
-						data[ odd ].Im	= i - odduI;
-					}
-				}
-			}
-
-		}
-		
-		/// <summary>
-		/// Compute a 1D fast Fourier transform of a dataset of complex numbers.
-		/// </summary>
-		/// <param name="data"></param>
-		/// <param name="length"></param>
-		/// <param name="direction"></param>
-		public static void	FFT_Quick( Complex[] data, int length, FourierDirection direction ) {
-			/*if( data == null ) {
-				throw new ArgumentNullException( "data" );
-			}
-			if( data.Length < length ) {
-				throw new ArgumentOutOfRangeException( "length", length, "must be at least as large as 'data.Length' parameter" );
-			}
-			if( IsPowerOf2( length ) == false ) {
-				throw new ArgumentOutOfRangeException( "length", length, "must be a power of 2" );
-			}
-
-			SyncLookupTableLength( length );   */
-
-			int ln = Log2( length );
-			
-			// reorder array
-			ReorderArray( data );
-			
-			// successive doubling
-			int N = 1;
-			int signIndex = ( direction == FourierDirection.Forward ) ? 0 : 1;
-			
-			for( int level = 1; level <= ln; level ++ ) {
-				int M = N;
-				N <<= 1;
-
-				double[] uRLookup = _uRLookup[ level, signIndex ];
-				double[] uILookup = _uILookup[ level, signIndex ];
-
-				for( int j = 0; j < M; j ++ ) {
-					double uR = uRLookup[j];
-					double uI = uILookup[j];
-
-					for( int even = j; even < length; even += N ) {
-						int odd	 = even + M;
-						
-						double	r = data[ odd ].Re;
-						double	i = data[ odd ].Im;
-
-						double	odduR = r * uR - i * uI;
-						double	odduI = r * uI + i * uR;
-
-						r = data[ even ].Re;
-						i = data[ even ].Im;
-						
-						data[ even ].Re	= r + odduR;
-						data[ even ].Im	= i + odduI;
-						
-						data[ odd ].Re	= r - odduR;
-						data[ odd ].Im	= i - odduI;
-					}
-				}
-			}
-
-		}
 
 		/// <summary>
 		/// Compute a 2D fast fourier transform on a data set of complex numbers

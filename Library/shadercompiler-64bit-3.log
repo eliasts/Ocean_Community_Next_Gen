@@ -1,6 +1,62 @@
 Base path: C:/Program Files/Unity5.3/Editor/Data
-Pipe name: \\.\pipe\UnityShaderCompiler-64bit-3-7768
+Pipe name: \\.\pipe\UnityShaderCompiler-64bit-3-2492
 Cmd: getPlatforms
+Cmd: compileSnippet
+  api=1 type=0 insize=4268 outsize=1067 kw= pd= ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=4268 outsize=6110 kw=FOG_LINEAR pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=4268 outsize=4841 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=4268 outsize=1493 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=4268 outsize=1493 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=4268 outsize=4841 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=3970 outsize=5809 kw= pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=3970 outsize=6151 kw=FOG_EXP pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=3970 outsize=4296 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=3970 outsize=1336 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=3970 outsize=4296 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=8 type=1 insize=3970 outsize=6508 kw=FOG_EXP2 pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=3176 outsize=952 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=3176 outsize=962 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=3176 outsize=5809 kw=FOG_EXP pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=3176 outsize=1102 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=3176 outsize=1102 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=8 type=1 insize=3176 outsize=5306 kw=FOG_EXP pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=3128 outsize=5176 kw= pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=3128 outsize=3882 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=8 type=1 insize=3128 outsize=3551 kw= pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=8 type=1 insize=3128 outsize=3941 kw=FOG_EXP pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=3271 outsize=5468 kw= pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=3271 outsize=5809 kw=FOG_EXP pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=3271 outsize=1098 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=3271 outsize=1098 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=8 type=1 insize=3271 outsize=5314 kw=FOG_EXP pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=8 type=1 insize=3271 outsize=5314 kw=FOG_EXP2 pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
 Unhandled exception: Readfile from pipe failed. GLE=The pipe has been ended.
 
 

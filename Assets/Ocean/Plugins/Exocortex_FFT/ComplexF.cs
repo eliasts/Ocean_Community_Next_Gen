@@ -180,12 +180,13 @@ public struct ComplexF : IComparable, ICloneable {
 	/// </summary>
 	/// <param name="c"></param>
 	/// <returns></returns>
+	 /*
 	public static explicit operator ComplexF ( Complex c ) {
 		ComplexF cF;
 		cF.Re	= (float) c.Re;
 		cF.Im	= (float) c.Im;
 		return cF;
-	}
+	}*/
 
 	/// <summary>
 	/// Convert from a single precision real number to a complex number
@@ -270,12 +271,12 @@ public struct ComplexF : IComparable, ICloneable {
 		if( o is float ) {
 			return	this.GetModulus().CompareTo( (float)o );
 		}
-		if( o is Complex ) {
-			return	this.GetModulus().CompareTo( ((Complex)o).GetModulus() );
-		}
-		if( o is double ) {
-			return	this.GetModulus().CompareTo( (double)o );
-		}
+		//if( o is Complex ) {
+		//	return	this.GetModulus().CompareTo( ((Complex)o).GetModulus() );
+	//	}
+	//	if( o is double ) {
+	//		return	this.GetModulus().CompareTo( (double)o );
+	//	}
 		throw new ArgumentException();
 	}
 
