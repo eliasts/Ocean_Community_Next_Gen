@@ -561,7 +561,7 @@ public class Ocean : MonoBehaviour {
 	void calcPhase3() {
 		float scaleB = waveScale / wh;
 		float scaleBinv = 1.0f / scaleB;
-		float magnitude = 1;
+		float magnitude = 1 , invm;
 		float mag2 = scaleBinv*scaleBinv;
 
 		for (int i=0; i<wh; i++) {
@@ -575,7 +575,7 @@ public class Ocean : MonoBehaviour {
 			normals[iw].y = scaleBinv;
 			//normalize
 			magnitude = (float)System.Math.Sqrt(normals[iw].x *normals[iw].x + mag2 + normals[iw].z * normals[iw].z);
-			if(magnitude>0){ normals[iw].x /= magnitude; normals[iw].y /= magnitude; normals[iw].z /= magnitude; }
+			if(magnitude>0){ invm = 1f/magnitude; normals[iw].x *= invm; normals[iw].y *= invm; normals[iw].z *= invm; }
 	
 			if (((i + 1) % width)==0) {
 				int iwi=iw+1;
@@ -589,7 +589,7 @@ public class Ocean : MonoBehaviour {
 				normals[iwi].y = scaleBinv;
 				//normalize
 				magnitude = (float)System.Math.Sqrt(normals[iwi].x *normals[iwi].x + mag2 + normals[iwi].z * normals[iwi].z);
-				if(magnitude>0){ normals[iwi].x /= magnitude; normals[iwi].y /= magnitude; normals[iwi].z /= magnitude; }
+				if(magnitude>0){ invm = 1f/magnitude; normals[iwi].x *= invm; normals[iwi].y *= invm; normals[iwi].z *= invm; }
 			}
 		}
 
@@ -606,36 +606,35 @@ public class Ocean : MonoBehaviour {
 			normals[io].y = scaleBinv;
 			//normalize
 			magnitude = (float)System.Math.Sqrt(normals[io].x *normals[io].x + mag2 + normals[io].z * normals[io].z);
-			if(magnitude>0){ normals[io].x /= magnitude; normals[io].y /= magnitude; normals[io].z /= magnitude; }
+			if(magnitude>0){ invm = 1f/magnitude; normals[io].x *= invm; normals[io].y *= invm; normals[io].z *= invm; }
 		}
 	    
 		canCheckBuoyancyNow = true;
-		
-		for (int i=0; i<gwgh; i++) {
-			
-			//Need to preserve w in refraction/reflection mode
-			if (!reflectionRefractionEnabled) {
-				if (((i + 1) % g_width) == 0) {
-					tangents [i] = Vector3Normalize(vertices [i - width + 1] + mv2 - vertices [i]);
-				} else {
-					tangents [i] = Vector3Normalize(vertices [i + 1] - vertices [i]);
-				}
-			
-				tangents [i].w = 1.0f;
+
+		Vector3 tmp;// = Vector3.zero;
+
+		for (int i=0; i<gwgh; i++) {	
+
+			if (((i + 1) % g_width) == 0) {
+				tmp = (vertices[i - width + 1] + mv2 - vertices [i]);
+				//tmp = Vector3NormalizeF(vertices[i - width + 1] + mv2 - vertices [i]); 
 			} else {
-				Vector3 tmp;// = Vector3.zero;
-			
-				if (((i + 1) % g_width) == 0) {
-					tmp = Vector3Normalize(vertices[i - width + 1] + mv2 - vertices [i]); 
-				} else {
-					tmp = Vector3Normalize(vertices [i + 1] - vertices [i]);
-				}
-				
-				tangents [i] = new Vector4 (tmp.x, tmp.y, tmp.z, tangents [i].w);
+				tmp = (vertices [i + 1] - vertices [i]);
+				//tmp = Vector3NormalizeF(vertices [i + 1] - vertices [i]);
 			}
+
+			//tangents [i] = new Vector4 (tmp.x, tmp.y, tmp.z, tangents [i].w);
+			magnitude = (float)System.Math.Sqrt(tmp.x *tmp. x + tmp.y * tmp.y + tmp.z * tmp.z);
+			if(magnitude>0){ invm = 1f/magnitude; tmp.x *= invm; tmp.y *= invm; tmp.z *= invm; }
+			tangents [i].x = tmp.x; tangents [i].y = tmp.y; tangents [i].z = tmp.z;
+
+			//Need to preserve w in refraction/reflection mode
+			if (!reflectionRefractionEnabled) tangents [i].w = 1.0f;
 		}
 
 	}
+
+
 
 
 	#if !UNITY_WEBGL
@@ -1565,25 +1564,20 @@ public class Ocean : MonoBehaviour {
 		}
 	}
 
-	void normalizeVector3D(Vector3 vec3) {
-		float magnitude = (float)System.Math.Sqrt(vec3.x *vec3. x + vec3.y * vec3.y + vec3.z * vec3.z);
-		if(magnitude>0){
-			vec3.x /= magnitude;
-			vec3.y /= magnitude;
-			vec3.z /= magnitude;
-		}
-	}
 
-	Vector3 Vector3Normalize(Vector3 in3) {
+
+	Vector3 Vector3NormalizeF(Vector3 in3) {
 		Vector3 vec3 = new Vector3(in3.x, in3.y, in3.z);
 		float magnitude = (float)System.Math.Sqrt(in3.x *in3. x + in3.y * in3.y + in3.z * in3.z);
 		if(magnitude>0){
-			vec3.x /= magnitude;
-			vec3.y /= magnitude;
-			vec3.z /= magnitude;
+			float invm = 1f/magnitude;
+			vec3.x *= invm;
+			vec3.y *= invm;
+			vec3.z *= invm;
 		}
 		return vec3;
 	}
+
 
 
 	public void SetWaves (float wind) {

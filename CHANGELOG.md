@@ -1,8 +1,12 @@
 15/12/2015 second part
 
-- uploaded project with 'Library' folder to avoid losing prefab connections.
-- small bug fixes.
-- small performance increase.
+- Uploaded project with 'Library' folder to avoid losing prefab connections.
+- Small bug fixes.
+- Small performance increase. (~5%)
+- Slimmed down the Exocortex plugin.
+- WebGL compatibility fixes.
+- Buoyancy update.
+- Vector Normalization performance increase.
 
 
 15/12/2015
