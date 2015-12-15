@@ -47,7 +47,10 @@ public class Ocean : MonoBehaviour {
 	private Vector3 centerOffset;
 	#if !UNITY_WEBGL
 	private Thread th0, th0b, th1,th1b, th2, th3, th3b;
+	bool start;
 	#endif
+
+	bool start2;
 
 	public int defaultLOD = 5;
 
@@ -238,8 +241,10 @@ public class Ocean : MonoBehaviour {
 
 
     void Start () {
-
-		ticked = false; start = false; start2= false;
+		#if !UNITY_WEBGL
+		start = false;
+		#endif
+		ticked = false;  start2= false;
 
 		setSpread();
 
@@ -382,7 +387,11 @@ public class Ocean : MonoBehaviour {
 		Fourier.FFT2 (data, width, height, FourierDirection.Backward);
 		Fourier2.FFT2 (t_x, width, height, FourierDirection.Backward);
 		calcPhase3();
+		#if !UNITY_WEBGL
 		calcPhase4();
+		#else
+		calcPhase4N();
+		#endif
 
 		//place player boat on current water level.
 		if(player!= null) {
@@ -424,8 +433,6 @@ public class Ocean : MonoBehaviour {
 	}
 
 
-
-	bool start, start2;
 
 	#if !UNITY_WEBGL
 	void updWithThreads() {
@@ -631,7 +638,7 @@ public class Ocean : MonoBehaviour {
 	}
 
 
-
+	#if !UNITY_WEBGL
 	void calcPhase4() {
 		 
 		calculateCenterOffset();
@@ -721,7 +728,7 @@ public class Ocean : MonoBehaviour {
 
 		updateTiles();
 	}
-
+	#endif
 
 	void calculateCenterOffset() {
 		if (followMainCamera && player != null) {
