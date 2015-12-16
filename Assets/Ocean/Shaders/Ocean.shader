@@ -338,7 +338,7 @@ Shader "Mobile/Ocean" {
 
 				half4 result = half4(0, 0, 0, 1);
 
-				half2 bumpSampleOffset = (i.objSpaceNormal.xz  + tangentNormal.xy) * 0.05  + i.projTexCoord.xy;// + projTexCoord.xy
+				half2 bumpSampleOffset = (i.objSpaceNormal.xz  + tangentNormal.xy) * 0.05  + i.projTexCoord.xy;
 	
 				half3 reflection = tex2D( _Reflection,  bumpSampleOffset) * _SurfaceColor  ;
 				half3 refraction = tex2D( _Refraction,  bumpSampleOffset ) * _WaterColor ;

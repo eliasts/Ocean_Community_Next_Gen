@@ -80,6 +80,11 @@ public class Ocean : MonoBehaviour {
 	private Bounds bounds;
 	public int tiles = 2;
 
+	private bool previousFogState;
+	private Color previousFogColor;
+	private float previousFogDensity;
+	private FogMode previousFogMode;
+
     public static Ocean Singleton { get; private set; }
 
     public float pWindx=10.0f;
@@ -164,6 +169,7 @@ public class Ocean : MonoBehaviour {
 	private Color oldSunColor;
 
 	public float specularity = 0.185f;
+	public float reflectivity = 1f;
 
 	public float foamFactor = 1.1f;
 	public Color surfaceColor = new Color (0.3f, 0.5f, 0.3f, 1.0f);
@@ -217,6 +223,11 @@ public class Ocean : MonoBehaviour {
 		start = false;
 		#endif
 		ticked = false;  start2= false;
+
+		previousFogState = RenderSettings.fog;
+		previousFogColor = RenderSettings.fogColor;
+		previousFogDensity = RenderSettings.fogDensity;
+		previousFogMode = RenderSettings.fogMode;
 
 		setSpread();
 
@@ -496,7 +507,6 @@ public class Ocean : MonoBehaviour {
 
 				float iwkt = (float)System.Math.Sqrt(9.81f * sqrtMagnitude)  * time * speed;
 
-				//ComplexF coeffA = new ComplexF ((float)System.Math.Cos(iwkt), (float)System.Math.Sin(iwkt));
 				coeffA.Re = (float)System.Math.Cos(iwkt); coeffA.Im = (float)System.Math.Sin(iwkt);
 
 				ComplexF coeffB;
@@ -1062,9 +1072,9 @@ public class Ocean : MonoBehaviour {
 			if(rint == 0) RenderReflectionAndRefraction ();
 		}
 	}
-	
-	public void RenderReflectionAndRefraction()
-	{
+
+
+	public void RenderReflectionAndRefraction() {
 		int cullingMask = ~(1 << 4) & renderLayers.value;
 		Camera cam = Camera.current;
 		if( !cam ) return;
@@ -1078,10 +1088,15 @@ public class Ocean : MonoBehaviour {
 
 		UpdateCameraModes( cam, reflectionCamera );
 		UpdateCameraModes( cam, refractionCamera );
+
+		if(reflectivity<1f) {
+			RenderSettings.fog = true;
+			RenderSettings.fogColor = surfaceColor*0.5f;
+			RenderSettings.fogDensity = 1f-reflectivity;
+		}
 		
 		// Render reflection if needed
-		if(this.renderReflection)
-		{
+		if(this.renderReflection) {
 			// Reflect camera around reflection plane
 			float d = -Vector3.Dot (normal, pos) - m_ClipPlaneOffset;
 			Vector4 reflectionPlane = new Vector4 (normal.x, normal.y, normal.z, d);
@@ -1100,6 +1115,7 @@ public class Ocean : MonoBehaviour {
 			reflectionCamera.cullingMask = cullingMask; // never render water layer
 			reflectionCamera.targetTexture = m_ReflectionTexture;
             //reflectionCamera.gameObject.AddComponent<FogLayer>().fog = true;
+
             GL.invertCulling = true;
 			reflectionCamera.transform.position = newpos;
 			Vector3 euler = cam.transform.eulerAngles;
@@ -1110,11 +1126,11 @@ public class Ocean : MonoBehaviour {
             if(material!=null) material.SetTexture( "_Reflection", m_ReflectionTexture );
 			if(mat1HasRefl) { if(material1!=null)  material1.SetTexture( "_Reflection", m_ReflectionTexture ); }
 			if(mat2HasRefl) { if(material2!=null)  material2.SetTexture( "_Reflection", m_ReflectionTexture ); }
+
 		}
 		
 		// Render refraction
-		if(this.renderRefraction)
-		{
+		if(this.renderRefraction) {
 			refractionCamera.worldToCameraMatrix = cam.worldToCameraMatrix;
 			
 			// Setup oblique projection matrix so that near plane is our reflection
@@ -1133,11 +1149,17 @@ public class Ocean : MonoBehaviour {
 			if(mat1HasRefr) { if(material1!=null) material1.SetTexture( "_Refraction", m_RefractionTexture ); }
 			if(mat2HasRefr) { if(material2!=null) material2.SetTexture( "_Refraction", m_RefractionTexture ); }
 		}
+
+		if(reflectivity<1f) {
+			RenderSettings.fog = previousFogState;
+			RenderSettings.fogColor = previousFogColor;
+			RenderSettings.fogDensity = previousFogDensity;
+			RenderSettings.fogMode = previousFogMode;
+		}
 	}
 
 	// Cleanup all the objects we possibly have created
-	void OnDisable()
-	{
+	void OnDisable() {
 		if( m_ReflectionTexture ) {
 			DestroyImmediate( m_ReflectionTexture );
 			m_ReflectionTexture = null;
@@ -1152,10 +1174,12 @@ public class Ocean : MonoBehaviour {
 		foreach (KeyValuePair<Camera, Camera> kvp in m_RefractionCameras)
 			DestroyImmediate( (kvp.Value).gameObject );
 		m_RefractionCameras.Clear();
+
+		Fourier.ClearLookupTables();
+		Fourier2.ClearLookupTables();
 	}
 
-	private void UpdateCameraModes( Camera src, Camera dest )
-	{
+	private void UpdateCameraModes( Camera src, Camera dest ) {
 		if( dest == null )
 			return;
 		// set water camera to clear the same way as current camera
@@ -1187,13 +1211,11 @@ public class Ocean : MonoBehaviour {
 	}
 	
 	// On-demand create any objects we need for water
-	private void CreateWaterObjects( Camera currentCamera, out Camera reflectionCamera, out Camera refractionCamera )
-	{	
+	private void CreateWaterObjects( Camera currentCamera, out Camera reflectionCamera, out Camera refractionCamera ) {	
 		reflectionCamera = null;
 		refractionCamera = null;
 		
-		if(this.renderReflection)
-		{
+		if(this.renderReflection){
 			// Reflection render texture
 			if( !m_ReflectionTexture || m_OldReflectionTextureSize != renderTexWidth )
 			{
@@ -1207,8 +1229,8 @@ public class Ocean : MonoBehaviour {
 			
 			// Camera for reflection
 			m_ReflectionCameras.TryGetValue(currentCamera, out reflectionCamera);
-			if (!reflectionCamera) // catch both not-in-dictionary and in-dictionary-but-deleted-GO
-			{
+			// catch both not-in-dictionary and in-dictionary-but-deleted-GO
+			if (!reflectionCamera) {
 				GameObject go = new GameObject( "Water Refl Camera id" + GetInstanceID() + " for " + currentCamera.GetInstanceID(), typeof(Camera), typeof(Skybox) );
 				reflectionCamera = go.GetComponent<Camera>();
 				reflectionCamera.enabled = false;
@@ -1220,11 +1242,9 @@ public class Ocean : MonoBehaviour {
 			}
 		}
 		
-		if(this.renderRefraction)
-		{
+		if(this.renderRefraction){
 			// Refraction render texture
-			if( !m_RefractionTexture || m_OldRefractionTextureSize != renderTexWidth )
-			{
+			if( !m_RefractionTexture || m_OldRefractionTextureSize != renderTexWidth ){
 				if( m_RefractionTexture ) DestroyImmediate( m_RefractionTexture );
 				m_RefractionTexture = new RenderTexture( renderTexWidth, renderTexHeight, 16 );
 				m_RefractionTexture.name = "__WaterRefraction" + GetInstanceID();
@@ -1235,8 +1255,8 @@ public class Ocean : MonoBehaviour {
 			
 			// Camera for refraction
 			m_RefractionCameras.TryGetValue(currentCamera, out refractionCamera);
-			if (!refractionCamera) // catch both not-in-dictionary and in-dictionary-but-deleted-GO
-			{
+			// catch both not-in-dictionary and in-dictionary-but-deleted-GO
+			if (!refractionCamera) {
 				GameObject go = new GameObject( "Water Refr Camera id" + GetInstanceID() + " for " + currentCamera.GetInstanceID(), typeof(Camera), typeof(Skybox) );
 				refractionCamera = go.GetComponent<Camera>();
 				refractionCamera.enabled = false;
@@ -1663,5 +1683,6 @@ public class Ocean : MonoBehaviour {
 		float vcsq=vec_k.magnitude;	
 		return (float)(A * System.Math.Exp (-1.0f / (k2 * L * L) - System.Math.Pow (vcsq * 0.1, 2.0)) / (k2 * k2) * System.Math.Pow (Vector2.Dot (vec_k / vcsq, wind / wind.magnitude), 2.0));// * wind_x * wind_y;
 	}
+
 
 }

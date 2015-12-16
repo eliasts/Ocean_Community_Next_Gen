@@ -144,7 +144,7 @@ public class OceanGeneratorInspector : Editor {
 			currentPreset = EditorGUILayout.Popup(currentPreset, presets);
 			if(oldpreset != currentPreset ) {
 				if(currentPreset==0) { currentPreset = oldpreset; return; }
-				if(ocean.loadPreset(presetpaths[currentPreset-1])) {oldpreset = currentPreset; ocean._name = presets[currentPreset]; } else {currentPreset = oldpreset; checkPdir(ocean);}
+				if(ocean.loadPreset(presetpaths[currentPreset-1])) {oldpreset = currentPreset; ocean._name = presets[currentPreset]; oldRenderRefraction=ocean.renderRefraction; EditorUtility.SetDirty(ocean); } else {currentPreset = oldpreset; checkPdir(ocean);}
 			}
 			GUI.backgroundColor = new Color(.5f, .8f, 1f, 1f);
 			EditorGUILayout.EndVertical();
@@ -228,7 +228,12 @@ public class OceanGeneratorInspector : Editor {
 			EditorGUILayout.LabelField("Wake distance");
 			ocean.wakeDistance = (float)EditorGUILayout.Slider(ocean.wakeDistance, 1f, 15f);
 
-			GUILayout.Space(38);
+			DrawHalfSeparator();
+			GUILayout.Space(4);
+			EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.LabelField("Reflectivity",GUILayout.MaxWidth(70));
+			ocean.reflectivity = EditorGUILayout.Slider(ocean.reflectivity, 0f, 1f);
+			EditorGUILayout.EndHorizontal();
 
 
 			DrawSeparator();
@@ -351,6 +356,7 @@ public class OceanGeneratorInspector : Editor {
 						ocean.loadPreset(preset);
 						title = Path.GetFileName(preset).Replace(".preset", ""); ocean._name = title;
 						updcurPreset();
+						oldRenderRefraction=ocean.renderRefraction;
 						EditorUtility.SetDirty(ocean);
 					}
 				}
@@ -654,7 +660,7 @@ public class OceanGeneratorInspector : Editor {
 		if(oldeDefaultLod != ocean.defaultLOD) {
 			//hardcoded for now. If the shader has alphs disable refraction since it is not needed (and not supported by the shader.)
 			if(ocean.defaultLOD == 6 || ocean.defaultLOD == 7 || ocean.defaultLOD == 1 ) {oldRenderRefraction = ocean.renderRefraction;  ocean.renderRefraction = false; }
-			if(ocean.defaultLOD != 6 || ocean.defaultLOD != 7 || ocean.defaultLOD != 1) ocean.renderRefraction = oldRenderRefraction;
+			if(ocean.defaultLOD != 6 || ocean.defaultLOD != 7 || ocean.defaultLOD != 1) { ocean.renderRefraction = oldRenderRefraction; }
 			oldeDefaultLod = ocean.defaultLOD;
 		}
 

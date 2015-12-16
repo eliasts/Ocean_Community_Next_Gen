@@ -166,18 +166,6 @@ using System.Text;
 		//-------------------------------------------------------------------------------------
 		//-------------------------------------------------------------------------------------
 
-		static private int	ReverseBits( int index, int numberOfBits ) {
-			//Debug.Assert( numberOfBits >= cMinBits );
-			//Debug.Assert( numberOfBits <= cMaxBits );
-
-			int reversedIndex = 0;
-			for( int i = 0; i < numberOfBits; i ++ ) {
-				reversedIndex = ( reversedIndex << 1 ) | ( index & 1 );
-				index = ( index >> 1 );
-			}
-			return reversedIndex;
-		}
-
 		//-------------------------------------------------------------------------------------
 		
 		static private int[][]	_reversedBits	= new int[ cMaxBits ][];
@@ -250,8 +238,8 @@ using System.Text;
 		}
 
 		private static int _lookupTabletLength = -1;
-		private static double[,][]	_uRLookup	= null;
-		private static double[,][]	_uILookup	= null;
+		private static float[,][]	_uRLookup	= null;
+		private static float[,][]	_uILookup	= null;
 		private static	float[,][]	_uRLookupF	= null;
 		private static	float[,][]	_uILookupF	= null;
 
@@ -272,7 +260,7 @@ using System.Text;
 			return	_lookupTabletLength;
 		}
 
-		private static void	ClearLookupTables() {
+		public static void	ClearLookupTables() {
 			_uRLookup	= null;
 			_uILookup	= null;
 			_uRLookupF	= null;
@@ -285,8 +273,8 @@ using System.Text;
 			//_wRLookup = new float[ levels + 1, 2 ];
 			//_wILookup = new float[ levels + 1, 2 ];
 			
-			_uRLookup = new double[ levels + 1, 2 ][];
-			_uILookup = new double[ levels + 1, 2 ][];
+			_uRLookup = new float[ levels + 1, 2 ][];
+			_uILookup = new float[ levels + 1, 2 ][];
 
 			_uRLookupF = new float[ levels + 1, 2 ][];
 			_uILookupF = new float[ levels + 1, 2 ][];
@@ -300,21 +288,21 @@ using System.Text;
 
 				// positive sign ( i.e. [M,0] )
 				{
-					double	uR = 1;
-					double	uI = 0;
-					double	angle = (double) Math.PI / M * 1;
-					double	wR = (double) Math.Cos( angle );
-					double	wI = (double) Math.Sin( angle );
+					float	uR = 1;
+					float	uI = 0;
+					float	angle = (float) Math.PI / M * 1;
+					float	wR = (float) Math.Cos( angle );
+					float	wI = (float) Math.Sin( angle );
 
-					_uRLookup[level,0] = new double[ M ];
-					_uILookup[level,0] = new double[ M ];
+					_uRLookup[level,0] = new float[ M ];
+					_uILookup[level,0] = new float[ M ];
 					_uRLookupF[level,0] = new float[ M ];
 					_uILookupF[level,0] = new float[ M ];
 
 					for( int j = 0; j < M; j ++ ) {
-						_uRLookupF[level,0][j] = (float)( _uRLookup[level,0][j] = uR );
-						_uILookupF[level,0][j] = (float)( _uILookup[level,0][j] = uI );
-						double	uwI = uR*wI + uI*wR;
+						_uRLookupF[level,0][j] = _uRLookup[level, 0][j] = uR;
+						_uILookupF[level,0][j] = _uILookup[level, 0][j] = uI;
+						float	uwI = uR*wI + uI*wR;
 						uR = uR*wR - uI*wI;
 						uI = uwI;
 					}
@@ -323,21 +311,21 @@ using System.Text;
 
 
 				// negative sign ( i.e. [M,1] )
-					double	uR = 1;
-                    double	uI = 0;
-					double	angle = (double) Math.PI / M * -1;
-					double	wR = (double) Math.Cos( angle );
-					double	wI = (double) Math.Sin( angle );
+					float	uR = 1;
+                    float	uI = 0;
+					float	angle = (float) Math.PI / M * -1;
+					float	wR = (float) Math.Cos( angle );
+					float	wI = (float) Math.Sin( angle );
 
-					_uRLookup[level,1] = new double[ M ];
-					_uILookup[level,1] = new double[ M ];
+					_uRLookup[level,1] = new float[ M ];
+					_uILookup[level,1] = new float[ M ];
 					_uRLookupF[level,1] = new float[ M ];
 					_uILookupF[level,1] = new float[ M ];
 
 					for( int j = 0; j < M; j ++ ) {
-						_uRLookupF[level,1][j] = (float)( _uRLookup[level,1][j] = uR );
-						_uILookupF[level,1][j] = (float)( _uILookup[level,1][j] = uI );
-						double	uwI = uR*wI + uI*wR;
+						_uRLookupF[level,1][j] = _uRLookup[level, 1][j] = uR;
+						_uILookupF[level,1][j] = _uILookup[level, 1][j] = uI;
+						float	uwI = uR*wI + uI*wR;
 						uR = uR*wR - uI*wI;
 						uI = uwI;
 					}
@@ -370,32 +358,7 @@ using System.Text;
 			buffer = null;
 		}
 
-		private static void	LinearFFT( ComplexF[] data, int start, int inc, int length, FourierDirection direction ) {
-			//Debug.Assert( data != null );
-			//Debug.Assert( start >= 0 );
-			//Debug.Assert( inc >= 1 );
-			//Debug.Assert( length >= 1 );
-			//Debug.Assert( ( start + inc * ( length - 1 ) ) < data.Length );
-			
-			// copy to buffer
-			ComplexF[]	buffer = null;
-			LockBufferCF( length, ref buffer );
-			int j = start;
-			for( int i = 0; i < length; i ++ ) {
-				buffer[ i ] = data[ j ];
-				j += inc;
-			}
 
-			FFT( buffer, length, direction );
-
-			// copy from buffer
-			j = start;
-			for( int i = 0; i < length; i ++ ) {
-				data[ j ] = buffer[ i ];
-				j += inc;
-			}
-			UnlockBufferCF( ref buffer );
-		}
 
 		private static void	LinearFFT_Quick( ComplexF[] data, int start, int inc, int length, FourierDirection direction ) {
 			/*//Debug.Assert( data != null );
@@ -426,7 +389,7 @@ using System.Text;
 
 
 		//======================================================================================
-
+		 
 
 		/// <summary>
 		/// Compute a 1D fast Fourier transform of a dataset of complex numbers.
@@ -492,80 +455,6 @@ using System.Text;
 
 		}
 
-		/// <summary>
-		/// Compute a 1D fast Fourier transform of a dataset of complex numbers.
-		/// </summary>
-		/// <param name="data"></param>
-		/// <param name="length"></param>
-		/// <param name="direction"></param>
-		public static void	FFT_Quick( ComplexF[] data, int length, FourierDirection direction ) {
-			/*if( data == null ) {
-				throw new ArgumentNullException( "data" );
-			}
-			if( data.Length < length ) {
-				throw new ArgumentOutOfRangeException( "length", length, "must be at least as large as 'data.Length' parameter" );
-			}
-			if( IsPowerOf2( length ) == false ) {
-				throw new ArgumentOutOfRangeException( "length", length, "must be a power of 2" );
-			}
-
-			SyncLookupTableLength( length );*/
-
-			int ln = Log2( length );
-			
-			// reorder array
-			ReorderArray( data );
-			
-			// successive doubling
-			int N = 1;
-			int signIndex = ( direction == FourierDirection.Forward ) ? 0 : 1;
-			
-			for( int level = 1; level <= ln; level ++ ) {
-				int M = N;
-				N <<= 1;
-
-				float[] uRLookup = _uRLookupF[ level, signIndex ];
-				float[] uILookup = _uILookupF[ level, signIndex ];
-
-				for( int j = 0; j < M; j ++ ) {
-					float uR = uRLookup[j];
-					float uI = uILookup[j];
-
-					for( int even = j; even < length; even += N ) {
-						int odd	 = even + M;
-						
-						float	r = data[ odd ].Re;
-						float	i = data[ odd ].Im;
-
-						float	odduR = r * uR - i * uI;
-						float	odduI = r * uI + i * uR;
-
-						r = data[ even ].Re;
-						i = data[ even ].Im;
-						
-						data[ even ].Re	= r + odduR;
-						data[ even ].Im	= i + odduI;
-						
-						data[ odd ].Re	= r - odduR;
-						data[ odd ].Im	= i - odduI;
-					}
-				}
-			}
-
-		}
-
-		/// <summary>
-		/// Compute a 1D fast Fourier transform of a dataset of complex numbers.
-		/// </summary>
-		/// <param name="data"></param>
-		/// <param name="direction"></param>
-		public static void	FFT( ComplexF[] data, FourierDirection direction ) {
-			if( data == null ) {
-				throw new ArgumentNullException( "data" );
-			}
-			FFT( data, data.Length, direction );
-		}
-		
 
 
 		/// <summary>

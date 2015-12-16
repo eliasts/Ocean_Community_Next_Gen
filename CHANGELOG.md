@@ -1,4 +1,12 @@
-16/12/205
+16/12/2015 second part
+
+- Added ability to adjust the reflection strength.
+- Fixed some issues with the new alpha shader switching.
+- Slimmed down more the Exocortex plugin.
+- Updated and added more presets.
+
+
+16/12/2015
 
 - Changed the bump and foam scrolling in the shaders. WaveOffset speed parameter has been removed.
 - Improved specularity in the shaders.
