@@ -63,7 +63,8 @@ Shader "Mobile/OceanL1" {
     			o.lightDir = mul(rotation, half3(_SunDir.xyz));
 
 
-				o.buv = float2(o.bumpTexCoord.x + _Time.x * 0.03, o.bumpTexCoord.y + _SinTime.x * 0.2);
+				o.buv = float2(o.bumpTexCoord.x + _CosTime.x * 0.2, o.bumpTexCoord.y + _SinTime.x * 0.3);
+
 				o.normViewDir = normalize(o.viewDir);
 
 				o.floatVec = normalize(o.normViewDir - normalize(o.lightDir));

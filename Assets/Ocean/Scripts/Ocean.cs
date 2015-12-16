@@ -173,6 +173,7 @@ public class Ocean : MonoBehaviour {
 	public Shader oceanShader;
 	public bool renderReflection = true;
 	public bool renderRefraction = true;
+	
 
 	//Alpha for shaders that support it
 	public float shaderAlpha = 0.83f;
@@ -988,9 +989,6 @@ public class Ocean : MonoBehaviour {
 			if(material2.HasProperty("_Reflection")) { mat2HasRefl=true; }
 			if(material2.HasProperty("_Refraction")) { mat2HasRefr=true;  }
 		}
-
-		//hardcoded for now. If the shader has alphs disable refraction since it is not needed (and not supported by the shader.)
-		if(defaultLOD == 6 || defaultLOD == 7) renderRefraction = false;
 
 		//Hack to make this object considered by the renderer - first make a plane
 		//covering the watertiles so we get a decent bounding box, then

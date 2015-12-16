@@ -76,7 +76,8 @@ Shader "Mobile/Ocean" {
     			o.viewDir = mul(rotation, objSpaceViewDir);
     			o.lightDir = mul(rotation, half3(_SunDir.xyz));
 
-				o.buv = float4(o.bumpTexCoord.x + _Time.x * 0.03, o.bumpTexCoord.y + _SinTime.x * 0.2, o.bumpTexCoord.x + _Time.y * 0.04, o.bumpTexCoord.y + _SinTime.y * 0.5);
+
+				o.buv = float4(o.bumpTexCoord.x + _CosTime.x * 0.2, o.bumpTexCoord.y + _SinTime.x * 0.3, o.bumpTexCoord.x + _CosTime.y * 0.04, o.bumpTexCoord.y + _SinTime.y * 0.5);
 
 				o.normViewDir = normalize(o.viewDir);
                 
@@ -191,7 +192,7 @@ Shader "Mobile/Ocean" {
     			o.viewDir = mul(rotation, objSpaceViewDir);
     			o.lightDir = mul(rotation, half3(_SunDir.xyz));
 
-				o.buv = float4(o.bumpTexCoord.x + _Time.x * 0.03, o.bumpTexCoord.y + _SinTime.x * 0.2, o.bumpTexCoord.x + _Time.y * 0.04, o.bumpTexCoord.y + _SinTime.y * 0.5);
+				o.buv = float4(o.bumpTexCoord.x + _CosTime.x * 0.2, o.bumpTexCoord.y + _SinTime.x * 0.3, o.bumpTexCoord.x + _CosTime.y * 0.04, o.bumpTexCoord.y + _SinTime.y * 0.5);
 
 				o.normViewDir = normalize(o.viewDir);
                 
@@ -304,7 +305,7 @@ Shader "Mobile/Ocean" {
     			o.viewDir = mul(rotation, objSpaceViewDir);
     			o.lightDir = mul(rotation, half3(_SunDir.xyz));
 
-				o.buv = float4(o.bumpTexCoord.x + _Time.x * 0.03, o.bumpTexCoord.y + _SinTime.x * 0.2, o.bumpTexCoord.x + _Time.y * 0.04, o.bumpTexCoord.y + _SinTime.y * 0.5);
+				o.buv = float4(o.bumpTexCoord.x + _CosTime.x * 0.2, o.bumpTexCoord.y + _SinTime.x * 0.3, o.bumpTexCoord.x + _CosTime.y * 0.04, o.bumpTexCoord.y + _SinTime.y * 0.5);
 				//World UV's
 				//o.worldPos = mul(_Object2World, v.vertex).xyz;	
 				//o.bumpuv.xyzw = o.worldPos.xzxz  * _WaveTiling*0.005  + frac(_Time.xxxx * _WaveDirection);
@@ -425,7 +426,7 @@ Shader "Mobile/Ocean" {
     			o.viewDir = mul(rotation, objSpaceViewDir);
     			o.lightDir = mul(rotation, half3(_SunDir.xyz));
 
-				o.buv = float4(o.bumpTexCoord.x + _Time.x * 0.03, o.bumpTexCoord.y + _SinTime.x * 0.2, o.bumpTexCoord.x + _Time.y * 0.04, o.bumpTexCoord.y + _SinTime.y * 0.5);
+				o.buv = float4(o.bumpTexCoord.x + _CosTime.x * 0.2, o.bumpTexCoord.y + _SinTime.x * 0.3, o.bumpTexCoord.x + _CosTime.y * 0.04, o.bumpTexCoord.y + _SinTime.y * 0.5);
 
 				o.normViewDir = normalize(o.viewDir);
                 
@@ -533,7 +534,7 @@ Shader "Mobile/Ocean" {
     			o.viewDir = mul(rotation, objSpaceViewDir);
     			o.lightDir = mul(rotation, half3(_SunDir.xyz));
 
-				o.buv = float4(o.bumpTexCoord.x + _Time.x * 0.03, o.bumpTexCoord.y + _SinTime.x * 0.2, o.bumpTexCoord.x + _Time.y * 0.04, o.bumpTexCoord.y + _SinTime.y * 0.5);
+				o.buv = float4(o.bumpTexCoord.x + _CosTime.x * 0.2, o.bumpTexCoord.y + _SinTime.x * 0.3, o.bumpTexCoord.x + _CosTime.y * 0.04, o.bumpTexCoord.y + _SinTime.y * 0.5);
 				o.normViewDir = normalize(o.viewDir);
 
 				o.floatVec = normalize(o.normViewDir - normalize(o.lightDir));
@@ -620,7 +621,7 @@ Shader "Mobile/Ocean" {
     			o.viewDir = mul(rotation, objSpaceViewDir);
     			o.lightDir = mul(rotation, half3(_SunDir.xyz));
 
-				o.buv = float2(o.bumpTexCoord.x + _Time.x * 0.03, o.bumpTexCoord.y + _SinTime.x * 0.2);
+				o.buv = float2(o.bumpTexCoord.x + _CosTime.x * 0.2, o.bumpTexCoord.y + _SinTime.x * 0.3);
 
 				o.normViewDir = normalize(o.viewDir);
 
@@ -708,7 +709,7 @@ Shader "Mobile/Ocean" {
     			o.viewDir = mul(rotation, objSpaceViewDir);
     			o.lightDir = mul(rotation, half3(_SunDir.xyz));
 
-				o.buv = float4(o.bumpTexCoord.x + _Time.x * 0.03, o.bumpTexCoord.y + _SinTime.x * 0.2, o.bumpTexCoord.x + _Time.y * 0.04, o.bumpTexCoord.y + _SinTime.y * 0.5);
+				o.buv = float4(o.bumpTexCoord.x + _CosTime.x * 0.2, o.bumpTexCoord.y + _SinTime.x * 0.3, o.bumpTexCoord.x + _CosTime.y * 0.04, o.bumpTexCoord.y + _SinTime.y * 0.5);
 
 				o.normViewDir = normalize(o.viewDir);
 

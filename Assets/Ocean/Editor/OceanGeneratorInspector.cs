@@ -29,9 +29,10 @@ public class OceanGeneratorInspector : Editor {
 	public static bool oldrefr, prevrefr, oldSpread, oldFixed;
 	public static float oldFoamUV, oldBumpUV, oldShaderAlpha;
 	public static Vector3 oldSunDir;
-	public static int oldRefrReflXframe;
+	public static int oldRefrReflXframe, oldeDefaultLod;
 	public static string presetPath;
 	public static int currentPreset, oldpreset, oldmodeset;
+	public static bool oldRenderRefraction;
 
 	private string[] defShader = {"default lod","1 (alpha)","2","3","4","5","6 (alpha)","7 (alpha)"};
 	private string[] skiplods = {"off","1","2","3","4"};
@@ -98,6 +99,8 @@ public class OceanGeneratorInspector : Editor {
 		back = AssetDatabase.LoadAssetAtPath<Texture2D>(backPath);
 
 		if (null == back) Debug.LogError("null == back");
+
+		oldRenderRefraction = ocean.renderRefraction;
 	}
 
 
@@ -648,6 +651,13 @@ public class OceanGeneratorInspector : Editor {
 			}
 		}
 
+		if(oldeDefaultLod != ocean.defaultLOD) {
+			//hardcoded for now. If the shader has alphs disable refraction since it is not needed (and not supported by the shader.)
+			if(ocean.defaultLOD == 6 || ocean.defaultLOD == 7 || ocean.defaultLOD == 1 ) {oldRenderRefraction = ocean.renderRefraction;  ocean.renderRefraction = false; }
+			if(ocean.defaultLOD != 6 || ocean.defaultLOD != 7 || ocean.defaultLOD != 1) ocean.renderRefraction = oldRenderRefraction;
+			oldeDefaultLod = ocean.defaultLOD;
+		}
+
 		if (ocean.renderReflection != oldrefl) { ocean.EnableReflection(ocean.renderReflection); oldrefl = ocean.renderReflection; }
 		if (ocean.renderRefraction != oldrefr) { if(ocean.defaultLOD!=6 && ocean.defaultLOD!=7) { ocean.EnableRefraction(ocean.renderRefraction);} else { ocean.renderRefraction=false; } oldrefr = ocean.renderRefraction; }
 
@@ -657,7 +667,10 @@ public class OceanGeneratorInspector : Editor {
 				prevrefr = ocean.renderRefraction;
 			}
 			int ll = ocean.numberLods;
-			if(ocean.material!=null && (ocean.defaultLOD == 6 || ocean.defaultLOD == 7)) {ll = 1;}
+			
+			if(ocean.material!=null && (ocean.defaultLOD == 6 || ocean.defaultLOD == 7)) {ll = 1; }
+			if(ocean.defaultLOD==6 || ocean.defaultLOD==7) ocean.renderRefraction = oldRenderRefraction;
+
 			ocean.shader_LOD(!ocean.shaderLod, ocean.material, ll);
 			oldShaderLod = ocean.shaderLod;
 
