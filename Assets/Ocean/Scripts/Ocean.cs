@@ -1464,6 +1464,7 @@ public class Ocean : MonoBehaviour {
 				}
 
 				if(br.BaseStream.Position != br.BaseStream.Length) shaderAlpha = br.ReadSingle();
+				if(br.BaseStream.Position != br.BaseStream.Length) reflectivity = br.ReadSingle();
 
 				setSpread();
 				return true;

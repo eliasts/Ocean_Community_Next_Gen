@@ -777,6 +777,7 @@ public class OceanGeneratorInspector : Editor {
 					swr.Write(ocean.material1.name);//string
 					swr.Write(ocean.material2.name);//string
 					swr.Write(ocean.shaderAlpha);//float
+					swr.Write(ocean.reflectivity);//float
 				}
 
 			}
