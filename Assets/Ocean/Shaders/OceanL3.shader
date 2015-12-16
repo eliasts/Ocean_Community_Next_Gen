@@ -15,10 +15,8 @@ Shader "Mobile/OceanL3" {
 		_Size ("UVSize", Float) = 0.015625//this is the best value (1/64) to have the same uv scales of normal and foam maps on all ocean sizes
 		_FoamSize ("FoamUVSize", Float) = 2//tiling of the foam texture
 		_SunDir ("SunDir", Vector) = (0.3, -0.6, -1, 0)
-		_WaveOffset ("Wave speed", Float) = 0
 
 		_FakeUnderwaterColor ("Water Color LOD1", Color) = (0.196, 0.262, 0.196, 1)
-		_WaterLod1Alpha ("Water Transparency", Range(0,1)) = 0.95
 	}
 
 		//water bump/foam/refelection/refraction
@@ -42,7 +40,7 @@ Shader "Mobile/OceanL3" {
     			half3  viewDir : TEXCOORD2;
     			half3  objSpaceNormal : TEXCOORD3;
     			half3  lightDir : TEXCOORD4;
-				float4 buv : TEXCOORD5;
+				float2 buv : TEXCOORD5;
 				half3 normViewDir : TEXCOORD6;
 				UNITY_FOG_COORDS(7)
 			};
@@ -50,7 +48,6 @@ Shader "Mobile/OceanL3" {
 			half _Size;
 			half _FoamSize;
 			half4 _SunDir;
-			half _WaveOffset;
 
 			v2f vert (appdata_tan v) {
     			v2f o;
@@ -76,9 +73,7 @@ Shader "Mobile/OceanL3" {
     			o.viewDir = mul(rotation, objSpaceViewDir);
     			o.lightDir = mul(rotation, half3(_SunDir.xyz));
 
-				o.buv = float4(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03, o.bumpTexCoord.x + _WaveOffset * 0.04, o.bumpTexCoord.y - _WaveOffset * 0.02);
-
-				//o.buv = float4(o.bumpTexCoord.x + _Time.x * 0.03, o.bumpTexCoord.y + _SinTime.x * 0.2, o.bumpTexCoord.x + _Time.y * 0.04, o.bumpTexCoord.y + _SinTime.y * 0.5);
+				o.buv = float2(o.bumpTexCoord.x + _Time.x * 0.03, o.bumpTexCoord.y + _SinTime.x * 0.2);
 
 				o.normViewDir = normalize(o.viewDir);
                 
@@ -102,9 +97,8 @@ Shader "Mobile/OceanL3" {
 
 				half foam = clamp(tex2D(_Foam, -i.buv.xy *_FoamSize)  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z * _FoamFactor;
 								
-				half3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2.0) + (tex2D(_Bump, i.buv.zw) * 2.0) - 2;
-
-				half3 tangentNormal = normalize(tangentNormal0 );
+				half3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2.0) -1;
+				half3 tangentNormal = normalize(tangentNormal0);
 
 				half4 result = half4(0, 0, 0, 1);
 

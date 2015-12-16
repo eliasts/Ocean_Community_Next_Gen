@@ -11,7 +11,6 @@ Shader "Mobile/OceanL2" {
 		_FoamFactor("Foam Factor", Range(0,3)) = 1.8
 		_Size ("UVSize", Float) = 0.015625//this is the best value (1/64) to have the same uv scales of normal and foam maps on all ocean sizes
 		_SunDir ("SunDir", Vector) = (0.3, -0.6, -1, 0)
-		_WaveOffset ("Wave speed", Float) = 0
 
 		_FakeUnderwaterColor ("Water Color LOD1", Color) = (0.196, 0.262, 0.196, 1)
 	}
@@ -43,7 +42,6 @@ Shader "Mobile/OceanL2" {
 			half _Size;
 			half4 _SunDir;
 			half4 _FakeUnderwaterColor;
-            half _WaveOffset;
             
 			v2f vert (appdata_tan v) {
     			v2f o;
@@ -59,8 +57,7 @@ Shader "Mobile/OceanL2" {
     			o.viewDir = mul(rotation, objSpaceViewDir);
     			o.lightDir = mul(rotation, half3(_SunDir.xyz));
 
-				//o.buv = float4(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03, o.bumpTexCoord.x + _WaveOffset * 0.04, o.bumpTexCoord.y- _WaveOffset * 0.02);
-				o.buv = float2(o.bumpTexCoord.x + _WaveOffset * 0.05, o.bumpTexCoord.y + _WaveOffset * 0.03);
+				o.buv = float2(o.bumpTexCoord.x + _Time.x * 0.03, o.bumpTexCoord.y + _SinTime.x * 0.2);
 
 				o.normViewDir = normalize(o.viewDir);
 
@@ -78,11 +75,6 @@ Shader "Mobile/OceanL2" {
             half4 _SunColor;
 
 			half4 frag (v2f i) : COLOR {
-				//float3 normViewDir = normalize(i.viewDir);
-				//float4 buv = float4(i.bumpTexCoord.x + _WaveOffset * 0.05, i.bumpTexCoord.y + _WaveOffset * 0.03, i.bumpTexCoord.x + _WaveOffset * 0.04, i.bumpTexCoord.y - _WaveOffset * 0.02);
-                
-				//float3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2.0) + (tex2D(_Bump, i.buv.zw) * 2.0) - 2;
-				//float3 tangentNormal = normalize(tangentNormal0);
 
 				half3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2.0) -1;
 				half3 tangentNormal = normalize(tangentNormal0);
@@ -93,8 +85,6 @@ Shader "Mobile/OceanL2" {
 				//float bias = 0.06;
 				//float power = 4.0;
 				half fresnelTerm = 0.06 + (1.0-0.06)*pow(1.0 - fresnelLookup, 4.0);
-
-				//float3 floatVec = normalize(i.normViewDir - normalize(i.lightDir));
 
 				half specular = pow(max(dot(i.floatVec,  tangentNormal) , 0.0), 250.0 * _Specularity );
                 

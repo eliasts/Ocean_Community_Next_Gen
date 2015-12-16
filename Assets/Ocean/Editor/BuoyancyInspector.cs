@@ -18,6 +18,8 @@ public class BuoyancyInspector  : Editor{
 
 	public static string presetPath;
 
+	
+
 
 	void OnEnable () {
 		Boyancy boyancy = target as Boyancy;
@@ -298,13 +300,29 @@ public class BuoyancyInspector  : Editor{
 					swr.Write(boyancy.slideFactor);//float
 					swr.Write(boyancy.moreAccurate);//bool
 					swr.Write(boyancy.useFixedUpdate);//bool
+
+					var bc = boyancy.GetComponent<BoatController>();
+
+					//If the object has a boat controller attached write the properties.
+					//This is useful, because if you change the buoynacy settings the speed
+					//settings of the boat controller need tweaking again.
+					if(bc!= null) {
+						swr.Write(true);//bool
+						swr.Write(bc.m_FinalSpeed);//float
+						swr.Write(bc.m_accelerationTorqueFactor);//float
+						swr.Write(bc.m_InertiaFactor);//float
+						swr.Write(bc.m_turningFactor);//float
+						swr.Write(bc.m_turningTorqueFactor);//float
+					} else {
+						swr.Write(false);//bool
+					}
 				}
 
 			}
 		}
 	}
 
-	//loads a buoyancy preset
+	//loads a buoyancy preset (and boat controller settings if available)
 	public static bool loadPreset(Boyancy boyancy) {
 
 		string preset = EditorUtility.OpenFilePanel("Load Ocean preset",presetPath,"buoyancy");
@@ -368,6 +386,20 @@ public class BuoyancyInspector  : Editor{
 							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.slideFactor = br.ReadSingle();
 							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.moreAccurate = br.ReadBoolean();
 							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.useFixedUpdate = br.ReadBoolean();
+							bool hasBoatController = false;
+							if(br.BaseStream.Position != br.BaseStream.Length) {
+								hasBoatController = br.ReadBoolean();
+								if(hasBoatController) {
+									float res=0;
+									var bc = boyancy.GetComponent<BoatController>();
+									res=br.ReadSingle(); if(bc) bc.m_FinalSpeed = res;
+									res=br.ReadSingle(); if(bc) bc.m_accelerationTorqueFactor = res;
+									res=br.ReadSingle(); if(bc) bc.m_InertiaFactor = res;
+									res=br.ReadSingle(); if(bc) bc.m_turningFactor = res;
+									res=br.ReadSingle(); if(bc) bc.m_turningTorqueFactor= res;
+								}
+							}
+							
 
 							//try to asign a renderer for visibility checks if there is none assigned in the boyancy inspector.
 							if(boyancy._renderer == null) {
@@ -378,6 +410,11 @@ public class BuoyancyInspector  : Editor{
 							}
 
 							EditorUtility.SetDirty(boyancy);
+							if(hasBoatController){
+								var bc = boyancy.GetComponent<BoatController>();
+								EditorUtility.SetDirty(bc);
+							}
+
 							return true;
 							
 						}

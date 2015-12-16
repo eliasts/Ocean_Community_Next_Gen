@@ -11,11 +11,11 @@ public class BoatController : MonoBehaviour{
 	[SerializeField] private float m_boatAudioMinPitch = 0.4F;
 	[SerializeField] private float m_boatAudioMaxPitch = 1.2F;
 
-	[SerializeField] private float m_FinalSpeed = 100F;
-	[SerializeField] private float m_InertiaFactor = 0.005F;
-	[SerializeField] private float m_turningFactor = 2.0F;
-    [SerializeField] private float m_accelerationTorqueFactor = 35F;
-	[SerializeField] private float m_turningTorqueFactor = 35F;
+	[SerializeField] public float m_FinalSpeed = 100F;
+	[SerializeField] public float m_InertiaFactor = 0.005F;
+	[SerializeField] public float m_turningFactor = 2.0F;
+    [SerializeField] public float m_accelerationTorqueFactor = 35F;
+	[SerializeField] public float m_turningTorqueFactor = 35F;
 
 	private float m_verticalInput = 0F;
 	private float m_horizontalInput = 0F;

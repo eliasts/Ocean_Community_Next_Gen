@@ -13,6 +13,9 @@ using System.Threading;
 
 
 public class Ocean : MonoBehaviour {
+
+	//Old method variables (some are shared with newer methods)
+
 	public int _mode;//mobile or desktop mode (todo)
 	public string _name;//the name of the ocean preset
 	private const float pix2 =  2.0f * Mathf.PI;
@@ -105,29 +108,7 @@ public class Ocean : MonoBehaviour {
 		}
 	}
 
-	private int pNormal_scale=8;
-	public int normal_scale {
-		get {
-			return pNormal_scale;
-		}
-		set {
-			if (value!=pNormal_scale) {
-				pNormal_scale=value;
-				this.InitWaveGenerator();
-			}
-		}
-	}
-	private float pNormalStrength=2f;
-	public float normalStrength {
-		get {
-			return pNormalStrength;
-		}
-		set {
-			if (value!=pNormalStrength) {
-				pNormalStrength=value;
-			}
-		}
-	}
+
 	public float choppy_scale = 2.0f;
 
 	public Material material;
@@ -144,11 +125,8 @@ public class Ocean : MonoBehaviour {
 	private ComplexF[] h0;
 	private ComplexF[] t_x;
 	private ComplexF[] n0;
-	//private ComplexF[] n_x;
-	//private ComplexF[] n_y;
 	private ComplexF[] data;
 
-	//private Color[] pixelData;
 	private Vector3[] baseHeight;
 
 	private Mesh baseMesh;
@@ -160,8 +138,7 @@ public class Ocean : MonoBehaviour {
 
 	private int g_height;
 	private int g_width;
-	//private int n_width;
-	//private int n_height;
+
     private Vector2 sizeInv;
 	
 	//private bool normalDone = false;
@@ -197,13 +174,8 @@ public class Ocean : MonoBehaviour {
 	public bool renderReflection = true;
 	public bool renderRefraction = true;
 
-	//Shader wave offset animation speed
-	public float waveSpeed = 10f;
-	private float prevOffsetValue = 0;
-	private float nextOffsetValue = 0;
-	private float prevOffsetTime = -100000;
-	private const float offsetTimeFreq = 1f/ 60f;
-	private int swich;
+	//Alpha for shaders that support it
+	public float shaderAlpha = 0.83f;
 
 	//Humidity values
 	public bool dynamicWaves;
@@ -226,7 +198,6 @@ public class Ocean : MonoBehaviour {
 	private Vector4[][] tangentsLOD;
 
 	private Vector3 mv2;
-	//private bool precalc;
 
 
     void Awake() {
@@ -252,10 +223,6 @@ public class Ocean : MonoBehaviour {
 
 		bounds = new Bounds(new Vector3(size.x/2f,0f,size.z/2f),new Vector3(size.x+size.x*0.12f,0,size.z+size.z*0.12f));
 
-        // normal map size
-        //n_width = 128;
-		//n_height = 128;
-
 		wh = width*height;
 
 		hhalf=height/2f;
@@ -266,17 +233,11 @@ public class Ocean : MonoBehaviour {
 		
 		SetupOffscreenRendering ();
 
-	
-		//pixelData = new Color[n_width * n_height];
-
 		// Init the water height matrix
 		data = new ComplexF[width * height];
 
 		// tangent
 		t_x = new ComplexF[width * height];
-
-		//n_x = new ComplexF[n_width * n_height];
-		//n_y = new ComplexF[n_width * n_height];
 
 		// Geometry size
 		g_height = height + 1;	
@@ -408,11 +369,6 @@ public class Ocean : MonoBehaviour {
 
 
 	void Update (){
-
-		if(material != null){
-			float getfloat = GetFloat();
-			if(useShaderLods) { for(int i=0; i<numberLods; i++) { if(mat[i] != null) mat[i].SetFloat( "_WaveOffset", getfloat );  }} else {material.SetFloat( "_WaveOffset", getfloat );}
-		}
 
 		if(!fixedUpdate) {
 			#if THREADS && !UNITY_WEBGL
@@ -1016,20 +972,25 @@ public class Ocean : MonoBehaviour {
 	void SetupOffscreenRendering () {
 
 		//set the uv scaling of normal and foam maps to 1/64 so they scale the same on all sizes!
-		if(material!=null) { material.SetFloat ("_Size", 0.015625f * bumpUV); material.SetFloat ("_FoamSize", foamUV); }
+		if(material!=null) { material.SetFloat ("_Size", 0.015625f * bumpUV); material.SetFloat ("_FoamSize", foamUV); material.SetFloat("_WaterLod1Alpha", shaderAlpha); }
 		mat1HasRefl=false; mat1HasRefr=false; mat2HasRefl=false; mat2HasRefr=false;
 
 		if(material1 != null) {
 			material1.SetFloat ("_Size", 0.015625f * bumpUV);
 			material1.SetFloat ("_FoamSize", foamUV);
+			material1.SetFloat("_WaterLod1Alpha", shaderAlpha);
 			if(material1.HasProperty("_Reflection")) { mat1HasRefl=true; }
 			if(material1.HasProperty("_Refraction")) { mat1HasRefr=true; }
 		}
 		if(material2 != null) {
 			material2.SetFloat ("_Size", 0.015625f * bumpUV);
+			material.SetFloat("_WaterLod1Alpha", shaderAlpha);
 			if(material2.HasProperty("_Reflection")) { mat2HasRefl=true; }
 			if(material2.HasProperty("_Refraction")) { mat2HasRefr=true;  }
 		}
+
+		//hardcoded for now. If the shader has alphs disable refraction since it is not needed (and not supported by the shader.)
+		if(defaultLOD == 6 || defaultLOD == 7) renderRefraction = false;
 
 		//Hack to make this object considered by the renderer - first make a plane
 		//covering the watertiles so we get a decent bounding box, then
@@ -1379,7 +1340,7 @@ public class Ocean : MonoBehaviour {
     }
 
 	public void UpdateWaterColor() {
-		for(int i=0; i<3; i++) { if(mat[i]!=null) { mat[i].SetColor("_WaterColor", waterColor); mat[i].SetColor("_SurfaceColor", surfaceColor);} }
+		for(int i=0; i<3; i++) { if(mat[i]!=null) { mat[i].SetColor("_WaterColor", waterColor); mat[i].SetColor("_SurfaceColor", surfaceColor); mat[i].SetColor("_FakeUnderwaterColor", fakeWaterColor); }  }
 	}
 
 	void Mist (bool isActive) {
@@ -1418,7 +1379,7 @@ public class Ocean : MonoBehaviour {
 				if(br.BaseStream.Position != br.BaseStream.Length) scale = br.ReadSingle();
 				if(br.BaseStream.Position != br.BaseStream.Length) choppy_scale = br.ReadSingle();
 				if(br.BaseStream.Position != br.BaseStream.Length) speed = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) waveSpeed = br.ReadSingle();
+				if(br.BaseStream.Position != br.BaseStream.Length) br.ReadSingle();//waveSpeed = removed
 				if(br.BaseStream.Position != br.BaseStream.Length) wakeDistance = br.ReadSingle();
 				if(br.BaseStream.Position != br.BaseStream.Length) renderReflection = br.ReadBoolean();
 				if(br.BaseStream.Position != br.BaseStream.Length) renderRefraction = br.ReadBoolean();
@@ -1484,6 +1445,8 @@ public class Ocean : MonoBehaviour {
 					if(nm2!= null) {Material mtr = (Material)Resources.Load("oceanMaterials/"+nm2, typeof(Material)); if(mtr!= null) { material2 = mtr; mat[2] = material2;} }
 				}
 
+				if(br.BaseStream.Position != br.BaseStream.Length) shaderAlpha = br.ReadSingle();
+
 				setSpread();
 				return true;
 			}
@@ -1505,31 +1468,6 @@ public class Ocean : MonoBehaviour {
 		
 		//return Mathf.SmoothStep(prevValue, nextValue, frac);
 		return MySmoothstep(prevValue, nextValue, frac);
-	}
-
-	private float GetFloat() {
-		float time = Time.time * waveSpeed;
-		int intTime = (int)(time * offsetTimeFreq);
-		int intPrevTime = (int)(prevOffsetTime * offsetTimeFreq);
-		
-		if (prevOffsetTime < 0){
-			nextOffsetValue = -100;
-		}
-		
-		if (intTime != intPrevTime){
-			prevOffsetValue = nextOffsetValue;
-			if(swich == 0){
-				nextOffsetValue = 100;
-				swich = 1;	
-			}else if(swich == 1){
-				nextOffsetValue = -100;
-				swich = 0;
-			}
-		}
-		prevOffsetTime = time;
-		float frac = time * offsetTimeFreq - intTime;
-		
-		return Lerp(prevOffsetValue, nextOffsetValue, frac);
 	}
 
 	//should use a pooling system

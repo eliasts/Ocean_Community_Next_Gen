@@ -1,6 +1,276 @@
 Base path: C:/Program Files/Unity5.3/Editor/Data
-Pipe name: \\.\pipe\UnityShaderCompiler-64bit-2-7636
+Pipe name: \\.\pipe\UnityShaderCompiler-64bit-2-3796
 Cmd: getPlatforms
+Cmd: compileSnippet
+  api=8 type=0 insize=3811 outsize=5809 kw= pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=3811 outsize=4272 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=8 type=1 insize=3811 outsize=6866 kw= pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=3811 outsize=1511 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=8 type=1 insize=3811 outsize=7256 kw=FOG_EXP2 pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=3754 outsize=5753 kw= pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=3754 outsize=4223 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=8 type=1 insize=3754 outsize=6061 kw= pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=3754 outsize=1353 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=4203 outsize=4142 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=4203 outsize=4166 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=4203 outsize=4223 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=4203 outsize=1493 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=4203 outsize=1493 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=4203 outsize=4841 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=3970 outsize=4142 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=3970 outsize=4166 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=3970 outsize=1120 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=3970 outsize=4296 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=3970 outsize=1336 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=3970 outsize=1336 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=3012 outsize=5387 kw= pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=3012 outsize=963 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=3012 outsize=5818 kw=FOG_EXP2 pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=3012 outsize=1102 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=3012 outsize=1102 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=3012 outsize=1102 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=8 type=1 insize=3012 outsize=5306 kw=FOG_EXP2 pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=2559 outsize=855 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=2559 outsize=864 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=2559 outsize=5614 kw=FOG_EXP pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=2559 outsize=2663 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=2559 outsize=2663 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=2559 outsize=2663 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=3093 outsize=5387 kw= pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=3093 outsize=963 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=3093 outsize=5818 kw=FOG_EXP2 pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=3093 outsize=1037 kw= pd= ok=1
+Cmd: compileSnippet
+  api=8 type=1 insize=3093 outsize=5314 kw=FOG_LINEAR pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=8 type=1 insize=3093 outsize=5314 kw=FOG_EXP2 pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=2726 outsize=698 kw= pd= ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=2684 outsize=3898 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=2684 outsize=880 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=2684 outsize=901 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=8 type=1 insize=2684 outsize=3534 kw= pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=2684 outsize=754 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=8 type=1 insize=2684 outsize=3924 kw=FOG_EXP2 pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=2906 outsize=5338 kw= pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=2906 outsize=3979 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=8 type=1 insize=2906 outsize=4591 kw= pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=2906 outsize=1021 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=8 type=1 insize=2906 outsize=4981 kw=FOG_EXP2 pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=2733 outsize=3898 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=2733 outsize=3923 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=2733 outsize=3979 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=2733 outsize=1018 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=2733 outsize=1018 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=2733 outsize=1018 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=3605 outsize=1090 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=3605 outsize=1099 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=3605 outsize=6094 kw=FOG_EXP pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=3605 outsize=4792 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=3605 outsize=1511 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=3605 outsize=4792 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=3489 outsize=1090 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=3489 outsize=1099 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=3489 outsize=1120 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=3489 outsize=6183 kw=FOG_EXP2 pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=3489 outsize=1353 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=8 type=1 insize=3489 outsize=6451 kw=FOG_EXP pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=3997 outsize=1090 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=3997 outsize=1099 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=3997 outsize=1120 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=3997 outsize=4223 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=3997 outsize=4841 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=3997 outsize=1493 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=3997 outsize=1493 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=3705 outsize=4142 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=3705 outsize=1099 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=3705 outsize=6094 kw=FOG_EXP pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=3705 outsize=1336 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=3705 outsize=4296 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=3705 outsize=1336 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=2801 outsize=3947 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=2801 outsize=5728 kw=FOG_EXP pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=2801 outsize=1102 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=2801 outsize=1102 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=2801 outsize=1102 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=8 type=1 insize=2801 outsize=5306 kw=FOG_EXP2 pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=2427 outsize=855 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=2427 outsize=864 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=2427 outsize=5614 kw=FOG_EXP pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=2427 outsize=2663 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=2427 outsize=2663 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=2427 outsize=757 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=2882 outsize=3947 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=2882 outsize=5728 kw=FOG_EXP pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=2882 outsize=3533 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=2882 outsize=1098 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=2882 outsize=1098 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=2552 outsize=871 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=2552 outsize=880 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=2552 outsize=901 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=2552 outsize=5769 kw=FOG_EXP2 pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=2552 outsize=754 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=2552 outsize=754 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=2552 outsize=2671 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=2774 outsize=3898 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=2774 outsize=5679 kw=FOG_EXP pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=2774 outsize=3346 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=2774 outsize=1021 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=2774 outsize=3346 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=2425 outsize=3858 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=2425 outsize=5614 kw=FOG_EXP pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=2425 outsize=701 kw= pd= ok=1
+Cmd: compileSnippet
+  api=8 type=1 insize=2425 outsize=3916 kw=FOG_LINEAR pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=3142 outsize=4093 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=3142 outsize=4118 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=3142 outsize=4174 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=3142 outsize=3435 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=3142 outsize=3435 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=3142 outsize=3435 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=3656 outsize=5655 kw= pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=3656 outsize=1100 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=3656 outsize=6086 kw=FOG_EXP2 pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=4 type=1 insize=3656 outsize=4109 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=3656 outsize=1256 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=3656 outsize=1256 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=4 type=0 insize=2702 outsize=3898 kw=FOG_LINEAR pd= ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=2702 outsize=880 kw=FOG_EXP pd= ok=1
+Cmd: compileSnippet
+  api=1 type=0 insize=2702 outsize=901 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=8 type=0 insize=2702 outsize=5769 kw=FOG_EXP2 pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=8 type=1 insize=2702 outsize=4574 kw= pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
+Cmd: compileSnippet
+  api=1 type=1 insize=2702 outsize=1018 kw=FOG_EXP2 pd= ok=1
+Cmd: compileSnippet
+  api=8 type=1 insize=2702 outsize=4964 kw=FOG_EXP2 pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
 Unhandled exception: Readfile from pipe failed. GLE=The pipe has been ended.
 
 

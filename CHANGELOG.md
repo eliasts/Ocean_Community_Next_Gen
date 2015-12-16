@@ -1,3 +1,14 @@
+16/12/205
+
+- Changed the bump and foam scrolling in the shaders. WaveOffset speed parameter has been removed.
+- Improved specularity in the shaders.
+- Added extra shaders with alpha support.
+- Added shader with Reflection and alpha.
+- Added extra lod materials to support the new alpha shaders.
+- Simplified the far lod shaders to improve performance.
+- The buoyancy editor saves now also boat controller parameters if the boat controller is attached to the object.
+
+
 15/12/2015 second part
 
 - Uploaded project with 'Library' folder to avoid losing prefab connections.

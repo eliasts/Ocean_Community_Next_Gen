@@ -158,7 +158,7 @@ public class Boyancy : MonoBehaviour {
 				lastvisible = visible;
 			}
 
-
+			//prevent use of gravity when buoyancy is disabled
 			if(cvisible) {
 				if(useGravity) {
 					if(!visible) {
