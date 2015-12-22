@@ -6,7 +6,7 @@
   (You can define the shore length and the shore foam power.)
 - Shaders calculate their own linear fog (if enabled). This was done to save shader instructions.
    (That means that only linear fog is valid now. Use the fog far and fog near in the unity editor to set the values.)
-- Fog can be switched on on or off per lod.
+- Fog can be switched on or off per lod.
 - Added the ability to display only fog color after a certain range. (Called distance cancellation.) Can be switched on or off per lod.
 - Added Specular Power slider. (Specular didn't had power factor before.)
 - Fresnel calculations have been simplified in the shaders to reduce shader instructions.
