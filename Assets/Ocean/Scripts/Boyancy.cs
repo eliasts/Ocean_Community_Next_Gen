@@ -4,6 +4,7 @@ using System.Collections.Generic;
 public class Boyancy : MonoBehaviour {
 
 	private Ocean ocean;
+	public int renderQueue;
 
 	public bool useFixedUpdate = false;
 	public bool moreAccurate = false;
@@ -63,6 +64,8 @@ public class Boyancy : MonoBehaviour {
 				_renderer = GetComponentInChildren<Renderer>();
 			}
 		}
+
+		if(_renderer && renderQueue>0) _renderer.material.renderQueue = renderQueue;
 
 		if(!_renderer) {
 			if(cvisible) { Debug.Log("Renderer to check visibility not assigned."); cvisible = false; }
@@ -145,7 +148,7 @@ public class Boyancy : MonoBehaviour {
 
 			visible = _renderer.isVisible;
 
-			//put object on the correct heigth of the sea surface when it has visibilty checks on and it became visible again.
+			//put object on the correct height of the sea surface when it has visibilty checks on and it became visible again.
 			if(visible != lastvisible) {
 				if(visible && !lastvisible) {
 					if(Time.frameCount-lastFrame>15) {
@@ -190,8 +193,7 @@ public class Boyancy : MonoBehaviour {
 						if(ocean.canCheckBuoyancyNow) {
 							float off = 0;
 								if(ocean.choppy_scale>0) off = ocean.GetChoppyAtLocation(wpos.x, wpos.z);
-							if(moreAccurate) {
-									
+							if(moreAccurate) {	
 								buyancy = magnitude * (wpos.y - ocean.GetWaterHeightAtLocation2 (wpos.x-off, wpos.z));
 							}else {
 								buyancy = magnitude * (wpos.y - ocean.GetWaterHeightAtLocation (wpos.x-off, wpos.z));

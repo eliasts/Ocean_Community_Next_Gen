@@ -30,9 +30,6 @@
  */
 
 using System;
-using System.Diagnostics;
-using System.IO;
-using System.Text;
 
 	/// <summary>
 	/// <p>Static functions for doing various Fourier Operations.</p>
@@ -44,14 +41,6 @@ using System.Text;
 		private Fourier() {
 		}
 
-		//======================================================================================
-
-		static private void Swap( ref ComplexF a, ref ComplexF b ) {
-			ComplexF temp = a;
-			a = b;
-			b = temp;
-		}
-		
 		//-------------------------------------------------------------------------------------
 		
 		private const int	cMaxLength	= 4096;
@@ -165,8 +154,7 @@ using System.Text;
 		
 		static private int[][]	_reversedBits	= new int[ cMaxBits ][];
 		static private int[]		GetReversedBits( int numberOfBits ) {
-			//Debug.Assert( numberOfBits >= cMinBits );
-			//Debug.Assert( numberOfBits <= cMaxBits );
+
 			if( _reversedBits[ numberOfBits - 1 ] == null ) {
 				int		maxBits = Pow2( numberOfBits );
 				int[]	reversedBits = new int[ maxBits ];
@@ -189,13 +177,8 @@ using System.Text;
 
 
 		static private void ReorderArray( ComplexF[] data ) {
-			//Debug.Assert( data != null );
 
 			int length = data.Length;
-			 
-			//Debug.Assert(IsPowerOf2( length ) == true );
-			//Debug.Assert( length >= cMinLength );
-			//Debug.Assert( length <= cMaxLength );
 
 			int[] reversedBits = GetReversedBits( Log2( length ) );
 			for( int i = 0; i < length; i ++ ) {
@@ -239,14 +222,11 @@ using System.Text;
 		private static	float[,][]	_uILookupF	= null;
 
 		private static void	SyncLookupTableLength( int length ) {
-			////Debug.Assert( length < 1024*10 );
-			////Debug.Assert( length >= 0 );
 			if( length > _lookupTabletLength ) {
 				int level = (int) Math.Ceiling( Math.Log( length, 2 ) );
 				InitializeReverseBits( level );
 				InitializeComplexRotations( level );
-				//_cFFTData	= new Complex[ Math2.CeilingBase( length, 2 ) ];
-				//_cFFTDataF	= new ComplexF[ Math2.CeilingBase( length, 2 ) ];
+
 				_lookupTabletLength = length;
 			}
 		}
@@ -265,8 +245,6 @@ using System.Text;
 		
 		private static void InitializeComplexRotations( int levels ) {
 			int ln = levels;
-			//_wRLookup = new float[ levels + 1, 2 ];
-			//_wILookup = new float[ levels + 1, 2 ];
 			
 			_uRLookup = new float[ levels + 1, 2 ][];
 			_uILookup = new float[ levels + 1, 2 ][];
@@ -332,35 +310,22 @@ using System.Text;
 
 		//======================================================================================
 		
-		//static private bool			_bufferCFLocked	= false;
 		static private ComplexF[]	_bufferCF		= new ComplexF[ 0 ];
 
 		static private void		LockBufferCF( int length, ref ComplexF[] buffer ) {
-			//Debug.Assert( length >= 0 );
-			////Debug.Assert( _bufferCFLocked == false );
 			
-			//_bufferCFLocked = true;
 			if( length != _bufferCF.Length ) {
 				_bufferCF	= new ComplexF[ length ];
 			}
 			buffer =	_bufferCF;
 		}
 		static private void		UnlockBufferCF( ref ComplexF[] buffer ) {
-			//Debug.Assert( _bufferCF == buffer );
-			////Debug.Assert( _bufferCFLocked == true );
-			
-			//_bufferCFLocked = false;
 			buffer = null;
 		}
 
 
 
 		private static void	LinearFFT_Quick( ComplexF[] data, int start, int inc, int length, FourierDirection direction ) {
-			/*//Debug.Assert( data != null );
-			//Debug.Assert( start >= 0 );
-			//Debug.Assert( inc >= 1 );
-			//Debug.Assert( length >= 1 );
-			//Debug.Assert( ( start + inc * ( length - 1 ) ) < data.Length );	*/
 			
 			// copy to buffer
 			ComplexF[]	buffer = null;
@@ -393,17 +358,6 @@ using System.Text;
 		/// <param name="length"></param>
 		/// <param name="direction"></param>
 		public static void	FFT( ComplexF[] data, int length, FourierDirection direction ) {
-		/*
-			if( data == null ) {
-				throw new ArgumentNullException( "data" );
-			}
-			if( data.Length < length ) {
-				throw new ArgumentOutOfRangeException( "length", length, "must be at least as large as 'data.Length' parameter" );
-			}
-			if( IsPowerOf2( length ) == false ) {
-				throw new ArgumentOutOfRangeException( "length", length, "must be a power of 2" );
-			}*/
-
 
 			SyncLookupTableLength( length );
 
@@ -460,21 +414,8 @@ using System.Text;
 		/// <param name="yLength"></param>
 		/// <param name="direction"></param>
 		public static void	FFT2( ComplexF[] data, int xLength, int yLength, FourierDirection direction ) {
-/*
-			if( data == null ) {
-				throw new ArgumentNullException( "data" );
-			}
-			if( data.Length < xLength*yLength ) {
-				throw new ArgumentOutOfRangeException( "data.Length", data.Length, "must be at least as large as 'xLength * yLength' parameter" );
-			}
-			if( IsPowerOf2( xLength ) == false ) {
-				throw new ArgumentOutOfRangeException( "xLength", xLength, "must be a power of 2" );
-			}
-			if( IsPowerOf2( yLength ) == false ) {
-				throw new ArgumentOutOfRangeException( "yLength", yLength, "must be a power of 2" );
-			}
-*/
-			int xInc = 1;
+
+		int xInc = 1;
 			int yInc = xLength;
 
 			if( xLength > 1 ) {

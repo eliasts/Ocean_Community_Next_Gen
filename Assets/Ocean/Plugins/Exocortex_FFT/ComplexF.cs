@@ -30,8 +30,6 @@
  */
 
 using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 
 // Comments? Questions? Bugs? Tell Ben Houston at ben@exocortex.org
 // Version: May 4, 2002
@@ -39,7 +37,6 @@ using System.Runtime.InteropServices;
 /// <summary>
 /// <p>A single-precision complex number representation.</p>
 /// </summary>
-[StructLayout(LayoutKind.Sequential)]
 public struct ComplexF {
 
 	//-----------------------------------------------------------------------------------
@@ -82,7 +79,6 @@ public struct ComplexF {
 		return c;
 	}
 
-
 	//-----------------------------------------------------------------------------------
 
 	/// <summary>
@@ -121,7 +117,7 @@ public struct ComplexF {
 	/// </summary>
 	/// <returns></returns>
 	public override int		GetHashCode() {
-		return	( this.Re.GetHashCode() ^ this.Im.GetHashCode() );
+		return	(Re.GetHashCode() ^ Im.GetHashCode() );
 	}
 
 	/// <summary>
@@ -174,8 +170,8 @@ public struct ComplexF {
 	/// <param name="f"></param>
 	/// <returns></returns>
 	public static ComplexF operator*( ComplexF a, float f ) {
-		a.Re	= (float)( a.Re * f );
-		a.Im	= (float)( a.Im * f );
+		a.Re	= a.Re * f;
+		a.Im	= a.Im * f;
 		return a;
 	}
 
@@ -188,10 +184,10 @@ public struct ComplexF {
 	/// <returns></returns>
 	public static ComplexF operator*( ComplexF a, ComplexF b ) {
 		// (x + yi)(u + vi) = (xu – yv) + (xv + yu)i. 
-		double	x = a.Re, y = a.Im;
-		double	u = b.Re, v = b.Im;
-		a.Re	= (float)( x*u - y*v );
-		a.Im	= (float)( x*v + y*u );
+		float	x = a.Re, y = a.Im;
+		float	u = b.Re, v = b.Im;
+		a.Re	= x * u - y * v;
+		a.Im	= x * v + y * u;
 		return a;
 	}
 
@@ -205,8 +201,8 @@ public struct ComplexF {
 		if( f == 0 ) {
 			throw new DivideByZeroException();
 		}
-		a.Re	= (float)( a.Re / f );
-		a.Im	= (float)( a.Im / f );
+		a.Re	= a.Re / f;
+		a.Im	= a.Im / f;
 		return a;
 	}
 

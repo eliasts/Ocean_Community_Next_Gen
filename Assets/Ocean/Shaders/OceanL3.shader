@@ -4,8 +4,9 @@ Shader "Mobile/OceanL3" {
 	    _WaterColor ("WaterColor", Color) = (1,1,1,1)
 
 		_Specularity ("Specularity", Range(0.01,1)) = 0.3
+		_SpecPower("Specularity Power", Range(0,1)) = 1
 
-		_SunColor ("SunColor", Color) = (1,1,0.901,1)
+		[HideInInspector] _SunColor ("SunColor", Color) = (1,1,0.901,1)
 
 		_Refraction ("Refraction (RGB)", 2D) = "white" {}
 		_Reflection ("Reflection (RGB)", 2D) = "white" {}
@@ -14,9 +15,13 @@ Shader "Mobile/OceanL3" {
 		_FoamFactor("Foam Factor", Range(0,3)) = 1.8
 		_Size ("UVSize", Float) = 0.015625//this is the best value (1/64) to have the same uv scales of normal and foam maps on all ocean sizes
 		_FoamSize ("FoamUVSize", Float) = 2//tiling of the foam texture
-		_SunDir ("SunDir", Vector) = (0.3, -0.6, -1, 0)
+		[HideInInspector]  _SunDir ("SunDir", Vector) = (0.3, -0.6, -1, 0)
 
-		_FakeUnderwaterColor ("Water Color LOD1", Color) = (0.196, 0.262, 0.196, 1)
+		[NoScaleOffset] _FoamGradient ("Foam gradient ", 2D) = "white" {}
+		_ShoreDistance("Shore Distance", Range(0,20)) = 4
+		_ShoreStrength("Shore Strength", Range(1,4)) = 1.5
+
+		_DistanceCancellation ("Distance Cancellation", Float) = 2000
 	}
 
 		//water bump/foam/refelection/refraction
@@ -27,7 +32,10 @@ Shader "Mobile/OceanL3" {
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
-			#pragma multi_compile_fog
+			//#pragma multi_compile_fog
+			#pragma multi_compile SHORE_ON SHORE_OFF
+			#pragma multi_compile FOGON FOGOFF
+			#pragma multi_compile DCON	DCOFF
 
 			#pragma target 2.0
 
@@ -37,17 +45,30 @@ Shader "Mobile/OceanL3" {
     			float4 pos : SV_POSITION;
     			half4  projTexCoord : TEXCOORD0;
     			float3  bumpTexCoord : TEXCOORD1;
-    			half3  viewDir : TEXCOORD2;
+				#ifdef SHORE_ON
+				float4 ref : TEXCOORD2;
+				#endif
     			half3  objSpaceNormal : TEXCOORD3;
     			half3  lightDir : TEXCOORD4;
 				float2 buv : TEXCOORD5;
 				half3 normViewDir : TEXCOORD6;
-				UNITY_FOG_COORDS(7)
+				//UNITY_FOG_COORDS(7)
+				#ifdef FOGON
+				half2 dist : TEXCOORD7;
+				#endif
 			};
 
 			half _Size;
-			half _FoamSize;
+			half _FoamFactor;
 			half4 _SunDir;
+			#ifdef FOGON
+ 			uniform half4 unity_FogStart;
+			uniform half4 unity_FogEnd;
+			uniform half4 unity_FogDensity;
+			#ifdef DCON
+			half _DistanceCancellation;
+			#endif
+			#endif
 
 			v2f vert (appdata_tan v) {
     			v2f o;
@@ -57,7 +78,7 @@ Shader "Mobile/OceanL3" {
 
     			o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
 
-				o.bumpTexCoord.z = v.tangent.w;
+				o.bumpTexCoord.z = v.tangent.w * _FoamFactor;
  
   				half4 projSource = half4(v.vertex.x, 0.0, v.vertex.z, 1.0);
     			half4 tmpProj = mul( UNITY_MATRIX_MVP, projSource);
@@ -70,14 +91,28 @@ Shader "Mobile/OceanL3" {
 				half3x3 rotation = half3x3( v.tangent.xyz, binormal, v.normal );
     
     			o.objSpaceNormal = v.normal;
-    			o.viewDir = mul(rotation, objSpaceViewDir);
+    			half3 viewDir = mul(rotation, objSpaceViewDir);
     			o.lightDir = mul(rotation, half3(_SunDir.xyz));
 
 				o.buv = float2(o.bumpTexCoord.x + _CosTime.x * 0.2, o.bumpTexCoord.y + _SinTime.x * 0.3);
 
-				o.normViewDir = normalize(o.viewDir);
-                
-				UNITY_TRANSFER_FOG(o, o.pos);
+				o.normViewDir = normalize(viewDir);
+
+   	  			#ifdef SHORE_ON
+				o.ref = ComputeScreenPos(o.pos);
+				#endif
+				             
+				#ifdef FOGON
+				//manual fog
+				half fogDif = 1.0/(unity_FogEnd.x - unity_FogStart.x);
+				o.dist.x = (unity_FogEnd.x - length(o.pos.xyz)) * fogDif;
+				#ifdef DCON
+				o.dist.y = (unity_FogEnd.x - _DistanceCancellation) * fogDif;
+				#endif
+                #endif
+
+				//autofog
+				//UNITY_TRANSFER_FOG(o, o.pos);
 
     			return o;
 			}
@@ -86,50 +121,82 @@ Shader "Mobile/OceanL3" {
 			sampler2D _Reflection;
 			sampler2D _Bump;
 			sampler2D _Foam;
-			half _FoamFactor;
+			half _FoamSize;
+			#ifdef SHORE_ON
+			uniform sampler2D _CameraDepthTexture;
+			half _ShoreDistance;
+			half _ShoreStrength;
+			#endif
 			half4 _SurfaceColor;
 			half4 _WaterColor;
 			half _Specularity;
+			half _SpecPower;
 			half4 _SunColor;
 
 			half4 frag (v2f i) : COLOR {
-				//float foamStrength = i.bumpTexCoord.z * _FoamFactor;
+				#ifdef FOGON
+				#ifdef DCON
+				if(i.dist.x>i.dist.y){
+				#endif
+				#endif
 
-				half foam = clamp(tex2D(_Foam, -i.buv.xy *_FoamSize)  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z * _FoamFactor;
+					half foam = clamp(tex2D(_Foam, -i.buv.xy *_FoamSize)  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z;
 								
-				half3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2.0) -1;
-				half3 tangentNormal = normalize(tangentNormal0);
+					half3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2.5) -1;
+					half3 tangentNormal = normalize(tangentNormal0);
 
-				half4 result = half4(0, 0, 0, 1);
+					half4 result = half4(0, 0, 0, 1);
 
-				half2 bumpSampleOffset = (i.objSpaceNormal.xz  + tangentNormal.xy) * 0.05  + i.projTexCoord.xy;// + projTexCoord.xy
+					half2 bumpSampleOffset = (i.objSpaceNormal.xz  + tangentNormal.xy) * 0.05  + i.projTexCoord.xy;// + projTexCoord.xy
 	
-				half3 reflection = tex2D( _Reflection,  bumpSampleOffset) * _SurfaceColor  ;
-				half3 refraction = tex2D( _Refraction,  bumpSampleOffset ) * _WaterColor ;
+					half3 reflection = tex2D( _Reflection,  bumpSampleOffset) * _SurfaceColor  ;
+					half3 refraction = tex2D( _Refraction,  bumpSampleOffset ) * _WaterColor ;
 
-				half fresnelLookup = dot(tangentNormal, i.normViewDir);
+					//half fresnelLookup = dot(tangentNormal, i.normViewDir);
+					//float bias = 0.06;
+					//float power = 4.0;
+					//half fresnelTerm = 0.06 + (1.0 - 0.06)*pow(1.0 - fresnelLookup, 4);
 
-				//float bias = 0.06;
-				//float power = 4.0;
-				half fresnelTerm = 0.06 + (1.0 - 0.06)*pow(1.0 - fresnelLookup, 4);
+					half fresnelTerm = 1.0 - saturate(dot (i.normViewDir, tangentNormal0));
 
-				half3 floatVec = normalize(i.normViewDir - normalize(i.lightDir));
+					half3 floatVec = normalize(i.normViewDir - normalize(i.lightDir));
 
-				half specular = pow(max(dot(floatVec,  tangentNormal) , 0.0), 250.0 * _Specularity ) *(1.2-foam);
+					half specular = pow(max(dot(floatVec,  tangentNormal) , 0.0), 250.0 * _Specularity )  * _SpecPower;
 
-				//simple
-				//result.rgb = lerp(refraction, reflection, fresnelTerm)+ clamp(foam, 0.0, 1.0) + specular;
+					//SHORELINES
+					#ifdef SHORE_ON
+					float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+					float intensityFactor = 1 - saturate((zdepth - i.ref.z) / _ShoreDistance);  
+					half foamColor = tex2D(_Foam, i.buv.xy ).r ;//* reflection.b 
+					foam += _ShoreStrength * intensityFactor * foamColor ;
+					#endif
+					//simple
+					//result.rgb = lerp(refraction, reflection, fresnelTerm)+ clamp(foam, 0.0, 1.0) + specular;
 
-				//method1
-				//result.rgb = lerp(refraction, reflection, fresnelTerm) + clamp(foam, 0.0, 1.0)*_SunColor.b + specular;
-				//result.rgb *= _SunColor.rgb;
+					//method1
+					//result.rgb = lerp(refraction, reflection, fresnelTerm) + clamp(foam, 0.0, 1.0)*_SunColor.b + specular;
+					//result.rgb *= _SunColor.rgb;
 
-				//method2
-				result.rgb = lerp(refraction, reflection, fresnelTerm)*_SunColor.rgb + clamp(foam, 0.0, 1.0)*_SunColor.b + specular*_SunColor.rgb;
+					//method2
+					result.rgb = lerp(refraction, reflection, fresnelTerm)*_SunColor.rgb + clamp(foam, 0.0, 1.0)*_SunColor.b + specular*_SunColor.rgb;
 
-				UNITY_APPLY_FOG(i.fogCoord, result); 
+					//fog
+					//UNITY_APPLY_FOG(i.fogCoord, result); 
 
-    			return result;
+					#ifdef FOGON
+					//manual fog (linear) (reduces instructions on d3d9)
+					float ff = saturate(i.dist.x);
+					result.rgb = lerp(unity_FogColor.rgb, result.rgb, ff);
+					#endif
+
+    				return result;
+				#ifdef FOGON
+				#ifdef DCON
+				}else{
+					return unity_FogColor;
+				}
+				#endif
+				#endif
 			}
 
 			ENDCG

@@ -6,15 +6,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-#if !UNITY_WEBGL
+#if !UNITY_WEBGL && !UNITY_WEBPLAYER
 using System.Threading;
 #endif
 
 
-
 public class Ocean : MonoBehaviour {
-
-	//Old method variables (some are shared with newer methods)
 
 	public int _mode;//mobile or desktop mode (todo)
 	public string _name;//the name of the ocean preset
@@ -47,8 +44,11 @@ public class Ocean : MonoBehaviour {
 	//this applies only if the spread job over x frames is used!
 	public bool canCheckBuoyancyNow;
 
+	//the renderqueue of the tiles materials
+	public int renderQueue = 3000;
+
 	private Vector3 centerOffset;
-	#if !UNITY_WEBGL
+	#if !UNITY_WEBGL && !UNITY_WEBPLAYER
 	private Thread th0, th0b, th1,th1b, th2, th3, th3b;
 	bool start;
 	#endif
@@ -82,7 +82,7 @@ public class Ocean : MonoBehaviour {
 
 	private bool previousFogState;
 	private Color previousFogColor;
-	private float previousFogDensity;
+	private float previousFogDensity, previousFogNear, previousFogFar;
 	private FogMode previousFogMode;
 
     public static Ocean Singleton { get; private set; }
@@ -123,6 +123,9 @@ public class Ocean : MonoBehaviour {
 	public Material[] mat = new Material[3];
 
 	private bool mat1HasRefl, mat1HasRefr, mat2HasRefl, mat2HasRefr;
+	public bool hasShore=true, hasShore1=false;
+	public bool hasFog=true, hasFog1=true, hasFog2=true, distCan1=true, distCan2=true;
+	public float cancellationDistance = 2000f;
 
 	public bool followMainCamera = true;
 	//this is hardcoded 
@@ -160,6 +163,7 @@ public class Ocean : MonoBehaviour {
 	private Vector3[] vertices;
 	private Vector3[] normals;
 	private Vector4[] tangents;
+
 	public Transform player;
 	public Transform sun;
 	public Vector4 SunDir;
@@ -169,7 +173,11 @@ public class Ocean : MonoBehaviour {
 	private Color oldSunColor;
 
 	public float specularity = 0.185f;
+	public float specPower = 1f;
 	public float reflectivity = 1f;
+	public float translucency = 1f;
+	public float shoreDistance = 4f;
+	public float shoreStrength = 1.5f;
 
 	public float foamFactor = 1.1f;
 	public Color surfaceColor = new Color (0.3f, 0.5f, 0.3f, 1.0f);
@@ -207,33 +215,36 @@ public class Ocean : MonoBehaviour {
 	private Vector3 mv2;
 
 
+
     void Awake() {
         Singleton = this;
+		//Application.targetFrameRate = 120;
 
 		mat[0] = material;
 		mat[1] = material1;
 		mat[2] = material2;
-
-		//Application.targetFrameRate = 120;
     }
 
 
     void Start () {
-		#if !UNITY_WEBGL
+		#if !UNITY_WEBGL && !UNITY_WEBPLAYER
 		start = false;
 		#endif
 		ticked = false;  start2= false;
+
 
 		previousFogState = RenderSettings.fog;
 		previousFogColor = RenderSettings.fogColor;
 		previousFogDensity = RenderSettings.fogDensity;
 		previousFogMode = RenderSettings.fogMode;
+		previousFogNear = RenderSettings.fogStartDistance;
+		previousFogFar = RenderSettings.fogEndDistance;
 
 		setSpread();
 
 		sunLight = sun.GetComponent<Light>();
 
-		bounds = new Bounds(new Vector3(size.x/2f,0f,size.z/2f),new Vector3(size.x+size.x*0.12f,0,size.z+size.z*0.12f));
+		bounds = new Bounds(new Vector3(size.x/2f,0f,size.z/2f),new Vector3(size.x+size.x*0.15f,0,size.z+size.z*0.15f));
 
 		wh = width*height;
 
@@ -347,10 +358,9 @@ public class Ocean : MonoBehaviour {
 		//n0 = new ComplexF[n_width * n_height];
 		
 		InitWaveGenerator();
-		UpdateWaterColor ();
+		matSetVars ();
 		GenerateHeightmap ();
 		StartCoroutine(AddMist());
-		shader_LOD(!shaderLod, material, numberLods);
 		preallocateBuffers();
 
 		mv2 = new Vector3 (size.x, 0.0f, 0.0f);
@@ -360,7 +370,7 @@ public class Ocean : MonoBehaviour {
 		Fourier.FFT2 (data, width, height, FourierDirection.Backward);
 		Fourier2.FFT2 (t_x, width, height, FourierDirection.Backward);
 		calcPhase3();
-		#if !UNITY_WEBGL
+		#if !UNITY_WEBGL && !UNITY_WEBPLAYER
 		calcPhase4();
 		#else
 		calcPhase4N();
@@ -383,7 +393,7 @@ public class Ocean : MonoBehaviour {
 	void Update (){
 
 		if(!fixedUpdate) {
-			#if THREADS && !UNITY_WEBGL
+			#if THREADS && !UNITY_WEBGL && !UNITY_WEBPLAYER
 				if(spreadAlongFrames) updWithThreads(); else updNoThreads();
 			#else
 				updNoThreads();
@@ -402,7 +412,7 @@ public class Ocean : MonoBehaviour {
 
 
 
-	#if !UNITY_WEBGL
+	#if !UNITY_WEBGL && !UNITY_WEBPLAYER
 	void updWithThreads() {
 
 		int fint = Time.frameCount % everyXframe;
@@ -490,10 +500,10 @@ public class Ocean : MonoBehaviour {
 	}
 
 
-	
 
 	void calcComplex(float time, int ha, int hb) {
 		ComplexF coeffA = new ComplexF(0,0);
+		ComplexF tmp = new ComplexF(0,0);
 		for (int y = ha; y<hb; y++) {
 			for (int x = 0; x<width; x++) {
 				int idx = width * y + x;
@@ -516,7 +526,8 @@ public class Ocean : MonoBehaviour {
 				int nx = x > 0 ? width - x : 0;
 
 				data [idx] = h0 [idx] * coeffA + h0[width * ny + nx].GetConjugate() * coeffB;
-				t_x [idx] = data [idx] * new ComplexF (0.0f, vec_kx) - data [idx] * vec_ky;
+				tmp.Im = vec_kx;
+				t_x [idx] = data [idx] * tmp - data [idx] * vec_ky;
 
 				// Choppy wave calculations
 				if (x + y > 0)
@@ -524,6 +535,7 @@ public class Ocean : MonoBehaviour {
 			}
 		}
 	}
+		
 
 	void calcPhase3() {
 		float scaleB = waveScale / wh;
@@ -604,7 +616,7 @@ public class Ocean : MonoBehaviour {
 
 
 
-	#if !UNITY_WEBGL
+	#if !UNITY_WEBGL && !UNITY_WEBPLAYER
 	void calcPhase4() {
 		 
 		calculateCenterOffset();
@@ -974,6 +986,35 @@ public class Ocean : MonoBehaviour {
 		}
 	}
 
+	//Runtime switching of ocean settings. (It is called after every loadPreset.)
+	void matSetVars() {
+		material.shader = oceanShader;
+
+		for(int i=0; i<3; i++) {
+			if(mat[i]!= null) {
+				mat[i].SetColor("_WaterColor", waterColor); 
+				mat[i].SetColor("_SurfaceColor", surfaceColor);
+				mat[i].SetColor("_FakeUnderwaterColor", fakeWaterColor); 
+				mat[i].SetFloat("_FoamFactor", foamFactor);
+				mat[i].SetFloat ("_FoamSize", foamUV);
+				mat[i].SetFloat ("_Size", 0.015625f * bumpUV);
+				mat[i].SetFloat("_WaterLod1Alpha", shaderAlpha);
+				mat[i].SetFloat("_Specularity", specularity);
+				mat[i].SetFloat("_SpecPower", specPower);
+				mat[i].SetFloat("_ShoreDistance", shoreDistance);
+				mat[i].SetFloat("_ShoreStrength", shoreStrength);
+				mat[i].SetFloat("_Translucency", translucency);
+				mat[i].SetFloat("_DistanceCancellation", cancellationDistance);
+				mat[i].renderQueue = renderQueue;
+				shader_LOD(!shaderLod, material, numberLods);
+			}
+		}
+
+		switchKeyword(mat[0], "SHORE_ON","SHORE_OFF", hasShore); switchKeyword(mat[1], "SHORE_ON","SHORE_OFF", hasShore1);
+		switchKeyword(mat[0], "FOGON","FOGOFF", hasFog); switchKeyword(mat[1], "FOGON","FOGOFF", hasFog1); switchKeyword(mat[2], "FOGON","FOGOFF", hasFog2);
+		switchKeyword(mat[1], "DCON","DCOFF", distCan1); switchKeyword(mat[2], "DCON","DCOFF", distCan2);
+	}
+
 
 	/*
     Prepares the scene for offscreen rendering; spawns a camera we'll use for for
@@ -982,20 +1023,15 @@ public class Ocean : MonoBehaviour {
     */
 	void SetupOffscreenRendering () {
 
-		//set the uv scaling of normal and foam maps to 1/64 so they scale the same on all sizes!
-		if(material!=null) { material.SetFloat ("_Size", 0.015625f * bumpUV); material.SetFloat ("_FoamSize", foamUV); material.SetFloat("_WaterLod1Alpha", shaderAlpha); }
+		matSetVars();
+
 		mat1HasRefl=false; mat1HasRefr=false; mat2HasRefl=false; mat2HasRefr=false;
 
 		if(material1 != null) {
-			material1.SetFloat ("_Size", 0.015625f * bumpUV);
-			material1.SetFloat ("_FoamSize", foamUV);
-			material1.SetFloat("_WaterLod1Alpha", shaderAlpha);
 			if(material1.HasProperty("_Reflection")) { mat1HasRefl=true; }
 			if(material1.HasProperty("_Refraction")) { mat1HasRefr=true; }
 		}
 		if(material2 != null) {
-			material2.SetFloat ("_Size", 0.015625f * bumpUV);
-			material.SetFloat("_WaterLod1Alpha", shaderAlpha);
 			if(material2.HasProperty("_Reflection")) { mat2HasRefl=true; }
 			if(material2.HasProperty("_Refraction")) { mat2HasRefr=true;  }
 		}
@@ -1004,7 +1040,7 @@ public class Ocean : MonoBehaviour {
 		//covering the watertiles so we get a decent bounding box, then
 		//scale all the vertices to 0 to make it invisible.
 		gameObject.AddComponent (typeof(MeshRenderer));
-        //GetComponent<Renderer>().material.renderQueue = 1001;
+        GetComponent<Renderer>().material.renderQueue = renderQueue;
         Renderer renderer = GetComponent<Renderer>();
         renderer.receiveShadows = false;
         renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
@@ -1084,15 +1120,18 @@ public class Ocean : MonoBehaviour {
 		
 		// find out the reflection plane: position and normal in world space
 		Vector3 pos = transform.position;
-		Vector3 normal = transform.up;
+		Vector3 normal =  transform.up;
 
 		UpdateCameraModes( cam, reflectionCamera );
 		UpdateCameraModes( cam, refractionCamera );
 
+		//a hack for now
 		if(reflectivity<1f) {
+			RenderSettings.fogMode = FogMode.Linear;
 			RenderSettings.fog = true;
 			RenderSettings.fogColor = surfaceColor*0.5f;
-			RenderSettings.fogDensity = 1f-reflectivity;
+			RenderSettings.fogEndDistance = 3000f;
+			RenderSettings.fogStartDistance = -(1f-reflectivity)*20000f;
 		}
 		
 		// Render reflection if needed
@@ -1151,10 +1190,12 @@ public class Ocean : MonoBehaviour {
 		}
 
 		if(reflectivity<1f) {
+			RenderSettings.fogMode = previousFogMode;
 			RenderSettings.fog = previousFogState;
 			RenderSettings.fogColor = previousFogColor;
 			RenderSettings.fogDensity = previousFogDensity;
-			RenderSettings.fogMode = previousFogMode;
+			RenderSettings.fogStartDistance = previousFogNear;
+			RenderSettings.fogEndDistance = previousFogFar;
 		}
 	}
 
@@ -1185,16 +1226,12 @@ public class Ocean : MonoBehaviour {
 		// set water camera to clear the same way as current camera
 		dest.clearFlags = src.clearFlags;
 		dest.backgroundColor = src.backgroundColor;		
-		if( src.clearFlags == CameraClearFlags.Skybox )
-		{
+		if( src.clearFlags == CameraClearFlags.Skybox )	{
 			Skybox sky = src.GetComponent(typeof(Skybox)) as Skybox;
 			Skybox mysky = dest.GetComponent(typeof(Skybox)) as Skybox;
-			if( !sky || !sky.material )
-			{
+			if( !sky || !sky.material )	{
 				mysky.enabled = false;
-			}
-			else
-			{
+			}else {
 				mysky.enabled = true;
 				mysky.material = sky.material;
 			}
@@ -1217,8 +1254,7 @@ public class Ocean : MonoBehaviour {
 		
 		if(this.renderReflection){
 			// Reflection render texture
-			if( !m_ReflectionTexture || m_OldReflectionTextureSize != renderTexWidth )
-			{
+			if( !m_ReflectionTexture || m_OldReflectionTextureSize != renderTexWidth ) {
 				if( m_ReflectionTexture ) DestroyImmediate( m_ReflectionTexture );
 				m_ReflectionTexture = new RenderTexture( renderTexWidth, renderTexHeight, 16 );
 				m_ReflectionTexture.name = "__WaterReflection" + GetInstanceID();
@@ -1269,6 +1305,8 @@ public class Ocean : MonoBehaviour {
 		}
 	}
 
+
+
 	// Given position/normal of the plane, calculates plane in camera space.
 	private Vector4 CameraSpacePlane (Camera cam, Vector3 pos, Vector3 normal, float sideSign) {
 		Vector3 offsetPos = pos + normal * m_ClipPlaneOffset;
@@ -1312,7 +1350,7 @@ public class Ocean : MonoBehaviour {
 		}else{
 			OnDisable(); 
 			if(oceanShader!=null)  oceanShader.maximumLOD = defaultLOD;
-			//disable refraction and reflection for shaderlods != 4
+			//disable refraction and reflection for shaderlods < 4
 			if(defaultLOD<4) {
 				renderReflection = false;
 				renderRefraction = false;
@@ -1357,14 +1395,17 @@ public class Ocean : MonoBehaviour {
 		}
     }
 
-	public void UpdateWaterColor() {
-		for(int i=0; i<3; i++) { if(mat[i]!=null) { mat[i].SetColor("_WaterColor", waterColor); mat[i].SetColor("_SurfaceColor", surfaceColor); mat[i].SetColor("_FakeUnderwaterColor", fakeWaterColor); }  }
-	}
 
 	void Mist (bool isActive) {
 		mistEnabled = isActive;	
 	}
 
+	void switchKeyword (Material _mat, string keyword1, string keyword2, bool on){
+		if(_mat) {
+			if(on) { _mat.EnableKeyword(keyword1);  _mat.DisableKeyword(keyword2); }
+			else { _mat.EnableKeyword(keyword2);  _mat.DisableKeyword(keyword1); }
+		 }
+	}
 
 	public bool loadPreset(string preset, bool runtime = false) {
 		if(File.Exists(preset)) {
@@ -1465,8 +1506,30 @@ public class Ocean : MonoBehaviour {
 
 				if(br.BaseStream.Position != br.BaseStream.Length) shaderAlpha = br.ReadSingle();
 				if(br.BaseStream.Position != br.BaseStream.Length) reflectivity = br.ReadSingle();
+				if(br.BaseStream.Position != br.BaseStream.Length) translucency = br.ReadSingle();
+				if(br.BaseStream.Position != br.BaseStream.Length) shoreDistance = br.ReadSingle();
+				if(br.BaseStream.Position != br.BaseStream.Length) shoreStrength = br.ReadSingle();
+				if(br.BaseStream.Position != br.BaseStream.Length) specPower = br.ReadSingle();
+
+				if(br.BaseStream.Position != br.BaseStream.Length) {
+					string nm = br.ReadString();
+					if(nm!= null) {Shader shd = Shader.Find(nm);  if(shd && material) { material.shader = shd; oceanShader = shd; } }
+				}
+
+				if(br.BaseStream.Position != br.BaseStream.Length) hasShore = br.ReadBoolean();
+				if(br.BaseStream.Position != br.BaseStream.Length) hasShore1 = br.ReadBoolean();
+				if(br.BaseStream.Position != br.BaseStream.Length) hasFog = br.ReadBoolean();
+				if(br.BaseStream.Position != br.BaseStream.Length) hasFog1 = br.ReadBoolean();
+				if(br.BaseStream.Position != br.BaseStream.Length) hasFog2 = br.ReadBoolean();
+				if(br.BaseStream.Position != br.BaseStream.Length) distCan1 = br.ReadBoolean();
+				if(br.BaseStream.Position != br.BaseStream.Length) distCan2 = br.ReadBoolean();
+				if(br.BaseStream.Position != br.BaseStream.Length) cancellationDistance = br.ReadSingle();
 
 				setSpread();
+
+				//UPDATE ALL VALUES (except tile settings) FOR STANDALONE RUNTIME !!!
+				matSetVars();
+
 				return true;
 			}
 		} else {Debug.Log(preset+" does not exist..."); return false;}

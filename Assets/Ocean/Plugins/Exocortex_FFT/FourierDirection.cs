@@ -30,8 +30,6 @@
  */
 
 
-using System;
-
 	// Comments? Questions? Bugs? Tell Ben Houston at ben@exocortex.org
 	// Version: May 4, 2002
 

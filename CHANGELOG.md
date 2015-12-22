@@ -1,3 +1,25 @@
+22/12/2015 Major update
+
+- Shaders almost totally rewritten.
+- Added per vertex translucency shader lod.
+- Added shore line foam support (It can be switched on of by code or by the editor, per lod).
+  (You can define the shore length and the shore foam power.)
+- Shaders calculate their own linear fog (if enabled). This was done to save shader instructions.
+   (That means that only linear fog is valid now. Use the fog far and fog near in the unity editor to set the values.)
+- Fog can be switched on on or off per lod.
+- Added the ability to display only fog color after a certain range. (Called distance cancellation.) Can be switched on or off per lod.
+- Added Specular Power slider. (Specular didn't had power factor before.)
+- Fresnel calculations have been simplified in the shaders to reduce shader instructions.
+- Added the ability to set render queues for the ocean and the boats. This is useful if you don't want to show shore foam around the boat.
+- Reordered and revamped the inspector.
+- Simplified the Exocortex plugin even more.
+- Added more materials and ocean presets to demonstrate the new features.
+- Added a new scene with an island to test the shore foam.   
+
+issues: 	1. If you set the render queue of the boat to 2501 and higher to avoid the shore foam around it you lose shadows.
+			2. If you have a render queue that shows foam around the boat some white pixels appear around the silhouette of the boat.
+			    That is because the depth buffer is used. Will look to smooth this out in a next update.
+
 16/12/2015 second part
 
 - Added ability to adjust the reflection strength.

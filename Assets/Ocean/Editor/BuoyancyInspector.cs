@@ -43,6 +43,15 @@ public class BuoyancyInspector  : Editor{
 		DrawSeparator();
 
 		EditorGUILayout.BeginHorizontal();
+		EditorGUILayout.LabelField("Render Queue", GUILayout.MaxWidth(130));
+		boyancy.renderQueue = EditorGUILayout.IntField(boyancy.renderQueue);
+		GUILayout.Space(175);
+		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
+			EditorUtility.DisplayDialog("Material Render Queue","Set the object's material render queue to something that suits you. Useful for not showing shore lines under boat.","OK");
+		}
+
+		EditorGUILayout.EndHorizontal();
+		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("More Accurate", GUILayout.MaxWidth(130));
 		boyancy.moreAccurate = EditorGUILayout.Toggle(boyancy.moreAccurate);
 		GUILayout.Space(175);
@@ -316,6 +325,8 @@ public class BuoyancyInspector  : Editor{
 					} else {
 						swr.Write(false);//bool
 					}
+
+					swr.Write(boyancy.renderQueue);//int
 				}
 
 			}
@@ -400,6 +411,7 @@ public class BuoyancyInspector  : Editor{
 								}
 							}
 							
+							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.renderQueue = br.ReadInt32();
 
 							//try to asign a renderer for visibility checks if there is none assigned in the boyancy inspector.
 							if(boyancy._renderer == null) {

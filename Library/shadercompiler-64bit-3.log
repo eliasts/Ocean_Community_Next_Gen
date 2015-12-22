@@ -1,14 +1,6 @@
-Base path: C:/Program Files/Unity5.3/Editor/Data
-Pipe name: \\.\pipe\UnityShaderCompiler-64bit-3-772
+Base path: C:/Program Files/Unity/Editor/Data
+Pipe name: \\.\pipe\UnityShaderCompiler-64bit-3-4848
 Cmd: getPlatforms
-Cmd: compileSnippet
-  api=4 type=0 insize=3982 outsize=4142 kw=FOG_LINEAR pd= ok=1
-Cmd: compileSnippet
-  api=8 type=0 insize=3982 outsize=6094 kw=FOG_EXP pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
-Cmd: compileSnippet
-  api=1 type=1 insize=3982 outsize=1493 kw=FOG_LINEAR pd= ok=1
-Cmd: compileSnippet
-  api=8 type=1 insize=3982 outsize=7313 kw=FOG_EXP pd=UNITY_NO_SCREENSPACE_SHADOWS UNITY_NO_LINEAR_COLORSPACE ok=1
 Unhandled exception: Readfile from pipe failed. GLE=The pipe has been ended.
 
 

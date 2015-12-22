@@ -25,6 +25,8 @@ public class BoatController : MonoBehaviour{
 	private float accel=0;
 	private float accelBreak;
 
+
+
      void Start()  {
        // base.Start();
 
@@ -34,6 +36,8 @@ public class BoatController : MonoBehaviour{
 	  accelBreak = m_FinalSpeed*0.3f;
 
 		initPosition ();
+
+
 	}
 
 	public void initPosition()	{
