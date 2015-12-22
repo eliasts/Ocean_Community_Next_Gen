@@ -2,7 +2,7 @@
 
 - Shaders almost totally rewritten.
 - Added per vertex translucency shader lod.
-- Added shore line foam support (It can be switched on of by code or by the editor, per lod).
+- Added shore line foam support (It can be switched on off by code or by the editor, per lod).
   (You can define the shore length and the shore foam power.)
 - Shaders calculate their own linear fog (if enabled). This was done to save shader instructions.
    (That means that only linear fog is valid now. Use the fog far and fog near in the unity editor to set the values.)
