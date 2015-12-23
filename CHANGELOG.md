@@ -1,4 +1,4 @@
-** 22/12/2015 Major update **
+**22/12/2015 Major update**
 
 - Shaders almost totally rewritten.
 - Added per vertex translucency shader lod.
