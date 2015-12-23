@@ -1098,7 +1098,7 @@ public void DrawHalfSeparator(bool left = true) {
 			Texture2D tex = back;
 			Rect rect = GUILayoutUtility.GetLastRect();
 			GUI.color = new Color(0.6f, 0.6f, 0.6f, 1f);
-			GUI.DrawTexture(new Rect(0f, rect.yMin + 6f, Screen.width, Screen.height+14), tex);
+			GUI.DrawTexture(new Rect(0f, rect.yMin + 6f, Screen.width, 930), tex);
 			GUI.color = Color.white;
 		}
 	}
