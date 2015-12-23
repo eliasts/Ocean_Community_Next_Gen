@@ -20,7 +20,7 @@ issues: 	1. If you set the render queue of the boat to 2501 and higher to avoid 
 			2. If you have a render queue that shows foam around the boat some white pixels appear around the silhouette of the boat.
 			    That is because the depth buffer is used. Will look to smooth this out in a next update.
 
-** 16/12/2015 second part **
+**16/12/2015 second part**
 
 - Added ability to adjust the reflection strength.
 - Fixed some issues with the new alpha shader switching.
@@ -28,7 +28,7 @@ issues: 	1. If you set the render queue of the boat to 2501 and higher to avoid 
 - Updated and added more presets.
 
 
-** 16/12/2015 **
+**16/12/2015**
 
 - Changed the bump and foam scrolling in the shaders. WaveOffset speed parameter has been removed.
 - Improved specularity in the shaders.
@@ -39,7 +39,7 @@ issues: 	1. If you set the render queue of the boat to 2501 and higher to avoid 
 - The buoyancy editor saves now also boat controller parameters if the boat controller is attached to the object.
 
 
-** 15/12/2015 second part **
+**15/12/2015 second part**
 
 - Uploaded project with 'Library' folder to avoid losing prefab connections.
 - Small bug fixes.
@@ -50,7 +50,7 @@ issues: 	1. If you set the render queue of the boat to 2501 and higher to avoid 
 - Vector Normalization performance increase.
 
 
-** 15/12/2015 **
+**15/12/2015**
 
 - Major Bugfix in the buoyancy script. Now Buoyancy will work much better.
 - Buoyancy fixes on boats to work well with various sizes of the ocean.
@@ -62,14 +62,14 @@ issues: 	1. If you set the render queue of the boat to 2501 and higher to avoid 
 - Now the ocean materials  are saved in the ocean presets. This required to put them in the Resources folder!
 
 
-** 13/12/2015 Hotfix update **
+**13/12/2015 Hotfix update**
 
 - I had to rewrite the Get water height and get choppiness functions. They had some bugs and were not accurate enough.
 - Added an option to the buoyancy script to use a more accurate but slower function.
 - The simple buoyant object can work also with rigidbodies now.
 
 
-** 12/12/2015 Major update **
+**12/12/2015 Major update**
 
 - Buoyancy has been rewritten with very good and fast results.
 - Custom inspector for buoyancy with additional variables.
@@ -82,7 +82,7 @@ issues: 	1. If you set the render queue of the boat to 2501 and higher to avoid 
 - The Editor Inspector has been improved and prepared for the future additions.
 
 
-** 09/12/2015 **
+**09/12/2015**
 
 - Improved the multithreading code a lot. Now the 2 frame spread gets a 14% speed increase and the 3 frame spread gets an 11% speed increase. The rest stays the same.
 - Fixed a bug where when using 2 shader lods the 1st lod material wouldn't get assigned.
@@ -94,7 +94,7 @@ issues: 	1. If you set the render queue of the boat to 2501 and higher to avoid 
 - added mask mesh to the fishing boat.
 
 
-** 08/12/2015 **
+**08/12/2015**
 
  - Restructured the multithreading code.
  - made the FFT plugin multithreading friendly.
@@ -105,7 +105,7 @@ issues: 	1. If you set the render queue of the boat to 2501 and higher to avoid 
  - The ocean is now precalculated at the Start() function. This eliminates the annoyance having the boats jumping ugly at the beginning, because now they find their position on the sea.
  
 
-** 06/12/2015 **
+**06/12/2015**
 
   - Ability to skip renders of reflection/refraction. Since reflection and refraction are not easy for the eye to catch their changes, we can update them every x frames to gain performance.
     (this gives around 10-20% speed increase, but depends on the complexity of the rendered reflection/refraction layer.)
@@ -148,7 +148,7 @@ issues: 	1. If you set the render queue of the boat to 2501 and higher to avoid 
   
   
 
-** 05/12/2015 **
+**05/12/2015**
 The shaders got one more overhaul, by removing yet more unnecessary calculations and by moving calculations from the fragment to the vertex shader.
 This gives room to squeeze in translucency and/or shadows on the hq shader lod.
 
@@ -160,7 +160,7 @@ In general compared to the old system my old XperiaS went from 12 fps to 30 fps.
 
 
 
-** 05/12/2015 **
+**05/12/2015**
 - Some extra optimizations.
 
 - Ability to save and load presets of oceans. This will save you a lot of time.
@@ -186,7 +186,7 @@ You can load the preset also on runtime, but some of the variables (like grid si
 
 
 
-** 02/12/2015 **
+**02/12/2015**
 Modifications on the Ocean.cs file.
 
 Besides the visibility checks, i am spreading the wave calculations among x frames and also added support for multi-threading.
@@ -216,7 +216,7 @@ OCEAN SCRIPT:
 
 
 
-** 01/12/2015 **
+**01/12/2015**
 Optimized Ocean.cs script.
 
 - It updates in realtime the sun light color.
