@@ -43,7 +43,7 @@ public class OceanGeneratorInspector : Editor {
 
 	private string[] defShader = {"default lod","1 (alpha)","2","3","4","5","6 (alpha)","7 (alpha)","8(translucent)"};
 	private string[] skiplods = {"off","1","2","3","4"};
-	private string[] tileSize = {"8","16","32","64","128"};
+	private string[] tileSize = {"8x8","16x16","32x32","64x64","128x128"};
 	private string[] mode = {"Mobile Setting","Desktop Setting"};
 	private string[] discSize = {"small", "medium", "large"};
 	public static string[] presets, presetpaths;
