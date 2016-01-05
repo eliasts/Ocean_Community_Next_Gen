@@ -23,7 +23,8 @@
 - On most devices, when the forward rendering path is used, the depth is not drawn and the shore foam is not working. So I added a forceDepth flag for the main Camera.
   (See this post: http://forum.unity3d.com/threads/depth-texture-not-working-on-some-devices.319568/ )
 - Added more comments in the code.
-
+- The native plugin use the kiss_fft lib: http://sourceforge.net/projects/kissfft/ (bsd license)
+- 
 **22/12/2015 Major update**
 
 - Shaders almost totally rewritten.
