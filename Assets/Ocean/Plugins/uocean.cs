@@ -1,0 +1,192 @@
+﻿#if NATIVE
+
+using System;
+using System.Runtime.InteropServices;
+using UnityEngine;
+
+
+public class uocean  {
+
+#if (UNITY_IOS || UNITY_IPHONE || UNITY_WEBGL) && !UNITY_EDITOR
+
+        [DllImport("__Internal")]
+		public static extern void UoceanInit( int w, int h, float wx, float wy, float wvspd, float wvscl, float chop, float sx, float sy, float sz);
+
+		[DllImport("__Internal")]
+		public static extern void UInit( int w, int h, float wx, float wy, float wvspd, float wvscl, float chop, float sx, float sy, float sz);
+
+		[DllImport("__Internal")]
+		public static extern void InitWaveGenerator();
+
+		[DllImport("__Internal")]
+		public static extern void UoceanClear();
+
+		//set the number of threads for native multithreaded functions (android and Linux).
+		//for all the other platforms(except webgl and webplayer) set this to >1 to have parallelization. If set to 1 no parallelization will be used.
+		[DllImport("__Internal")]
+		public static extern void setThreads(int threads);
+
+		[DllImport("__Internal")]
+		protected static extern void calcComplex(IntPtr data, IntPtr tx, float time, int ha, int hb);
+
+		[DllImport("__Internal")]
+		protected static extern void fft1(IntPtr data);
+
+		[DllImport("__Internal")]
+		protected static extern void fft2(IntPtr tx);
+
+		[DllImport("__Internal")]
+		protected static extern void calcPhase3b(IntPtr data, IntPtr tx, IntPtr vrt, IntPtr baseH, IntPtr normals, IntPtr tangents, bool rre, IntPtr canCheck, float scaleA);
+
+		[DllImport("__Internal")]
+		protected static extern void calcPhase4b(IntPtr vrt, IntPtr tangents, IntPtr floats, bool player, IntPtr pos);
+
+		[DllImport("__Internal")]
+		protected static extern void updateTilesA(IntPtr vrtLOD, IntPtr vrt, IntPtr tangentsLOD, IntPtr tangents, IntPtr normalsLOD, IntPtr normals, int L0D, float farLodOffset, IntPtr flodoffset, float flodFact);
+
+		[DllImport("__Internal")]
+		protected static extern void getHeightBatchV(IntPtr data, int size, IntPtr Vec3);
+
+		[DllImport("__Internal")]
+		protected static extern void getChoppyBatchV(IntPtr data, int size, IntPtr Vec3);
+
+		[DllImport("__Internal")]
+		protected static extern void getHeightChoppyBatchV(IntPtr data, int size, IntPtr Vec3);
+
+#endif
+
+#if UNITY_EDITOR_LINUX
+	private const string libname = "libocean";
+#endif
+	
+#if UNITY_EDITOR_WIN || UNITY_EDITOR_OSX || UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_ANDROID || UNITY_WSA || (UNITY_STANDALONE_LINUX && !UNITY_EDITOR_LINUX)
+	private const string libname = "ocean";
+#endif
+
+#if UNITY_EDITOR || UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_ANDROID || UNITY_STANDALONE_LINUX || UNITY_WSA
+
+        [DllImport(libname, EntryPoint = "UoceanInit")]
+		public static extern void UoceanInit( int w, int h, float wx, float wy, float wvspd, float wvscl, float chop, float sx, float sy, float sz);
+
+		[DllImport(libname, EntryPoint = "UInit")]
+		public static extern void UInit( int w, int h, float wx, float wy, float wvspd, float wvscl, float chop, float sx, float sy, float sz);
+
+		[DllImport(libname, EntryPoint = "InitWaveGenerator")]
+		public static extern void InitWaveGenerator();
+
+		[DllImport(libname, EntryPoint = "UoceanClear")]
+		public static extern void UoceanClear();
+
+		//set the number of threads for native multithreaded functions (android and Linux).
+		//for all the other platforms(except webgl and webplayer) set this to >1 to have parallelization. If set to 1 no parallelization will be used.
+		[DllImport(libname, EntryPoint = "setThreads")]
+		public static extern void setThreads(int threads);
+
+		[DllImport(libname, EntryPoint = "calcComplex")]
+		protected static extern void calcComplex(IntPtr data, IntPtr tx, float time, int ha, int hb);
+
+		[DllImport(libname, EntryPoint = "fft1")]
+		protected static extern void fft1(IntPtr data);
+
+		[DllImport(libname, EntryPoint = "fft2")]
+		protected static extern void fft2(IntPtr tx);
+
+		[DllImport(libname, EntryPoint = "calcPhase3b")]
+		protected static extern void calcPhase3b(IntPtr data, IntPtr tx, IntPtr vrt, IntPtr baseH, IntPtr normals, IntPtr tangents, bool rre, IntPtr canCheck, float scaleA);
+
+		[DllImport(libname, EntryPoint = "calcPhase4b")]
+		protected static extern void calcPhase4b(IntPtr vrt, IntPtr tangents, IntPtr floats, bool player, IntPtr pos);
+
+		[DllImport(libname, EntryPoint = "updateTilesA")]
+		protected static extern void updateTilesA(IntPtr vrtLOD, IntPtr vrt, IntPtr tangentsLOD, IntPtr tangents, IntPtr normalsLOD, IntPtr normals, int L0D, float farLodOffset, IntPtr flodoffset, float flodFact);
+
+		[DllImport(libname, EntryPoint = "getHeightBatchV")]
+		protected static extern void getHeightBatchV(IntPtr data, int size, IntPtr Vec3);
+
+		[DllImport(libname, EntryPoint = "getChoppyBatchV")]
+		protected static extern void getChoppyBatchV(IntPtr data, int size, IntPtr Vec3);
+
+		[DllImport(libname, EntryPoint = "getHeightChoppyBatchV")]
+		protected static extern void getHeightChoppyBatchV(IntPtr data, int size, IntPtr Vec3);
+
+#endif
+		//feed it with a Vector3 array where x and z are the input positions. Y will get the Height.
+		public static void _getHeightBatch(ComplexF[] dt, ref Vector3[] outpos) {
+			GCHandle dtbuf = GCHandle.Alloc(dt, GCHandleType.Pinned);
+			GCHandle obuf = GCHandle.Alloc(outpos, GCHandleType.Pinned);
+			getHeightBatchV(dtbuf.AddrOfPinnedObject(), outpos.Length,  obuf.AddrOfPinnedObject());
+			dtbuf.Free();  obuf.Free();
+		}
+
+		//feed it with a Vector3 array where x and z are the input positions. Y will get the chopiness offset.
+		public static void _getChoppyBatch(ComplexF[] dt, ref Vector3[] outpos) {
+			GCHandle dtbuf = GCHandle.Alloc(dt, GCHandleType.Pinned);
+			GCHandle obuf = GCHandle.Alloc(outpos, GCHandleType.Pinned);
+			getChoppyBatchV(dtbuf.AddrOfPinnedObject(), outpos.Length, obuf.AddrOfPinnedObject());
+			dtbuf.Free(); obuf.Free();
+		}
+		
+		//get the true height, considering choppy waves, in one go. Faster then having to use the above 2 functions.
+		//feed it with a Vector3 array where x and z are the input positions. Y will get the Height.
+		public static void _getHeightChoppyBatch(ComplexF[] dt, ref Vector3[] outpos) {
+			GCHandle dtbuf = GCHandle.Alloc(dt, GCHandleType.Pinned);
+			GCHandle obuf = GCHandle.Alloc(outpos, GCHandleType.Pinned);
+			getHeightChoppyBatchV(dtbuf.AddrOfPinnedObject(), outpos.Length,  obuf.AddrOfPinnedObject());
+			dtbuf.Free(); obuf.Free();
+		}
+
+		public static void _calcComplex(ComplexF[] dt, ComplexF[] tx,  float time, int ha, int hb) {
+			GCHandle dtbuf = GCHandle.Alloc(dt, GCHandleType.Pinned);
+			GCHandle txbuf = GCHandle.Alloc(tx, GCHandleType.Pinned);
+			calcComplex(dtbuf.AddrOfPinnedObject(), txbuf.AddrOfPinnedObject(), time, ha, hb);			
+			dtbuf.Free(); txbuf.Free();
+		}
+
+		public static void _fft1(ComplexF[] dt) {
+			GCHandle dtbuf = GCHandle.Alloc(dt, GCHandleType.Pinned);
+			fft1(dtbuf.AddrOfPinnedObject());			
+			dtbuf.Free();
+		}
+
+		public static void _fft2(ComplexF[] tx) {
+			GCHandle txbuf = GCHandle.Alloc(tx, GCHandleType.Pinned);
+			fft2(txbuf.AddrOfPinnedObject());			
+			txbuf.Free();
+		}
+
+		public static void _calcPhase3(ComplexF[] dt, ComplexF[] tx,  Vector3[] vrt, Vector3[] baseH, Vector3[] normals, Vector4[] tangents, bool rre, byte[] canCheck, float scaleA) {
+			GCHandle dtbuf = GCHandle.Alloc(dt, GCHandleType.Pinned);
+			GCHandle txbuf = GCHandle.Alloc(tx, GCHandleType.Pinned);
+			GCHandle vbuf = GCHandle.Alloc(vrt, GCHandleType.Pinned);
+			GCHandle bbuf = GCHandle.Alloc(baseH, GCHandleType.Pinned);
+			GCHandle nbuf = GCHandle.Alloc(normals, GCHandleType.Pinned);
+			GCHandle tbuf = GCHandle.Alloc(tangents, GCHandleType.Pinned);
+			GCHandle cbuf = GCHandle.Alloc(canCheck, GCHandleType.Pinned);
+			calcPhase3b(dtbuf.AddrOfPinnedObject(), txbuf.AddrOfPinnedObject(), vbuf.AddrOfPinnedObject(), bbuf.AddrOfPinnedObject(), nbuf.AddrOfPinnedObject(), tbuf.AddrOfPinnedObject(), rre, cbuf.AddrOfPinnedObject(), scaleA );		
+			dtbuf.Free(); txbuf.Free(); vbuf.Free(); bbuf.Free(); nbuf.Free(); tbuf.Free(); cbuf.Free();
+		}
+
+		public static void _calcPhase4b(Vector3[] vrt, Vector4[] tangents, float[] floats, bool player, Vector3[] pos) {
+			GCHandle vbuf = GCHandle.Alloc(vrt, GCHandleType.Pinned);
+			GCHandle tbuf = GCHandle.Alloc(tangents, GCHandleType.Pinned);
+			GCHandle fbuf = GCHandle.Alloc(floats, GCHandleType.Pinned);
+			GCHandle pbuf = GCHandle.Alloc(pos, GCHandleType.Pinned);
+			calcPhase4b( vbuf.AddrOfPinnedObject(), tbuf.AddrOfPinnedObject(), fbuf.AddrOfPinnedObject(), player, pbuf.AddrOfPinnedObject() );		
+			vbuf.Free(); tbuf.Free(); fbuf.Free(); pbuf.Free();
+		}
+
+		public static void _updateTilesA(Vector3[] vrtLOD,  Vector3[] vrt, Vector4[] tangentsLOD,  Vector4[] tangents,Vector3[] normalsLOD, Vector3[]  normals, int L0D, float farLodOffset, float[] flodoffset, float flodFact) {
+			GCHandle v1 = GCHandle.Alloc(vrtLOD, GCHandleType.Pinned);
+			GCHandle v2 = GCHandle.Alloc(vrt, GCHandleType.Pinned);
+			GCHandle t1 = GCHandle.Alloc(tangentsLOD, GCHandleType.Pinned);
+			GCHandle t2= GCHandle.Alloc(tangents, GCHandleType.Pinned);
+			GCHandle n1 = GCHandle.Alloc(normalsLOD, GCHandleType.Pinned);
+			GCHandle n2 = GCHandle.Alloc(normals, GCHandleType.Pinned);
+			GCHandle f1 = GCHandle.Alloc(flodoffset, GCHandleType.Pinned);
+			updateTilesA(v1.AddrOfPinnedObject(), v2.AddrOfPinnedObject(), t1.AddrOfPinnedObject(), t2.AddrOfPinnedObject(), n1.AddrOfPinnedObject(), n2.AddrOfPinnedObject(), L0D, farLodOffset, f1.AddrOfPinnedObject(), flodFact );		
+			v1.Free(); v2.Free(); t1.Free(); t2.Free(); n1.Free(); n2.Free(); f1.Free();
+		}
+
+
+}
+#endif

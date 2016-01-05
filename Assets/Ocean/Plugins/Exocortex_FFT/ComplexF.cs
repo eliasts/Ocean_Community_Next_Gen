@@ -31,12 +31,18 @@
 
 using System;
 
+
 // Comments? Questions? Bugs? Tell Ben Houston at ben@exocortex.org
 // Version: May 4, 2002
 
 /// <summary>
 /// <p>A single-precision complex number representation.</p>
 /// </summary>
+
+//using System.Runtime.InteropServices;
+//[StructLayout(LayoutKind.Sequential)]
+//unsafe public struct ComplexF {
+
 public struct ComplexF {
 
 	//-----------------------------------------------------------------------------------
@@ -61,8 +67,8 @@ public struct ComplexF {
 	/// <param name="real"></param>
 	/// <param name="imaginary"></param>
 	public ComplexF( float real, float imaginary ) {
-		this.Re		= real;
-		this.Im	= imaginary;
+		Re = real;
+		Im = imaginary;
 	}
 
 
@@ -74,8 +80,8 @@ public struct ComplexF {
 	/// <returns></returns>
 	static public ComplexF	FromRealImaginary( float real, float imaginary ) {
 		ComplexF c;
-		c.Re		= real;
-		c.Im = imaginary;
+		c.Re	= real;
+		c.Im	= imaginary;
 		return c;
 	}
 

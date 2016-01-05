@@ -1,3 +1,10 @@
+
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/Assets/AssetStoreTools*
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
@@ -49,5 +56,10 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-#Ignore these directories
+# Unity3D generated meta files
+*.pidb.meta
 
+# Unity3D Generated File On Crash Reports
+sysinfo.txt
+
+#Ignore these directories

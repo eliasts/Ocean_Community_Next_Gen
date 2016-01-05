@@ -150,7 +150,8 @@ Shader "Mobile/Ocean" {
 			half4 frag (v2f i) : COLOR {
 
 				//foam
-				half foam = clamp( tex2D(_Foam,  -i.buv.xy*_FoamSize)*tex2D(_Foam, i.buv.zy*_FoamSize) -0.15, 0.0, 1.0) * i.bumpTexCoord.z ;
+				half _foam =  tex2D(_Foam, -i.buv.xy  *_FoamSize).r;
+				half foam = clamp( _foam  * tex2D(_Foam, i.buv.zy * _FoamSize).r -0.15, 0.0, 1.0)  * i.bumpTexCoord.z;
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 				//bumps			
@@ -161,15 +162,14 @@ Shader "Mobile/Ocean" {
 
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				//fresnel
-				#ifdef SHORE_ON
+				//#ifdef SHORE_ON
 				half fresnelTerm = 1.0 - saturate(dot (i.normViewDir, tangentNormal0));
-				#else
-				half fresnelLookup = dot(tangentNormal, i.normViewDir);
+				//#else
+				//half fresnelLookup = dot(tangentNormal, i.normViewDir);
 				//float bias = 0.06;
 				//float power = 4.0;
-				half fresnelTerm = 0.06 + (1.0 - 0.06)*pow(1.0 - fresnelLookup, 4);
-				//half fresnelTerm = UNITY_SAMPLE_1CHANNEL( _Fresnel, float2(fresnelLookup,fresnelLookup) );
-				#endif
+				//half fresnelTerm = 0.06 + (1.0 - 0.06)*pow(1.0 - fresnelLookup, 4);
+				//#endif
 
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				half3 floatVec = normalize(i.normViewDir - normalize(i.lightDir));
@@ -186,10 +186,9 @@ Shader "Mobile/Ocean" {
 				//SHORELINES
 				#ifdef SHORE_ON
 				float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
-				float intensityFactor = 1 - saturate((zdepth - i.ref.z) / _ShoreDistance);  
+				float intensityFactor = 1- saturate((zdepth- i.ref.z) / _ShoreDistance);  
 				half3 foamGradient = _ShoreStrength - tex2D(_FoamGradient, float2(intensityFactor - i.bumpTexCoord.w, 0) + tangentNormal.xy);
-				half foamColor = tex2D(_Foam, i.buv.xy ).r ;
-				foam += foamGradient * intensityFactor * foamColor;
+				foam += foamGradient * intensityFactor * _foam;
 				#endif
 				 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				 //translucency
@@ -336,7 +335,8 @@ Shader "Mobile/Ocean" {
 			half4 _FakeUnderwaterColor;
 
 			half4 frag (v2f i) : COLOR {
-				half foam = clamp( tex2D(_Foam, -i.buv.xy*_FoamSize)*tex2D(_Foam, i.buv.zy*_FoamSize) -0.15, 0.0, 1.0) * i.bumpTexCoord.z;
+				half _foam =  tex2D(_Foam, -i.buv.xy  *_FoamSize).r;
+				half foam = clamp( _foam * tex2D(_Foam, i.buv.zy * _FoamSize).r -0.15, 0.0, 1.0)  * i.bumpTexCoord.z;
 								
 				half3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2 )+( tex2D(_Bump, i.buv.zw) * 2 ) - 2 + (  tex2D(_FoamBump, i.bumpTexCoord.xy*_FoamSize)*4   - 1)*foam; 
 				half3 tangentNormal = normalize(tangentNormal0 );
@@ -348,15 +348,14 @@ Shader "Mobile/Ocean" {
 				half3 reflection = tex2D( _Reflection,  bumpSampleOffset) * _SurfaceColor *_FakeUnderwaterColor.a ;
 
 				//fresnel
-				#ifdef SHORE_ON
+				//#ifdef SHORE_ON
 				half fresnelTerm = 1.0 - saturate(dot (i.normViewDir, tangentNormal0));
-				#else
-				half fresnelLookup = dot(tangentNormal, i.normViewDir);
+				//#else
+				//half fresnelLookup = dot(tangentNormal, i.normViewDir);
 				//float bias = 0.06;
 				//float power = 4.0;
-				half fresnelTerm = 0.06 + (1.0 - 0.06)*pow(1.0 - fresnelLookup, 4);
-				//half fresnelTerm = UNITY_SAMPLE_1CHANNEL( _Fresnel, float2(fresnelLookup,fresnelLookup) );
-				#endif
+				//half fresnelTerm = 0.06 + (1.0 - 0.06)*pow(1.0 - fresnelLookup, 4);
+				//#endif
 
 				half3 floatVec = normalize(i.normViewDir - normalize(i.lightDir));
 
@@ -371,8 +370,7 @@ Shader "Mobile/Ocean" {
 				float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
 				float intensityFactor = 1 - saturate((zdepth - i.ref.z) / _ShoreDistance);  
 				half3 foamGradient = _ShoreStrength - tex2D(_FoamGradient, float2(intensityFactor - i.bumpTexCoord.w, 0) + tangentNormal.xy);
-				half foamColor = tex2D(_Foam, i.buv.xy ).r ;
-				foam += foamGradient * intensityFactor * foamColor;
+				foam += foamGradient * intensityFactor * _foam;
 				#endif
 
 				//method2
@@ -506,7 +504,8 @@ Shader "Mobile/Ocean" {
 
 			half4 frag (v2f i) : COLOR {
 
-				half foam = clamp(tex2D(_Foam, -i.buv.xy *_FoamSize)  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z;
+				half _foam = tex2D(_Foam, -i.buv.xy *_FoamSize).r;
+				half foam = clamp(_foam  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z;
 								
 				half3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2.0) + (tex2D(_Bump, i.buv.zw) * 2.0) - 2;
 				half3 tangentNormal = normalize(tangentNormal0 );
@@ -519,15 +518,14 @@ Shader "Mobile/Ocean" {
 
 
 				//fresnel
-				#ifdef SHORE_ON
+				//#ifdef SHORE_ON
 				half fresnelTerm = 1.0 - saturate(dot (i.normViewDir, tangentNormal0));
-				#else
-				half fresnelLookup = dot(tangentNormal, i.normViewDir);
+				//#else
+				//half fresnelLookup = dot(tangentNormal, i.normViewDir);
 				//float bias = 0.06;
 				//float power = 4.0;
-				half fresnelTerm = 0.06 + (1.0 - 0.06)*pow(1.0 - fresnelLookup, 4);
-				//half fresnelTerm = UNITY_SAMPLE_1CHANNEL( _Fresnel, float2(fresnelLookup,fresnelLookup) );
-				#endif
+				//half fresnelTerm = 0.06 + (1.0 - 0.06)*pow(1.0 - fresnelLookup, 4);
+				//#endif
 
 				half3 floatVec = normalize(i.normViewDir - normalize(i.lightDir));
 
@@ -542,8 +540,7 @@ Shader "Mobile/Ocean" {
 				float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
 				float intensityFactor = 1 - saturate((zdepth - i.ref.z) / _ShoreDistance);  
 				half3 foamGradient = _ShoreStrength - tex2D(_FoamGradient, float2(intensityFactor - i.bumpTexCoord.w, 0) + tangentNormal.xy);
-				half foamColor = tex2D(_Foam, i.buv.xy ).r ;
-				foam += foamGradient * intensityFactor * foamColor;
+				foam += foamGradient * intensityFactor * _foam;
 				#endif
 
 				//method2
@@ -618,7 +615,7 @@ Shader "Mobile/Ocean" {
 
 				o.bumpTexCoord.z = v.tangent.w * _FoamFactor;
 
-  				half4 projSource = half4(v.vertex.x, 0.0, v.vertex.z, 1.0);
+  				half4 projSource = half4(v.vertex.x, v.vertex.y, v.vertex.z, 1.0);
     			half4 tmpProj = mul( UNITY_MATRIX_MVP, projSource);
     			//o.projTexCoord = tmpProj;
 
@@ -677,7 +674,8 @@ Shader "Mobile/Ocean" {
 
 			half4 frag (v2f i) : COLOR {
 
-				half foam = clamp( tex2D(_Foam,  -i.buv.xy*_FoamSize)*tex2D(_Foam, i.buv.zy*_FoamSize) -0.15, 0.0, 1.0) * i.bumpTexCoord.z;
+				half _foam =  tex2D(_Foam, -i.buv.xy  *_FoamSize).r;
+				half foam = clamp( _foam * tex2D(_Foam, i.buv.zy * _FoamSize).r -0.15, 0.0, 1.0)  * i.bumpTexCoord.z;
 								
 				half3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2 )+( tex2D(_Bump, i.buv.zw) * 2 ) - 2 + (  tex2D(_FoamBump, i.bumpTexCoord.xy*_FoamSize)*4   - 1)*foam;
 				half3 tangentNormal = normalize(tangentNormal0 );
@@ -690,15 +688,14 @@ Shader "Mobile/Ocean" {
 				half3 refraction = tex2D( _Refraction,  bumpSampleOffset ) * _WaterColor ;
 
 				//fresnel
-				#ifdef SHORE_ON
+				//#ifdef SHORE_ON
 				half fresnelTerm = 1.0 - saturate(dot (i.normViewDir, tangentNormal0));
-				#else
-				half fresnelLookup = dot(tangentNormal, i.normViewDir);
+				//#else
+				//half fresnelLookup = dot(tangentNormal, i.normViewDir);
 				//float bias = 0.06;
 				//float power = 4.0;
-				half fresnelTerm = 0.06 + (1.0 - 0.06)*pow(1.0 - fresnelLookup, 4);
-				//half fresnelTerm = UNITY_SAMPLE_1CHANNEL( _Fresnel, float2(fresnelLookup,fresnelLookup) );
-				#endif
+				//half fresnelTerm = 0.06 + (1.0 - 0.06)*pow(1.0 - fresnelLookup, 4);
+				//#endif
 
 				half3 floatVec = normalize(i.normViewDir - normalize(i.lightDir));
 
@@ -713,8 +710,7 @@ Shader "Mobile/Ocean" {
 				float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
 				float intensityFactor = 1 - saturate((zdepth - i.ref.z) / _ShoreDistance);  
 				half3 foamGradient = _ShoreStrength - tex2D(_FoamGradient, float2(intensityFactor - i.bumpTexCoord.w, 0) + tangentNormal.xy);
-				half foamColor = tex2D(_Foam, i.buv.xy ).r ;
-				foam += foamGradient * intensityFactor * foamColor;
+				foam += foamGradient * intensityFactor * _foam;
 				#endif
 
 				//simple
@@ -850,7 +846,8 @@ Shader "Mobile/Ocean" {
 
 			half4 frag (v2f i) : COLOR {
 
-				half foam = clamp(tex2D(_Foam, -i.buv.xy *_FoamSize)  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z;
+				half _foam = tex2D(_Foam, -i.buv.xy *_FoamSize).r;
+				half foam = clamp(_foam  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z;
 								
 				half3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2.0) + (tex2D(_Bump, i.buv.zw) * 2.0) - 2;
 				half3 tangentNormal = normalize(tangentNormal0 );
@@ -863,15 +860,14 @@ Shader "Mobile/Ocean" {
 				half3 refraction = tex2D( _Refraction,  bumpSampleOffset ) * _WaterColor ;
 
 				//fresnel
-				#ifdef SHORE_ON
+				//#ifdef SHORE_ON
 				half fresnelTerm = 1.0 - saturate(dot (i.normViewDir, tangentNormal0));
-				#else
-				half fresnelLookup = dot(tangentNormal, i.normViewDir);
+				//#else
+				//half fresnelLookup = dot(tangentNormal, i.normViewDir);
 				//float bias = 0.06;
 				//float power = 4.0;
-				half fresnelTerm = 0.06 + (1.0 - 0.06)*pow(1.0 - fresnelLookup, 4);
-				//half fresnelTerm = UNITY_SAMPLE_1CHANNEL( _Fresnel, float2(fresnelLookup,fresnelLookup) );
-				#endif
+				//half fresnelTerm = 0.06 + (1.0 - 0.06)*pow(1.0 - fresnelLookup, 4);
+				//#endif
 
 				half3 floatVec = normalize(i.normViewDir - normalize(i.lightDir));
 
@@ -886,8 +882,7 @@ Shader "Mobile/Ocean" {
 				float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
 				float intensityFactor = 1 - saturate((zdepth - i.ref.z) / _ShoreDistance);  
 				half3 foamGradient = _ShoreStrength - tex2D(_FoamGradient, float2(intensityFactor - i.bumpTexCoord.w, 0) + tangentNormal.xy);
-				half foamColor = tex2D(_Foam, i.buv.xy ).r ;
-				foam += foamGradient * intensityFactor * foamColor;
+				foam += foamGradient * intensityFactor * _foam;
 				#endif
 
 				//simple
@@ -1021,17 +1016,17 @@ Shader "Mobile/Ocean" {
 				half4 result = half4(0, 0, 0, 1);
                 
 				//fresnel
-				#ifdef SHORE_ON
+				//#ifdef SHORE_ON
 				half fresnelTerm = 1.0 - saturate(dot (i.normViewDir, tangentNormal0));
-				#else
-				half fresnelLookup = dot(tangentNormal, i.normViewDir);
+				//#else
+				//half fresnelLookup = dot(tangentNormal, i.normViewDir);
 				//float bias = 0.06;
 				//float power = 4.0;
-				half fresnelTerm = 0.06 + (1.0 - 0.06)*pow(1.0 - fresnelLookup, 4);
-				//half fresnelTerm = UNITY_SAMPLE_1CHANNEL( _Fresnel, float2(fresnelLookup,fresnelLookup) );
-				#endif
+				//half fresnelTerm = 0.06 + (1.0 - 0.06)*pow(1.0 - fresnelLookup, 4);
+				//#endif
 
-				half foam = clamp(tex2D(_Foam, -i.buv.xy  *_FoamSize)  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z;
+				half _foam = tex2D(_Foam, -i.buv.xy *_FoamSize).r;
+				half foam = clamp(_foam  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z;
 
 				#ifdef SHORE_ON
 				half specular = pow(max(dot(i.floatVec,  tangentNormal) , 0.0), 250.0 * _Specularity ) * _SpecPower;
@@ -1044,8 +1039,7 @@ Shader "Mobile/Ocean" {
 				float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
 				float intensityFactor = 1 - saturate((zdepth - i.ref.z) / _ShoreDistance);  
 				half3 foamGradient = _ShoreStrength - tex2D(_FoamGradient, float2(intensityFactor - i.bumpTexCoord.w, 0) + tangentNormal.xy);
-				half foamColor = tex2D(_Foam, i.buv.xy ).r ;
-				foam += foamGradient * intensityFactor * foamColor;
+				foam += foamGradient * intensityFactor * _foam;
 				#endif
                 
 				result.rgb = lerp(_WaterColor*_FakeUnderwaterColor, _SunColor.rgb*_SurfaceColor*0.85, fresnelTerm*0.65) + clamp(foam.r, 0.0, 1.0)*_SunColor.b + specular*_SunColor.rgb;
@@ -1149,10 +1143,11 @@ Shader "Mobile/Ocean" {
 
 				half4 result = half4(0, 0, 0, 1);
                 
-				half fresnelLookup = dot(tangentNormal,i. normViewDir);
+				half fresnelTerm = 1.0 - saturate(dot (i.normViewDir, tangentNormal0));
+				//half fresnelLookup = dot(tangentNormal,i. normViewDir);
 				//float bias = 0.06;
 				//float power = 4.0;
-				half fresnelTerm = 0.06 + (1.0-0.06)*pow(1.0 - fresnelLookup, 4.0);
+				//half fresnelTerm = 0.06 + (1.0-0.06)*pow(1.0 - fresnelLookup, 4.0);
 
 				half specular = pow(max(dot(i.floatVec,  tangentNormal) , 0.0), 250.0 * _Specularity ) * _SpecPower;
                 
@@ -1280,17 +1275,18 @@ Shader "Mobile/Ocean" {
 				half4 result = half4(0, 0, 0, 1);
                 
 				//fresnel
-				#ifdef SHORE_ON
+				//#ifdef SHORE_ON
 				half fresnelTerm = 1.0 - saturate(dot (i.normViewDir, tangentNormal0));
-				#else
-				half fresnelLookup = dot(tangentNormal, i.normViewDir);
+				//#else
+				//half fresnelLookup = dot(tangentNormal, i.normViewDir);
 				//float bias = 0.06;
 				//float power = 4.0;
-				half fresnelTerm = 0.06 + (1.0 - 0.06)*pow(1.0 - fresnelLookup, 4);
+				//half fresnelTerm = 0.06 + (1.0 - 0.06)*pow(1.0 - fresnelLookup, 4);
 				//half fresnelTerm = UNITY_SAMPLE_1CHANNEL( _Fresnel, float2(fresnelLookup,fresnelLookup) );
-				#endif
+				//#endif
 
-				half foam = clamp(tex2D(_Foam, -i.buv.xy  *_FoamSize)  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z;
+				half _foam = tex2D(_Foam, -i.buv.xy *_FoamSize).r;
+				half foam = clamp(_foam  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z;
 
 				#ifdef SHORE_ON
 				half specular = pow(max(dot(i.floatVec,  tangentNormal) , 0.0), 250.0 * _Specularity ) * _SpecPower;
@@ -1303,8 +1299,7 @@ Shader "Mobile/Ocean" {
 				float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
 				float intensityFactor = 1 - saturate((zdepth - i.ref.z) / _ShoreDistance);  
 				half3 foamGradient = _ShoreStrength - tex2D(_FoamGradient, float2(intensityFactor - i.bumpTexCoord.w, 0) + tangentNormal.xy);
-				half foamColor = tex2D(_Foam, i.buv.xy ).r ;
-				foam += foamGradient * intensityFactor * foamColor;
+				foam += foamGradient * intensityFactor * _foam;
 				#endif
 				             
 				result.rgb = lerp(_WaterColor*_FakeUnderwaterColor, _SunColor.rgb*_SurfaceColor*0.85, fresnelTerm*0.65) + clamp(foam.r, 0.0, 1.0)*_SunColor.b + specular*_SunColor.rgb;

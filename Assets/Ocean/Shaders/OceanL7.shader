@@ -150,7 +150,8 @@ Shader "Mobile/OceanL7" {
 				#endif
 				#endif
 					//foam
-					half foam = clamp(tex2D(_Foam, -i.buv.xy *_FoamSize)  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z;
+					half _foam = tex2D(_Foam, -i.buv.xy  *_FoamSize).r;
+					half foam = clamp(_foam - 0.5, 0.0, 1.0) * i.bumpTexCoord.z;
 					//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 					//bumps			
@@ -184,8 +185,7 @@ Shader "Mobile/OceanL7" {
 					#ifdef SHORE_ON
 					float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
 					float intensityFactor = 1 - saturate((zdepth - i.ref.z) / _ShoreDistance);  
-					half foamColor = tex2D(_Foam, i.buv.xy ).r ;
-					foam += _ShoreStrength * intensityFactor * foamColor ;
+					foam += _ShoreStrength * intensityFactor * _foam;
 					#endif
 
 					//-----------------------------------------------------------------------------------------------------------------------------------------------------------

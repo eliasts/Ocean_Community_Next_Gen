@@ -19,7 +19,7 @@ private Vector3 oldPos;
 	}
 	
 	void Update () {
-		if(ocean.canCheckBuoyancyNow) {
+		if(ocean.canCheckBuoyancyNow[0]==1) {
 			float off = 0;
 			if(hasChoppy) off = ocean.GetChoppyAtLocation2(transform.position.x, transform.position.z);
 

@@ -140,7 +140,9 @@ Shader "Mobile/OceanL3" {
 				#endif
 				#endif
 
-					half foam = clamp(tex2D(_Foam, -i.buv.xy *_FoamSize)  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z;
+					half _foam = tex2D(_Foam, -i.buv.xy *_FoamSize).r;
+
+					half foam = clamp(_foam  - 0.5, 0.0, 1.0) * i.bumpTexCoord.z;
 								
 					half3 tangentNormal0 = (tex2D(_Bump, i.buv.xy) * 2.5) -1;
 					half3 tangentNormal = normalize(tangentNormal0);
@@ -167,8 +169,7 @@ Shader "Mobile/OceanL3" {
 					#ifdef SHORE_ON
 					float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
 					float intensityFactor = 1 - saturate((zdepth - i.ref.z) / _ShoreDistance);  
-					half foamColor = tex2D(_Foam, i.buv.xy ).r ;//* reflection.b 
-					foam += _ShoreStrength * intensityFactor * foamColor ;
+					foam += _ShoreStrength * intensityFactor * _foam;
 					#endif
 					//simple
 					//result.rgb = lerp(refraction, reflection, fresnelTerm)+ clamp(foam, 0.0, 1.0) + specular;

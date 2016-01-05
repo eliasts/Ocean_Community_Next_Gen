@@ -15,6 +15,9 @@ function Start()
     lastInterval = Time.realtimeSinceStartup;
     frames = 0;
 	framesav = 0;
+
+	Screen.sleepTimeout = SleepTimeout.NeverSleep;
+
 }
 
 function OnDisable ()

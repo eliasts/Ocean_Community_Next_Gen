@@ -29,6 +29,8 @@
  * DAMAGE.
  */
 
+ #if !NATIVE
+
 using System;
 
 	/// <summary>
@@ -48,6 +50,8 @@ using System;
 
 		private const int	cMaxBits	= 12;
 		private const int	cMinBits	= 0;
+
+		private const float _PI = (float)Math.PI;
 	
 
 		static private bool	IsPowerOf2( int x ) {
@@ -221,9 +225,14 @@ using System;
 		private static	float[,][]	_uRLookupF	= null;
 		private static	float[,][]	_uILookupF	= null;
 
+		static int MyCeilIntF(float g) {
+			if(g>=0)return (int)g+1; else return (int)g;
+		}
+
 		private static void	SyncLookupTableLength( int length ) {
 			if( length > _lookupTabletLength ) {
-				int level = (int) Math.Ceiling( Math.Log( length, 2 ) );
+				//int level = (int) Math.Ceiling( Math.Log( length, 2 ) );
+				int level = MyCeilIntF( (float)Math.Log( length, 2 ) );
 				InitializeReverseBits( level );
 				InitializeComplexRotations( level );
 
@@ -263,7 +272,7 @@ using System;
 				{
 					float	uR = 1;
 					float	uI = 0;
-					float	angle = (float) Math.PI / M * 1;
+					float	angle = _PI / M * 1;
 					float	wR = (float) Math.Cos( angle );
 					float	wI = (float) Math.Sin( angle );
 
@@ -286,7 +295,7 @@ using System;
 				// negative sign ( i.e. [M,1] )
 					float	uR = 1;
                     float	uI = 0;
-					float	angle = (float) Math.PI / M * -1;
+					float	angle = _PI / M * -1;
 					float	wR = (float) Math.Cos( angle );
 					float	wI = (float) Math.Sin( angle );
 
@@ -437,3 +446,4 @@ using System;
 
 		
 	}
+ #endif

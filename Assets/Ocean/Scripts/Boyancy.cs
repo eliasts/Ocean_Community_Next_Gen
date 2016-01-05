@@ -54,7 +54,7 @@ public class Boyancy : MonoBehaviour {
 
 	private float bbboyancy;
 	private float prevBuoyancy;
-	
+
 
     void Start () {
 
@@ -179,7 +179,8 @@ public class Boyancy : MonoBehaviour {
 			int index = 0, k=0;
 
 			int ran = (int)Random.Range(0, blobs.Count-1);
-		
+
+
 			for(int j = 0; j<blobs.Count; j++) {
 
 				wpos = transform.TransformPoint (blobs[j]);
@@ -190,7 +191,7 @@ public class Boyancy : MonoBehaviour {
 					float buyancy = magnitude * (wpos.y);
 
 					if (ocean.enabled) {
-						if(ocean.canCheckBuoyancyNow) {
+						if(ocean.canCheckBuoyancyNow[0]==1) {
 							float off = 0;
 								if(ocean.choppy_scale>0) off = ocean.GetChoppyAtLocation(wpos.x, wpos.z);
 							if(moreAccurate) {	

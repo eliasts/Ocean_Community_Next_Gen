@@ -28,6 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
  * DAMAGE.
  */
+ #if !NATIVE
 
 using System;
 
@@ -51,6 +52,8 @@ using System;
 
 		private const int	cMaxBits	= 12;
 		private const int	cMinBits	= 0;
+
+		private const float _PI = (float)Math.PI;
 	
 
 		static private bool	IsPowerOf2( int x ) {
@@ -206,6 +209,17 @@ using System;
 			}
 			return bitsReversed;
 		}
+		/*
+		static int MyIntPow(int num, int exp){
+			int result = 1;
+			while (exp > 0) {
+				if (exp % 2 == 1) result *= num;
+				exp >>= 1;
+				num *= num;
+			}
+			return result;
+		}*/
+
 
 		private static void	InitializeReverseBits( int levels ) {
 			_reverseBits = new int[levels + 1][];
@@ -224,10 +238,15 @@ using System;
 		private static	float[,][]	_uRLookupF	= null;
 		private static	float[,][]	_uILookupF	= null;
 
+		static int MyCeilIntF(float g) {
+			if(g>=0)return (int)g+1; else return (int)g;
+		}
+
 		private static void	SyncLookupTableLength( int length ) {
 
 			if( length > _lookupTabletLength ) {
-				int level = (int) Math.Ceiling( Math.Log( length, 2 ) );
+				//int level = (int) Math.Ceiling( Math.Log( length, 2 ) );
+				int level = MyCeilIntF( (float)Math.Log( length, 2 ) );
 				InitializeReverseBits( level );
 				InitializeComplexRotations( level );
 				_lookupTabletLength = length;
@@ -266,7 +285,7 @@ using System;
 				{
 					float	uR = 1;
 					float	uI = 0;
-					float	angle = (float) Math.PI / M * 1;
+					float	angle = _PI / M * 1;
 					float	wR = (float) Math.Cos( angle );
 					float	wI = (float) Math.Sin( angle );
 
@@ -289,7 +308,7 @@ using System;
 				// negative sign ( i.e. [M,1] )
 					float	uR = 1;
                     float	uI = 0;
-					float	angle = (float) Math.PI / M * -1;
+					float	angle = _PI / M * -1;
 					float	wR = (float) Math.Cos( angle );
 					float	wI = (float) Math.Sin( angle );
 
@@ -440,3 +459,4 @@ using System;
 
 		
 	}
+ #endif

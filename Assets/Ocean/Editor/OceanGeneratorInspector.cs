@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEditor;
+using System.Collections;
+using System.Reflection;
 using System.Collections.Generic;
 using System.IO;
 
@@ -30,22 +32,23 @@ public class OceanGeneratorInspector : Editor {
 	public static float oldFoamUV, oldBumpUV, oldShaderAlpha;
 	public static float oldTranslucency, oldShoreDistance, oldShoreStrength;
 	public static Vector3 oldSunDir;
-	public static int oldRefrReflXframe, oldeDefaultLod, oldRenderQueue;
+	public static int oldRefrReflXframe, oldeDefaultLod, oldRenderQueue, oldDiscSize;
 	public static string presetPath;
 	public static int currentPreset, oldpreset, oldmodeset;
-	public static bool oldRenderRefraction;
+	public static bool oldRenderRefraction, oldFixedTiles;
 	public static Shader oldShader;
 	public static bool hasShore, hasShore1,hasFog, hasFog1, hasFog2, distCan1, distCan2;
 	public static float cancellationDistance;
-
+	public static int ocW, oldocW;
 
 	private string[] defShader = {"default lod","1 (alpha)","2","3","4","5","6 (alpha)","7 (alpha)","8(translucent)"};
 	private string[] skiplods = {"off","1","2","3","4"};
+	private string[] tileSize = {"8","16","32","64","128"};
 	private string[] mode = {"Mobile Setting","Desktop Setting"};
+	private string[] discSize = {"small", "medium", "large"};
 	public static string[] presets, presetpaths;
 
 	public static int editormode = 0;
-
 
 	private string GetPluginPath() {
 		MonoScript ms = MonoScript.FromScriptableObject( this );
@@ -106,7 +109,10 @@ public class OceanGeneratorInspector : Editor {
 		if (null == back) Debug.LogError("null == back");
 
 		oldRenderRefraction = ocean.renderRefraction;
+		oldDiscSize = ocean.discSize;
+		oldFixedTiles = ocean.fixedTiles;
 
+		checkOceanWidth(ocean);
 	}
 
 
@@ -153,7 +159,7 @@ public class OceanGeneratorInspector : Editor {
 			currentPreset = EditorGUILayout.Popup(currentPreset, presets);
 			if(oldpreset != currentPreset ) {
 				if(currentPreset==0) { currentPreset = oldpreset; return; }
-				if(ocean.loadPreset(presetpaths[currentPreset-1])) {oldpreset = currentPreset; ocean._name = presets[currentPreset]; oldRenderRefraction=ocean.renderRefraction; EditorUtility.SetDirty(ocean); } else {currentPreset = oldpreset; checkPdir(ocean);}
+				if(ocean.loadPreset(presetpaths[currentPreset-1],EditorApplication.isPlaying)) {oldpreset = currentPreset; ocean._name = presets[currentPreset]; checkOceanWidth(ocean); oldRenderRefraction=ocean.renderRefraction; EditorUtility.SetDirty(ocean); } else {currentPreset = oldpreset; checkPdir(ocean);}
 			}
 			
 
@@ -163,9 +169,10 @@ public class OceanGeneratorInspector : Editor {
 
 				if (preset != null) {
 					if (preset.Length > 0) {
-						ocean.loadPreset(preset);
+						ocean.loadPreset(preset,EditorApplication.isPlaying);
 						title = Path.GetFileName(preset).Replace(".preset", ""); ocean._name = title;
 						updcurPreset();
+						checkOceanWidth(ocean);
 						oldRenderRefraction=ocean.renderRefraction;
 						EditorUtility.SetDirty(ocean);
 					}
@@ -244,7 +251,7 @@ public class OceanGeneratorInspector : Editor {
 			EditorGUILayout.EndVertical();
 
 			EditorGUILayout.LabelField("Scale");
-			ocean.scale = (float)EditorGUILayout.Slider(ocean.scale, 0, 100);
+			ocean.scale = (float)EditorGUILayout.Slider(ocean.scale, 0, 200);
 
 			EditorGUILayout.LabelField("Choppy scale");
 			ocean.choppy_scale = (float)EditorGUILayout.Slider(ocean.choppy_scale, 0, 100);
@@ -295,7 +302,7 @@ public class OceanGeneratorInspector : Editor {
 			EditorGUILayout.EndHorizontal();
 
 			EditorGUILayout.LabelField("Wind power");
-			ocean.humidity = (float)EditorGUILayout.Slider(ocean.humidity, 0.01f, 1f);
+			ocean.humidity = EditorGUILayout.Slider(ocean.humidity, 0.01f, 1f);
 
 			EditorGUILayout.LabelField("Wind direction");
 			EditorGUILayout.BeginHorizontal();
@@ -313,8 +320,14 @@ public class OceanGeneratorInspector : Editor {
 			EditorGUILayout.BeginHorizontal();
 			EditorGUILayout.LabelField("Foam Strength", GUILayout.MaxWidth(90));
 			GUI.contentColor = new Color(1f, 1f, 1f, 1f);
-			ocean.foamFactor = (float)EditorGUILayout.Slider(ocean.foamFactor, 0f, 3.0f);
+			ocean.foamFactor = EditorGUILayout.Slider(ocean.foamFactor, 0f, 3.0f);
 			EditorGUILayout.EndHorizontal();
+
+			EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.LabelField("Foam Duration", GUILayout.MaxWidth(90));
+			ocean.foamDuration = EditorGUILayout.Slider(ocean.foamDuration, 2f, 0.1f);
+			EditorGUILayout.EndHorizontal();
+
 			DrawHalfSeparator();
 
 			GUILayout.Space(8);
@@ -376,31 +389,31 @@ public class OceanGeneratorInspector : Editor {
 			GUILayout.Space(7);
 			GUI.contentColor = new Color(0.75f, 0.75f, 0.75f, 1f);
 			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField("Shader Low lod");
-			ocean.shaderLod = EditorGUILayout.Toggle(ocean.shaderLod);
+			ocean.shaderLod = EditorGUILayout.Toggle(ocean.shaderLod,GUILayout.MaxWidth(15));
+			EditorGUILayout.LabelField("Shader Low lod",GUILayout.MinWidth(70));
+			ocean.lowShaderLod = EditorGUILayout.Popup(ocean.lowShaderLod, defShader,GUILayout.MaxWidth(90));
 			if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
-				EditorUtility.DisplayDialog("Enable/disable low quality shader.","This will enable/disable the low quality shader lod using the number declared by the slider (No. of shader lods).\n\n"+
+				EditorUtility.DisplayDialog("Enable/disable low quality shader.","This will enable/disable the selected low quality shader.\n\n"+
 				"You can switch to the desired lower quality shader lod by code, using the shader_LOD function in the Ocean.cs script.","OK");
 			}
 			EditorGUILayout.EndHorizontal();
 
 			EditorGUILayout.BeginHorizontal();
+			ocean.useShaderLods = EditorGUILayout.Toggle(ocean.useShaderLods,GUILayout.MaxWidth(15));
 			EditorGUILayout.LabelField("Enable shader lods");
-			ocean.useShaderLods = EditorGUILayout.Toggle(ocean.useShaderLods);
 			if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 				EditorUtility.DisplayDialog("Enable/disable of shader lods on tiles.","This will enable/disable shader lod on tiles with higher lod.\n\n"+
 				"You can set the number of lods that will be used with the slider: No. of shader lods.","OK");		
 			}
 			EditorGUILayout.EndHorizontal();
 
-			if(ocean.useShaderLods || ocean.shaderLod) {
+			if(ocean.useShaderLods) {
 				EditorGUILayout.LabelField("No. of shader lods");
 				EditorGUILayout.BeginHorizontal();
 				ocean.numberLods = (int)EditorGUILayout.Slider(ocean.numberLods, 1, 3);
 				if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
-					EditorUtility.DisplayDialog("Number of shader lods","How many shader lods will be used for the mesh lods.\n\n The current number of the shader lods is used also as the low shader lod when switching between"+
-					"the high and low quality shader for the main (lod0) material of the ocean.\n(The alpha shader falls back to lod1 alpha shader lod.)\n\n1: Only the main shader will be used on all tiles.\n\n2: The main shader and the 2nd lod level will be used.\n\n"+
-					"3: The main shader and the 2nd and the 3rd lod levels will be used.\n\nYou assign the lod shaders to the material L1 and material L2 respectively.","OK");
+					EditorUtility.DisplayDialog("Number of shader lods","How many shader lods will be used for the mesh lods.\n\n(The alpha shader falls back to lod1 alpha shader lod.)\n\n1: Only the main shader will be used on all tiles.\n\n2: The main shader and the 2nd lod level will be used.\n\n"+
+					"3: The main shader and the 2nd and the 3rd lod levels will be used.\n\nYou assign the lod shaders to the material L1 and material L2 respectively. (See example presets).","OK");
 				}
 				EditorGUILayout.EndHorizontal();
 			} else {
@@ -458,31 +471,45 @@ public class OceanGeneratorInspector : Editor {
 			ocean.tiles = (int)EditorGUILayout.Slider(ocean.tiles, 1, 15);
 			EditorGUILayout.LabelField("Tiles size");
 			ocean.size = EditorGUILayout.Vector3Field("", ocean.size);
-
-			EditorGUILayout.LabelField("Tiles poly count");
+			GUILayout.Space(10);
+			EditorGUILayout.LabelField("Tiles polycount: "+(ocean.width*ocean.height).ToString());
 			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField("Width");
+			EditorGUILayout.LabelField("Width x Height :");
 			GUILayout.Space(-80);
-			ocean.width = EditorGUILayout.IntField(ocean.width, GUILayout.MaxWidth(65));
-			EditorGUILayout.LabelField("Height");
-			GUILayout.Space(-80);
-			ocean.height = EditorGUILayout.IntField(ocean.height, GUILayout.MaxWidth(65));
+			//ocean.width = EditorGUILayout.IntField(ocean.width, GUILayout.MaxWidth(65));
+			ocW = EditorGUILayout.Popup(ocW, tileSize, GUILayout.MaxWidth(70));
+
 			EditorGUILayout.EndHorizontal();
 
+			GUILayout.Space(10);
+
 			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField("Fixed tiles", GUILayout.MaxWidth(65));
+			EditorGUILayout.LabelField("Fixed Disc", GUILayout.MaxWidth(65));
 			ocean.fixedTiles = EditorGUILayout.Toggle(ocean.fixedTiles);
+			if(ocean.fixedTiles) {
+				ocean.discSize = EditorGUILayout.Popup(ocean.discSize, discSize,GUILayout.MaxWidth(70));
+			}
 			EditorGUILayout.EndHorizontal();
 
-			EditorGUILayout.LabelField("Fixed tiles distance");
-			ocean.fTilesDistance = (int)EditorGUILayout.Slider(ocean.fTilesDistance, 1, 5);
+			GUILayout.Space(10);
 
-			EditorGUILayout.LabelField("Fixed tiles lod");
-			ocean.fTilesLod = (int)EditorGUILayout.Slider(ocean.fTilesLod, 0, 5);
+			//EditorGUILayout.LabelField("Fixed tiles distance");
+			//ocean.fTilesDistance = (int)EditorGUILayout.Slider(ocean.fTilesDistance, 1, 5);
+
+			EditorGUILayout.LabelField("Tiles shader Lod start");
+			EditorGUILayout.BeginHorizontal();
+			ocean.sTilesLod = (int)EditorGUILayout.Slider(ocean.sTilesLod, 0, 3);
+			EditorGUILayout.BeginVertical();
+			GUILayout.Space(-1);
+			if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
+				EditorUtility.DisplayDialog("Tiles shader Lod start","At which tile lod the lods will start to get lower shader lods (if they are enabled).\n\n","OK");
+			}
+			EditorGUILayout.EndVertical();
+			EditorGUILayout.EndHorizontal();
 
 			EditorGUILayout.LabelField("Far LOD Y-offset");
 			EditorGUILayout.BeginHorizontal();
-			ocean.farLodOffset = (float)EditorGUILayout.Slider(ocean.farLodOffset, -30f, 0);
+			ocean.farLodOffset = EditorGUILayout.Slider(ocean.farLodOffset, -50f, 0);
 			EditorGUILayout.BeginVertical();
 			GUILayout.Space(-1);
 			if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
@@ -503,9 +530,9 @@ public class OceanGeneratorInspector : Editor {
 			GUILayout.Space(4);
 			EditorGUILayout.BeginHorizontal();
 			EditorGUILayout.LabelField("Reflection",GUILayout.MaxWidth(59));
-			if (!ocean.shaderLod) ocean.renderReflection = EditorGUILayout.Toggle(ocean.renderReflection,GUILayout.MaxWidth(79));
+			ocean.renderReflection = EditorGUILayout.Toggle(ocean.renderReflection,GUILayout.MaxWidth(79));
 			EditorGUILayout.LabelField("Refraction",GUILayout.MaxWidth(64));
-			if (!ocean.shaderLod) ocean.renderRefraction = EditorGUILayout.Toggle(ocean.renderRefraction,GUILayout.MaxWidth(79));
+			ocean.renderRefraction = EditorGUILayout.Toggle(ocean.renderRefraction,GUILayout.MaxWidth(79));
 			EditorGUILayout.EndHorizontal();
 
 			GUILayout.Space(2);
@@ -597,7 +624,7 @@ public class OceanGeneratorInspector : Editor {
 			EditorGUILayout.BeginVertical();
 			GUILayout.Space(-1);
 			if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
-				EditorUtility.DisplayDialog("Interactive foam strength/duaration.","The strength/duration of the foam produced by the boat that interacts with the ocean.","OK");
+				EditorUtility.DisplayDialog("Interactive foam strength/duaration.","The strength/duration of the foam produced by the boat that interacts with the ocean.\n\nSet this to 0 to disable calculations for it.","OK");
 			}
 			EditorGUILayout.EndVertical();
 			EditorGUILayout.EndHorizontal();
@@ -738,7 +765,19 @@ public class OceanGeneratorInspector : Editor {
 				GUI.contentColor = new Color(1f, 1f, 1f, 1f);
 				ocean.cancellationDistance = EditorGUILayout.FloatField(ocean.cancellationDistance, GUILayout.MaxWidth(55));
 				if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
-					EditorUtility.DisplayDialog("Fog Cancellation Distance","The distance at which the shader will calculate only fog. For Lod1 and Lod2.","OK");		
+					EditorUtility.DisplayDialog("Fog Cancellation Distance","The distance at which the shader will display only fog. For Lod1 and Lod2.","OK");		
+				}
+				EditorGUILayout.EndHorizontal();
+
+				EditorGUILayout.BeginHorizontal();
+				GUI.contentColor = new Color(1f, 0.5f, 0.5f, 1f);
+				EditorGUILayout.LabelField("Force depth on camera:");
+				GUILayout.Space(-120);
+				GUI.contentColor = new Color(1f, 1f, 1f, 1f);
+				ocean.forceDepth = EditorGUILayout.Toggle(ocean.forceDepth, GUILayout.MaxWidth(55));
+				if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
+					EditorUtility.DisplayDialog("Force depth on camera","On the forward rendering on most platforms, depth is not drawn and so the shore foam is not working.\n\n"+
+					"Use this to force the main camera to draw depth! (Not needed for deferred rendering paths.)","OK");		
 				}
 				EditorGUILayout.EndHorizontal();
 			}
@@ -820,12 +859,8 @@ public class OceanGeneratorInspector : Editor {
 				prevrefl = ocean.renderReflection;
 				prevrefr = ocean.renderRefraction;
 			}
-			int ll = ocean.numberLods;
-			
-			if(ocean.material!=null && (ocean.defaultLOD == 6 || ocean.defaultLOD == 7)) {ll = 1; }
-			if(ocean.defaultLOD==6 || ocean.defaultLOD==7) ocean.renderRefraction = oldRenderRefraction;
 
-			ocean.shader_LOD(!ocean.shaderLod, ocean.material, ll);
+			if(ocean.lowShaderLod>0) ocean.shader_LOD(!ocean.shaderLod, ocean.material, ocean.lowShaderLod);
 			oldShaderLod = ocean.shaderLod;
 
 			if (!ocean.shaderLod) {
@@ -843,6 +878,33 @@ public class OceanGeneratorInspector : Editor {
 		//switch between mobile and desktop settings
 		if(oldmodeset != ocean._mode) {
 			oldmodeset = ocean._mode;
+		}
+
+		//switch fixed disc size
+		if(oldDiscSize != ocean.discSize) {
+			oldDiscSize = ocean.discSize;
+			if(Application.isPlaying)  ocean.initDisc();
+		}
+
+		if(oldFixedTiles != ocean.fixedTiles) {
+			oldFixedTiles = ocean.fixedTiles;
+			if(Application.isPlaying)  ocean.initDisc();
+		}
+
+		if(ocW != oldocW) {
+			switch (ocW) {
+				case 0:
+				ocean.width = ocean.height = 8; break;
+				case 1:
+				;ocean.width = ocean.height = 16; break;
+				case 2:
+				ocean.width = ocean.height = 32; break;
+				case 3:
+				ocean.width = ocean.height = 64; break;
+				case 4:
+				ocean.width = ocean.height = 128; break;
+			}
+			oldocW = ocW;
 		}
 
 		if (GUI.changed) {
@@ -866,6 +928,22 @@ public class OceanGeneratorInspector : Editor {
 		}
 	}
 
+	public static void checkOceanWidth(Ocean ocean) {
+		switch (ocean.width) {
+			case 8:
+			ocW = 0; ocean.width = ocean.height = 8; break;
+			case 16:
+			ocW = 1 ;ocean.width = ocean.height = 16; break;
+			case 32:
+			ocW = 2; ocean.width = ocean.height = 32; break;
+			case 64:
+			ocW = 3; ocean.width = ocean.height = 64; break;
+			case 128:
+			ocW = 4; ocean.width = ocean.height = 128; break;
+		}
+		oldocW = ocW;
+	}
+
 	public static void savePreset(Ocean ocean) {
 		if (!Directory.Exists(presetPath)) Directory.CreateDirectory(presetPath);
 		string preset = EditorUtility.SaveFilePanel("Save Ocean preset", presetPath,"","preset");
@@ -885,8 +963,8 @@ public class OceanGeneratorInspector : Editor {
 					swr.Write(ocean.width);//int
 					swr.Write(ocean.height);//int
 					swr.Write(ocean.fixedTiles);//bool
-					swr.Write(ocean.fTilesDistance);//int
-					swr.Write(ocean.fTilesLod);//int
+					swr.Write(0);//int removed
+					swr.Write(0);//intremoved
 					swr.Write(ocean.scale);//float
 					swr.Write(ocean.choppy_scale);//float
 					swr.Write(ocean.speed);//float
@@ -950,6 +1028,11 @@ public class OceanGeneratorInspector : Editor {
 					swr.Write(ocean.distCan1);//bool
 					swr.Write(ocean.distCan2);//bool
 					swr.Write(ocean.cancellationDistance);//float
+					swr.Write(ocean.foamDuration);//float
+					swr.Write(ocean.sTilesLod);//int
+					swr.Write(ocean.discSize);//int
+					swr.Write(ocean.lowShaderLod);//int
+					swr.Write(ocean.forceDepth);//bool
 				}
 
 			}
@@ -1086,9 +1169,9 @@ public void DrawHalfSeparator(bool left = true) {
 			Rect rect = GUILayoutUtility.GetLastRect();
 			GUI.color = new Color(0f, 0f, 0f, 0.25f);
 			float sw5 = Screen.width * 0.5f;
-			GUI.DrawTexture(new Rect(sw5, rect.yMin + 10f, 4f, 930), tex);
-			GUI.DrawTexture(new Rect(sw5, rect.yMin + 10f, 1f, 930), tex);
-			GUI.DrawTexture(new Rect(sw5 + 3f, rect.yMin + 10f, 1f, 930), tex);
+			GUI.DrawTexture(new Rect(sw5, rect.yMin + 10f, 4f, 950), tex);
+			GUI.DrawTexture(new Rect(sw5, rect.yMin + 10f, 1f, 950), tex);
+			GUI.DrawTexture(new Rect(sw5 + 3f, rect.yMin + 10f, 1f, 950), tex);
 			GUI.color = Color.white;
 		}
 	}
@@ -1098,11 +1181,10 @@ public void DrawHalfSeparator(bool left = true) {
 			Texture2D tex = back;
 			Rect rect = GUILayoutUtility.GetLastRect();
 			GUI.color = new Color(0.6f, 0.6f, 0.6f, 1f);
-			GUI.DrawTexture(new Rect(0f, rect.yMin + 6f, Screen.width, 930), tex);
+			GUI.DrawTexture(new Rect(0f, rect.yMin + 6f, Screen.width, 950), tex);
 			GUI.color = Color.white;
 		}
 	}
-
 
 }
 #endif

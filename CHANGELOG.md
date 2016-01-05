@@ -1,3 +1,29 @@
+**05/01/2016**
+
+- Added native plugin support for the core functions. Significant speed increase! The core functions went from 6.7 ms to 1ms and below.
+- Preprocessor defines are defined in Player Settings now (SIMD;THREADS;NATIVE)
+- Native plugins for: Android, iOS, tvOS, WebGL, WSA81, WSA10, Winx86, Winx86_64, Linux-x86, Linux-x86_64, MacOSX Universal.
+  (The above platforms can enable the native plugin support by declaring the NATIVE preprocessor define in the player settings.)
+- Made il2Cpp compatibility changes.
+- Removed unnecessary vertex buffer updates! That gave almost an extra 2x speed increase.
+- Tweaked shaders to use one texture fetch less.
+- Fresnel uses same calculation on all shader variation and lods now.
+- Preliminary SIMD vector operations support.
+- Math optimizations.
+- Moved the mist prefabs to the water layer to avoid a Unity5.3.1p1 bug/glitch.
+- Improved runtime changing/loading of the ocean.
+- Now when you run the simulation and focus on the scene view, (in the editor only) the ocean follows the editor camera.
+- If the camera raises above the sea, the height offset between the lods is reduced proportional to the height.
+- Added the ability to change the foam duration.
+- Added the option to specify the low lod number.
+- If the target to follow is a camera do not draw interactive foam. (Multiple boats that draw interactive foam will come later.)
+- Autodetect if no target or sun is assigned and assign the main camera as the target and a dummy vector with white color as the sun.
+- Since the vertex buffer speed increase gave much better performance, the fixed tiles have been replaced with a fixed disc that gives better horizon results.
+- Buoyancy function optimized more. Added native buoyancy functions that will perform batched calculations on Vector3 inputs. (See comments in uocean.cs.)
+- On most devices, when the forward rendering path is used, the depth is not drawn and the shore foam is not working. So I added a forceDepth flag for the main Camera.
+  (See this post: http://forum.unity3d.com/threads/depth-texture-not-working-on-some-devices.319568/ )
+- Added more comments in the code.
+
 **22/12/2015 Major update**
 
 - Shaders almost totally rewritten.

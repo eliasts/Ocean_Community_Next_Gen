@@ -28,7 +28,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
  * DAMAGE.
  */
-
+ #if !NATIVE
 
 	// Comments? Questions? Bugs? Tell Ben Houston at ben@exocortex.org
 	// Version: May 4, 2002
@@ -48,3 +48,6 @@
 		/// </summary>
 		Backward = -1,
 	}
+
+ #endif
+
