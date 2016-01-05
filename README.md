@@ -4,7 +4,7 @@ Based on ocean community : http://forum.unity3d.com/threads/wanted-ocean-shader.
 
 ![Alt text](http://i.imgur.com/iui8lyB.jpg)
 
-![Alt text](http://i.imgur.com/7pcxjzN.jpg)
+![Alt text](http://i.imgur.com/oYLtnc7.jpg)
 
 2nd iteration by HeadHunter (unity forum user): http://forum.unity3d.com/members/headhunter2009.115193/
 
