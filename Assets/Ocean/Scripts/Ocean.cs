@@ -6,6 +6,10 @@
 #undef SIMD
 #endif
 
+#if (UNITY_WSA_8_1 ||  UNITY_WP_8_1 || UNITY_WINRT_8_1) && !UNITY_EDITOR
+#undef THREADS
+#endif
+
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,6 +20,7 @@ using System.IO;
 using System.Threading;
 #endif
 #endif
+
 
 #if NETFX_CORE
     #if UNITY_WSA_10_0
@@ -1655,7 +1660,7 @@ public class Ocean : MonoBehaviour {
 	}
 
 	public bool loadPreset(string preset, bool runtime = false) {
-		#if !UNITY_WEBGL && !UNITY_WEBPLAYER
+		#if !UNITY_WEBGL && !UNITY_WEBPLAYER && !(UNITY_WSA_8_1 ||  UNITY_WP_8_1 || UNITY_WINRT_8_1) || UNITY_EDITOR
 		if(File.Exists(preset)) {
 			using (BinaryReader br = new BinaryReader(File.Open(preset, FileMode.Open))){
 				if(br.BaseStream.Position != br.BaseStream.Length) followMainCamera = br.ReadBoolean();
