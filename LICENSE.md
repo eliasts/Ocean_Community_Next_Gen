@@ -1,6 +1,8 @@
 Do whatever you want.
 
-The native plugins use a modified version of the kissfft library.
+
+
+The native plugins use a modified version of the kissfft library. (Bsd license.)
 
 /*
 Copyright (c) 2003-2004, Mark Borgerding
