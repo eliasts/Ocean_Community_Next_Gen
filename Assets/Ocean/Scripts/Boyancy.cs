@@ -243,12 +243,14 @@ public class Boyancy : MonoBehaviour {
 				//if the object gets its position affected by the force of the choppy waves. Useful for smaller objects).
 				if(ChoppynessAffectsPosition) {
 					if(!cvisible || visible) {
-						if(moreAccurate) {
-							if(tack==0) rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocation2Fast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, cpos);
-							else rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocation2Fast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, transform.position);
-						} else {
-							if(tack==0) rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocationFast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, cpos);
-							else rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocationFast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, transform.position);
+						if(ocean.choppy_scale>0) {
+							if(moreAccurate) {
+								if(tack==0) rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocation2Fast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, cpos);
+								else rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocation2Fast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, transform.position);
+							} else {
+								if(tack==0) rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocationFast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, cpos);
+								else rrigidbody.AddForceAtPosition (-Vector3.left * (ocean.GetChoppyAtLocationFast() * ChoppynessFactor*Random.Range(0.5f,1.3f))*fact2, transform.position);
+							}
 						}
 					}
 				}

@@ -16,6 +16,9 @@ public class uocean  {
 		public static extern void UInit( int w, int h, float wx, float wy, float wvspd, float wvscl, float chop, float sx, float sy, float sz);
 
 		[DllImport("__Internal")]
+		public static extern void updVars( float wx, float wy, float wvspd, float wvscl, float chop, bool hh0);
+
+		[DllImport("__Internal")]
 		public static extern void InitWaveGenerator();
 
 		[DllImport("__Internal")]
@@ -48,18 +51,26 @@ public class uocean  {
 		protected static extern void getHeightBatchV(IntPtr data, int size, IntPtr Vec3);
 
 		[DllImport("__Internal")]
+		protected static extern void getHeightBatchF(IntPtr data, int size, IntPtr Vec3);
+
+		[DllImport("__Internal")]
 		protected static extern void getChoppyBatchV(IntPtr data, int size, IntPtr Vec3);
+
+		[DllImport("__Internal")]
+		protected static extern void getChoppyBatchF(IntPtr data, int size, IntPtr Vec3);
 
 		[DllImport("__Internal")]
 		protected static extern void getHeightChoppyBatchV(IntPtr data, int size, IntPtr Vec3);
 
+		[DllImport("__Internal")]
+		protected static extern void getHeightChoppyBatchF(IntPtr data, int size, IntPtr Vec3);
 #endif
 
 #if UNITY_EDITOR_LINUX
 	private const string libname = "libocean";
 #endif
 	
-#if UNITY_EDITOR_WIN || UNITY_EDITOR_OSX || UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_ANDROID || UNITY_WSA || (UNITY_STANDALONE_LINUX && !UNITY_EDITOR_LINUX)
+#if (UNITY_EDITOR_WIN || UNITY_EDITOR_OSX || UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_ANDROID || UNITY_WSA || UNITY_STANDALONE_LINUX) && !UNITY_EDITOR_LINUX
 	private const string libname = "ocean";
 #endif
 
@@ -70,6 +81,9 @@ public class uocean  {
 
 		[DllImport(libname, EntryPoint = "UInit")]
 		public static extern void UInit( int w, int h, float wx, float wy, float wvspd, float wvscl, float chop, float sx, float sy, float sz);
+
+		[DllImport(libname, EntryPoint = "updVars")]
+		public static extern void updVars( float wx, float wy, float wvspd, float wvscl, float chop, bool hh0);
 
 		[DllImport(libname, EntryPoint = "InitWaveGenerator")]
 		public static extern void InitWaveGenerator();
@@ -103,11 +117,20 @@ public class uocean  {
 		[DllImport(libname, EntryPoint = "getHeightBatchV")]
 		protected static extern void getHeightBatchV(IntPtr data, int size, IntPtr Vec3);
 
+		[DllImport(libname, EntryPoint = "getHeightBatchF")]
+		protected static extern void getHeightBatchF(IntPtr data, int size, IntPtr Vec3);
+
 		[DllImport(libname, EntryPoint = "getChoppyBatchV")]
 		protected static extern void getChoppyBatchV(IntPtr data, int size, IntPtr Vec3);
 
+		[DllImport(libname, EntryPoint = "getChoppyBatchF")]
+		protected static extern void getChoppyBatchF(IntPtr data, int size, IntPtr Vec3);
+
 		[DllImport(libname, EntryPoint = "getHeightChoppyBatchV")]
 		protected static extern void getHeightChoppyBatchV(IntPtr data, int size, IntPtr Vec3);
+
+		[DllImport(libname, EntryPoint = "getHeightChoppyBatchF")]
+		protected static extern void getHeightChoppyBatchF(IntPtr data, int size, IntPtr Vec3);
 
 #endif
 		//feed it with a Vector3 array where x and z are the input positions. Y will get the Height.
@@ -118,6 +141,14 @@ public class uocean  {
 			dtbuf.Free();  obuf.Free();
 		}
 
+		//feed it with a Vector3 array where x and z are the input positions. Y will get the Height. (faster, less accurate.)
+		public static void _getHeightBatchF(ComplexF[] dt, ref Vector3[] outpos) {
+			GCHandle dtbuf = GCHandle.Alloc(dt, GCHandleType.Pinned);
+			GCHandle obuf = GCHandle.Alloc(outpos, GCHandleType.Pinned);
+			getHeightBatchF(dtbuf.AddrOfPinnedObject(), outpos.Length,  obuf.AddrOfPinnedObject());
+			dtbuf.Free();  obuf.Free();
+		}
+
 		//feed it with a Vector3 array where x and z are the input positions. Y will get the chopiness offset.
 		public static void _getChoppyBatch(ComplexF[] dt, ref Vector3[] outpos) {
 			GCHandle dtbuf = GCHandle.Alloc(dt, GCHandleType.Pinned);
@@ -125,13 +156,30 @@ public class uocean  {
 			getChoppyBatchV(dtbuf.AddrOfPinnedObject(), outpos.Length, obuf.AddrOfPinnedObject());
 			dtbuf.Free(); obuf.Free();
 		}
+
+		//feed it with a Vector3 array where x and z are the input positions. Y will get the chopiness offset. (faster, less accurate.)
+		public static void _getChoppyBatchF(ComplexF[] dt, ref Vector3[] outpos) {
+			GCHandle dtbuf = GCHandle.Alloc(dt, GCHandleType.Pinned);
+			GCHandle obuf = GCHandle.Alloc(outpos, GCHandleType.Pinned);
+			getChoppyBatchF(dtbuf.AddrOfPinnedObject(), outpos.Length, obuf.AddrOfPinnedObject());
+			dtbuf.Free(); obuf.Free();
+		}
 		
 		//get the true height, considering choppy waves, in one go. Faster then having to use the above 2 functions.
-		//feed it with a Vector3 array where x and z are the input positions. Y will get the Height.
+		//feed it with a Vector3 array where x and z are the input positions. Y will get the Height considering choppy waves.
 		public static void _getHeightChoppyBatch(ComplexF[] dt, ref Vector3[] outpos) {
 			GCHandle dtbuf = GCHandle.Alloc(dt, GCHandleType.Pinned);
 			GCHandle obuf = GCHandle.Alloc(outpos, GCHandleType.Pinned);
 			getHeightChoppyBatchV(dtbuf.AddrOfPinnedObject(), outpos.Length,  obuf.AddrOfPinnedObject());
+			dtbuf.Free(); obuf.Free();
+		}
+
+		//get the true height, considering choppy waves, in one go. Faster then having to use the above 2 functions.
+		//feed it with a Vector3 array where x and z are the input positions. Y will get the Height considering choppy waves. (faster, less accurate.)
+		public static void _getHeightChoppyBatchF(ComplexF[] dt, ref Vector3[] outpos) {
+			GCHandle dtbuf = GCHandle.Alloc(dt, GCHandleType.Pinned);
+			GCHandle obuf = GCHandle.Alloc(outpos, GCHandleType.Pinned);
+			getHeightChoppyBatchF(dtbuf.AddrOfPinnedObject(), outpos.Length,  obuf.AddrOfPinnedObject());
 			dtbuf.Free(); obuf.Free();
 		}
 

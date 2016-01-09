@@ -1,3 +1,16 @@
+**09/01/2016**
+
+- The native plugins got more multithreading support. (They should run faster now.)
+- Choppy scale, wave speed & wind direction can be changed during runtime without disrupting the ocean simulation.
+   (This allows more dynamic weather conditions!)
+- Now you can load any ocean preset at runtime! Even if it has different tile number, polycount, size etc.
+- Fixed a bug where far tile lods would not get updates when the lod skipping was disabled.
+- Fixed a bug where the foam would not vanish when using the native plugin and having the spread frames disabled.
+- Added more native buoyancy functions.
+- Linux editor compatibility fixes.
+- WP8.1 & WSA8.1 compatibility fixes.
+
+
 **05/01/2016**
 
 - Added native plugin support for the core functions. Significant speed increase! The core functions went from 6.7 ms to 1ms and below.

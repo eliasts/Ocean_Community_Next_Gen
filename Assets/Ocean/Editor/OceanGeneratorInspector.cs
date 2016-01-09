@@ -474,11 +474,9 @@ public class OceanGeneratorInspector : Editor {
 			GUILayout.Space(10);
 			EditorGUILayout.LabelField("Tiles polycount: "+(ocean.width*ocean.height).ToString());
 			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField("Width x Height :");
+			if(!EditorApplication.isPlaying)  EditorGUILayout.LabelField("Width x Height :"); else EditorGUILayout.LabelField("Width x Height : "+tileSize[ocW]);
 			GUILayout.Space(-80);
-			//ocean.width = EditorGUILayout.IntField(ocean.width, GUILayout.MaxWidth(65));
-			ocW = EditorGUILayout.Popup(ocW, tileSize, GUILayout.MaxWidth(70));
-
+			if(!EditorApplication.isPlaying) ocW = EditorGUILayout.Popup(ocW, tileSize, GUILayout.MaxWidth(70));
 			EditorGUILayout.EndHorizontal();
 
 			GUILayout.Space(10);
