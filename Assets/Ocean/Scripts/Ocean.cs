@@ -441,6 +441,7 @@ public class Ocean : MonoBehaviour {
 
 		//force the main camera to draw depth if we want shore lines to show (Not needed for deferred rendering paths.)
 		if(forceDepth) Camera.main.depthTextureMode = DepthTextureMode.Depth;
+
 	}
 
 
@@ -1351,7 +1352,7 @@ public class Ocean : MonoBehaviour {
     */
 	void OnWillRenderObject ()
 	{
-		if (this.renderReflection || this.renderRefraction) {
+		if (renderReflection || renderRefraction) {
 			int rint = Time.frameCount % reflrefrXframe;
 			//Since reflection and refraction are not easy for the eye to catch their changes,
 			//we can update them every x frames to gain performance.
@@ -1385,7 +1386,7 @@ public class Ocean : MonoBehaviour {
 		}
 		
 		// Render reflection if needed
-		if(this.renderReflection) {
+		if(renderReflection) {
 			// Reflect camera around reflection plane
 			float d = -Vector3.Dot (normal, pos) - m_ClipPlaneOffset;
 			Vector4 reflectionPlane = new Vector4 (normal.x, normal.y, normal.z, d);
@@ -1419,7 +1420,7 @@ public class Ocean : MonoBehaviour {
 		}
 		
 		// Render refraction
-		if(this.renderRefraction) {
+		if(renderRefraction) {
 			refractionCamera.worldToCameraMatrix = cam.worldToCameraMatrix;
 			
 			// Setup oblique projection matrix so that near plane is our reflection
@@ -1907,12 +1908,15 @@ public class Ocean : MonoBehaviour {
 		}
 	}
 
+	//not working correct for now
 	private float GetHumidity(float time) {
 		int intTime = (int)(time * timeFreq);
 		int intPrevTime = (int)(prevTime * timeFreq);
 		
 		if (intTime != intPrevTime){
 			prevValue = nextValue;
+			//float d = UnityEngine.Random.value;
+			//if(d>0.5f) nextValue = d; else nextValue = -d;
 			nextValue = UnityEngine.Random.value;
 		}
 		prevTime = time;
@@ -1988,6 +1992,36 @@ public class Ocean : MonoBehaviour {
 		}    
 	}
 	
+	public int GetIndexAtLocation(float x, float y) {
+        x = x * sizeQX;
+		x = (x - MyFloorInt(x)) * width;
+
+        y = y * sizeQZ;
+		y = (y - MyFloorInt(y)) * height;
+
+		return width * MyFloorInt(y) + MyFloorInt(x);
+    }
+
+	public int GetIndexChoppyAtLocation(float x, float y) {
+		if(scaleA == 0) return GetIndexAtLocation(x , y);
+		float x1 = x;
+        x = x * sizeQX;
+		x = (x - MyFloorInt(x)) * width;
+
+        y = y  * sizeQZ;
+		y = (y - MyFloorInt(y)) * height;
+
+		int wm = width * MyFloorInt(y);
+		int idx = wm + MyFloorInt(x);
+		float res1 = data[idx].Im * scaleA;
+
+		x1 -= res1;
+        x1 = x1 * sizeQX;
+		x1 = (x1 - MyFloorInt(x1)) * width;
+
+		return wm + MyFloorInt(x1);
+    }
+
 	//faster but less accurate then version2
 	//When using choppy waves get the true height: GetWaterHeightAtLocation(x - GetChoppyAtLocation(x, y) , y);
 	public float GetWaterHeightAtLocation(float x, float y) {
@@ -2270,5 +2304,59 @@ public class Ocean : MonoBehaviour {
 		 }
 	}
 #endif
+
+
+
+	// A higher number will push more of the mesh verts 
+	// closer to center of grid were player is. 
+	// Must be >= 1.
+	float m_bias = 2.0f;
+
+	Mesh CreateRadialGrid(int segementsX, int segementsY) {
+			
+		Vector3[] vertices = new Vector3[segementsX * segementsY];
+		Vector3[] normals = new Vector3[segementsX * segementsY];
+		Vector2[] texcoords = new Vector2[segementsX * segementsY]; //not used atm
+			
+		float TAU = Mathf.PI * 2f;
+		float r;
+		for (int x = 0; x < segementsX; x++) {
+			for (int y = 0; y < segementsY; y++) {
+				r = (float)x / (float)(segementsX - 1);
+				r = Mathf.Pow(r, m_bias);
+					
+				normals[x + y * segementsX] = new Vector3(0, 1, 0);
+					
+				vertices[x + y * segementsX].x = r * Mathf.Cos(TAU * (float)y / (float)(segementsY - 1));
+				vertices[x + y * segementsX].y = 0.0f;
+				vertices[x + y * segementsX].z = r * Mathf.Sin(TAU * (float)y / (float)(segementsY - 1));
+			}
+		}
+			
+		int[] indices = new int[segementsX * segementsY * 6];
+			
+		int num = 0;
+		for (int x = 0; x < segementsX - 1; x++) {
+			for (int y = 0; y < segementsY - 1; y++) {
+				indices[num++] = x + y * segementsX;
+				indices[num++] = x + (y + 1) * segementsX;
+				indices[num++] = (x + 1) + y * segementsX;
+					
+				indices[num++] = x + (y + 1) * segementsX;
+				indices[num++] = (x + 1) + (y + 1) * segementsX;
+				indices[num++] = (x + 1) + y * segementsX;
+					
+			}
+		}
+			
+		Mesh mesh = new Mesh();
+			
+		mesh.vertices = vertices;
+		mesh.uv = texcoords;
+		mesh.normals = normals;
+		mesh.triangles = indices;
+			
+		return mesh;
+	}
 
 }

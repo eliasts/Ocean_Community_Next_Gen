@@ -1,3 +1,7 @@
+**11/01/20116**
+- Linear Color Space fix.
+
+
 **09/01/2016**
 
 - The native plugins got more multithreading support. (They should run faster now.)
