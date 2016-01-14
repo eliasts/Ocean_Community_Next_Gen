@@ -39,13 +39,15 @@ public class OceanGeneratorInspector : Editor {
 	public static Shader oldShader;
 	public static bool hasShore, hasShore1,hasFog, hasFog1, hasFog2, distCan1, distCan2;
 	public static float cancellationDistance;
-	public static int ocW, oldocW;
+	public static int ocW, oldocW, oldGridRes;
 
 	private string[] defShader = {"default lod","1 (alpha)","2","3","4","5","6 (alpha)","7 (alpha)","8(translucent)"};
 	private string[] skiplods = {"off","1","2","3","4"};
 	private string[] tileSize = {"8x8","16x16","32x32","64x64","128x128"};
 	private string[] mode = {"Mobile Setting","Desktop Setting"};
 	private string[] discSize = {"small", "medium", "large"};
+	//private string[] projRes = {"low", "medium", "high"};
+	private string[] gridMode = {"tiles"};//,"proj grid"};
 	public static string[] presets, presetpaths;
 
 	public static int editormode = 0;
@@ -111,6 +113,7 @@ public class OceanGeneratorInspector : Editor {
 		oldRenderRefraction = ocean.renderRefraction;
 		oldDiscSize = ocean.discSize;
 		oldFixedTiles = ocean.fixedTiles;
+		oldGridRes = ocean._gridRes;
 
 		checkOceanWidth(ocean);
 	}
@@ -126,10 +129,11 @@ public class OceanGeneratorInspector : Editor {
 		GUILayout.Space(8);
 		EditorGUILayout.BeginHorizontal();
 		
-		if (GUILayout.Button("Ocean Classic")) { editormode=0;}
-		if (GUILayout.Button("Ocean Grid")) {editormode=1;}
+		if (GUILayout.Button("Ocean Settings")) { editormode=0;}
+		if (GUILayout.Button("Extra Settings")) {editormode=1;}
 		if (GUILayout.Button("Objects")) {editormode=2;}
 		EditorGUILayout.EndHorizontal();
+
 
 		if(editormode==0) {
 			GUILayout.FlexibleSpace();
@@ -194,6 +198,7 @@ public class OceanGeneratorInspector : Editor {
 			GUILayout.Space(-100);
 			ocean.player = (Transform)EditorGUILayout.ObjectField(ocean.player, typeof(Transform), true, GUILayout.MinWidth(120));
 			EditorGUILayout.EndHorizontal();
+
 			EditorGUILayout.BeginHorizontal();
 			EditorGUILayout.LabelField("Follow", GUILayout.MaxWidth(65));
 			ocean.followMainCamera = EditorGUILayout.Toggle(ocean.followMainCamera);
@@ -251,17 +256,52 @@ public class OceanGeneratorInspector : Editor {
 			EditorGUILayout.EndVertical();
 
 			EditorGUILayout.LabelField("Scale");
-			ocean.scale = (float)EditorGUILayout.Slider(ocean.scale, 0, 200);
+
+			EditorGUILayout.BeginHorizontal();
+			ocean.scale = EditorGUILayout.Slider(ocean.scale, 0, 200);
+			EditorGUILayout.BeginVertical();
+			GUILayout.Space(-1);
+			if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
+				EditorUtility.DisplayDialog("Wave scale.","Sets the vertical scale of the waves.\n\nCan be changed in runtime.","OK");
+			}
+			EditorGUILayout.EndVertical();
+			EditorGUILayout.EndHorizontal();
 
 			EditorGUILayout.LabelField("Choppy scale");
-			ocean.choppy_scale = (float)EditorGUILayout.Slider(ocean.choppy_scale, 0, 100);
+			
+			EditorGUILayout.BeginHorizontal();
+			ocean.choppy_scale = EditorGUILayout.Slider(ocean.choppy_scale, 0, 100);
+			EditorGUILayout.BeginVertical();
+			GUILayout.Space(-1);
+			if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
+				EditorUtility.DisplayDialog("Choppy scale.","Sets the choppiness of the waves.\n\nCan be changed in runtime.","OK");
+			}
+			EditorGUILayout.EndVertical();
+			EditorGUILayout.EndHorizontal();
 
 			EditorGUILayout.LabelField("Waves speed");
-			ocean.speed = (float)EditorGUILayout.Slider(ocean.speed, 0.1f, 3f);
 
-			EditorGUILayout.LabelField("Wake distance");
-			ocean.wakeDistance = (float)EditorGUILayout.Slider(ocean.wakeDistance, 1f, 15f);
+			EditorGUILayout.BeginHorizontal();
+			ocean.speed = EditorGUILayout.Slider(ocean.speed, 0.1f, 3f);
+			EditorGUILayout.BeginVertical();
+			GUILayout.Space(-1);
+			if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
+				EditorUtility.DisplayDialog("Wave speed.","Sets the speed of the wave movement.\n\nCan be changed in runtime.","OK");
+			}
+			EditorGUILayout.EndVertical();
+			EditorGUILayout.EndHorizontal();
 
+			EditorGUILayout.LabelField("Wave density");
+			
+			EditorGUILayout.BeginHorizontal();
+			ocean.waveDistanceFactor = EditorGUILayout.Slider(ocean.waveDistanceFactor, 0.4f, 3f);
+			EditorGUILayout.BeginVertical();
+			GUILayout.Space(-1);
+			if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
+				EditorUtility.DisplayDialog("Wave density.","Determines the distance between waves. Careful when using it!\n\n If you lower its value you have to lower 'wave scale' and 'choppy scale'\n\nCan be changed in runtime.","OK");
+			}
+			EditorGUILayout.EndVertical();
+			EditorGUILayout.EndHorizontal();
 
 			DrawHalfSeparator();
 
@@ -459,41 +499,51 @@ public class OceanGeneratorInspector : Editor {
 			GUILayout.Space(35);
 			GUILayout.FlexibleSpace();
 
-			EditorGUILayout.BeginVertical();
-			//GUILayout.Space(20);
+			EditorGUILayout.BeginVertical();//----------------------------------------------------------------------------------------
 			
-
-			EditorGUI.DropShadowLabel(EditorGUILayout.BeginVertical(), "Tiles settings");
-			GUILayout.Space(10);
-			EditorGUILayout.EndVertical();
-
-			EditorGUILayout.LabelField("Tiles count");
-			ocean.tiles = (int)EditorGUILayout.Slider(ocean.tiles, 1, 15);
-			EditorGUILayout.LabelField("Tiles size");
-			ocean.size = EditorGUILayout.Vector3Field("", ocean.size);
-			GUILayout.Space(10);
-			EditorGUILayout.LabelField("Tiles polycount: "+(ocean.width*ocean.height).ToString());
 			EditorGUILayout.BeginHorizontal();
-			if(!EditorApplication.isPlaying)  EditorGUILayout.LabelField("Width x Height :"); else EditorGUILayout.LabelField("Width x Height : "+tileSize[ocW]);
-			GUILayout.Space(-80);
-			if(!EditorApplication.isPlaying) ocW = EditorGUILayout.Popup(ocW, tileSize, GUILayout.MaxWidth(70));
+			if(!EditorApplication.isPlaying) EditorGUILayout.LabelField("Mesh Mode: "); else EditorGUILayout.LabelField("Mesh Mode:   "+gridMode[ocean._gridMode]);
+			if(!EditorApplication.isPlaying) ocean._gridMode = EditorGUILayout.Popup(ocean._gridMode, gridMode, GUILayout.MaxWidth(90));
 			EditorGUILayout.EndHorizontal();
 
-			GUILayout.Space(10);
+			if(ocean._gridMode == 0) {
+				EditorGUILayout.LabelField("Tiles count");
+				ocean.tiles = (int)EditorGUILayout.Slider(ocean.tiles, 1, 15);
+				EditorGUILayout.LabelField("Tiles size");
+				ocean.size = EditorGUILayout.Vector3Field("", ocean.size);
+			
+				GUILayout.Space(6);
+				EditorGUILayout.LabelField("Tiles polycount: "+(ocean.width*ocean.height).ToString());
+				EditorGUILayout.BeginHorizontal();
+				if(!EditorApplication.isPlaying)  EditorGUILayout.LabelField("Width x Height :"); else EditorGUILayout.LabelField("Width x Height : "+tileSize[ocW]);
+				GUILayout.Space(-80);
+				if(!EditorApplication.isPlaying) ocW = EditorGUILayout.Popup(ocW, tileSize, GUILayout.MaxWidth(70));
+				EditorGUILayout.EndHorizontal();
 
-			EditorGUILayout.BeginHorizontal();
-			EditorGUILayout.LabelField("Fixed Disc", GUILayout.MaxWidth(65));
-			ocean.fixedTiles = EditorGUILayout.Toggle(ocean.fixedTiles);
-			if(ocean.fixedTiles) {
-				ocean.discSize = EditorGUILayout.Popup(ocean.discSize, discSize,GUILayout.MaxWidth(70));
+				GUILayout.Space(3);
+
+				EditorGUILayout.BeginHorizontal();
+				EditorGUILayout.LabelField("Fixed Disc", GUILayout.MaxWidth(65));
+				ocean.fixedTiles = EditorGUILayout.Toggle(ocean.fixedTiles);
+				if(ocean.fixedTiles) {
+					ocean.discSize = EditorGUILayout.Popup(ocean.discSize, discSize,GUILayout.MaxWidth(70));
+				}
+				EditorGUILayout.EndHorizontal();
 			}
-			EditorGUILayout.EndHorizontal();
+			/*
+			if(ocean._gridMode == 1) {
+				GUILayout.Space(6);
+				EditorGUILayout.BeginHorizontal();
+				if(!EditorApplication.isPlaying)  EditorGUILayout.LabelField("Grid resolution :"); else EditorGUILayout.LabelField("Grid resolution : "+projRes[ocean._gridRes]);
+				GUILayout.Space(-80);
+				if(!EditorApplication.isPlaying) ocean._gridRes = EditorGUILayout.Popup(ocean._gridRes, projRes, GUILayout.MaxWidth(70));
+				EditorGUILayout.EndHorizontal();
+				GUILayout.Space(6);
+				GUILayout.Space(16);
+			}*/
 
-			GUILayout.Space(10);
-
-			//EditorGUILayout.LabelField("Fixed tiles distance");
-			//ocean.fTilesDistance = (int)EditorGUILayout.Slider(ocean.fTilesDistance, 1, 5);
-
+			GUILayout.Space(3);
+			
 			EditorGUILayout.LabelField("Tiles shader Lod start");
 			EditorGUILayout.BeginHorizontal();
 			ocean.sTilesLod = (int)EditorGUILayout.Slider(ocean.sTilesLod, 0, 3);
@@ -516,16 +566,16 @@ public class OceanGeneratorInspector : Editor {
 			}
 			EditorGUILayout.EndVertical();
 			EditorGUILayout.EndHorizontal();
-
+			if(ocean._gridMode == 1) GUILayout.Space(10);
 			DrawHalfSeparator(false);
 
 			////------------------------------------------
-			GUILayout.Space(6);
-
-			EditorGUI.DropShadowLabel(EditorGUILayout.BeginVertical(), "Reflection & Refraction");
-			GUILayout.Space(14);
-			EditorGUILayout.EndVertical();
 			GUILayout.Space(4);
+			if(ocean._gridMode == 1) GUILayout.Space(10);
+			EditorGUI.DropShadowLabel(EditorGUILayout.BeginVertical(), "Reflection & Refraction");
+			GUILayout.Space(10);
+			EditorGUILayout.EndVertical();
+			GUILayout.Space(2);
 			EditorGUILayout.BeginHorizontal();
 			EditorGUILayout.LabelField("Reflection",GUILayout.MaxWidth(59));
 			ocean.renderReflection = EditorGUILayout.Toggle(ocean.renderReflection,GUILayout.MaxWidth(79));
@@ -558,7 +608,7 @@ public class OceanGeneratorInspector : Editor {
 			ocean.renderTexHeight = EditorGUILayout.IntField(ocean.renderTexHeight,GUILayout.MaxWidth(50));
 			EditorGUILayout.EndHorizontal();
 
-			GUILayout.Space(4);
+			GUILayout.Space(3);
 			EditorGUILayout.BeginHorizontal();
 			EditorGUILayout.LabelField("Reflection clip plane offset");
 			ocean.m_ClipPlaneOffset = EditorGUILayout.FloatField(ocean.m_ClipPlaneOffset, GUILayout.MaxWidth(50));
@@ -575,30 +625,30 @@ public class OceanGeneratorInspector : Editor {
 			}
 			EditorGUILayout.EndHorizontal();
 
-			GUILayout.Space(4);
+			GUILayout.Space(3);
 			//DrawHalfSeparator();
 
-			GUILayout.Space(4);
+			GUILayout.Space(3);
 			EditorGUILayout.BeginHorizontal();
 			EditorGUILayout.LabelField("Reflectivity",GUILayout.MaxWidth(70));
 			ocean.reflectivity = EditorGUILayout.Slider(ocean.reflectivity, 0f, 1f);
 			EditorGUILayout.EndHorizontal();
 
-			GUILayout.Space(4);
+			GUILayout.Space(3);
 			EditorGUILayout.BeginHorizontal();
 			EditorGUILayout.LabelField("Specularity",GUILayout.MaxWidth(70));
 			ocean.specularity = EditorGUILayout.Slider(ocean.specularity, 0.01f, 8.0f);
 			EditorGUILayout.EndHorizontal();
 
-			GUILayout.Space(4);
+			GUILayout.Space(3);
 			EditorGUILayout.BeginHorizontal();
 			EditorGUILayout.LabelField("Spec power",GUILayout.MaxWidth(70));
 			ocean.specPower = EditorGUILayout.Slider(ocean.specPower, 0f, 1.0f);
 			EditorGUILayout.EndHorizontal();
 
-			GUILayout.Space(4);
+			GUILayout.Space(3);
 			//EditorGUILayout.LabelField("Shader Alpha");
-			//ocean.shaderAlpha = (float)EditorGUILayout.Slider(ocean.shaderAlpha, 0f, 1f);
+			//ocean.shaderAlpha = EditorGUILayout.Slider(ocean.shaderAlpha, 0f, 1f);
 			EditorGUILayout.BeginHorizontal();
 			EditorGUILayout.LabelField("Alpha",GUILayout.MaxWidth(70));
 			ocean.shaderAlpha = EditorGUILayout.Slider(ocean.shaderAlpha, 0f, 1f);
@@ -607,7 +657,7 @@ public class OceanGeneratorInspector : Editor {
 			GUILayout.Space(2);
 
 			DrawHalfSeparator(false);
-
+			if(ocean._gridMode == 1) GUILayout.Space(10);
 			EditorGUI.DropShadowLabel(EditorGUILayout.BeginVertical(), "Interactive Foam");
 			GUILayout.Space(18);
 			EditorGUILayout.EndVertical();
@@ -618,7 +668,7 @@ public class OceanGeneratorInspector : Editor {
 			EditorGUILayout.EndHorizontal();
 
 			EditorGUILayout.BeginHorizontal();
-			ocean.ifoamStrength = (float)EditorGUILayout.Slider(ocean.ifoamStrength, 0, 50);
+			ocean.ifoamStrength = EditorGUILayout.Slider(ocean.ifoamStrength, 0, 50);
 			EditorGUILayout.BeginVertical();
 			GUILayout.Space(-1);
 			if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
@@ -627,13 +677,12 @@ public class OceanGeneratorInspector : Editor {
 			EditorGUILayout.EndVertical();
 			EditorGUILayout.EndHorizontal();
 
-
 			EditorGUILayout.BeginHorizontal();
 			EditorGUILayout.LabelField("Interactive foam width");
 			EditorGUILayout.EndHorizontal();
 
 			EditorGUILayout.BeginHorizontal();
-			ocean.ifoamWidth = (float)EditorGUILayout.Slider(ocean.ifoamWidth, 2, 0.1f);
+			ocean.ifoamWidth = EditorGUILayout.Slider(ocean.ifoamWidth, 2, 0.1f);
 			EditorGUILayout.BeginVertical();
 			GUILayout.Space(-1);
 			if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
@@ -641,13 +690,28 @@ public class OceanGeneratorInspector : Editor {
 			}
 			EditorGUILayout.EndVertical();
 			EditorGUILayout.EndHorizontal();
-			GUILayout.Space(4);
+
+			EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.LabelField("Foam Wake distance");
+			EditorGUILayout.EndHorizontal();
+
+			EditorGUILayout.BeginHorizontal();
+			ocean.wakeDistance = EditorGUILayout.Slider(ocean.wakeDistance, 1f, 15f);
+			EditorGUILayout.BeginVertical();
+			GUILayout.Space(-1);
+			if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
+				EditorUtility.DisplayDialog("Foam Wake distance.","A factor that determines the length of the foam trail of the player's vessel.","OK");
+			}
+			EditorGUILayout.EndVertical();
+			EditorGUILayout.EndHorizontal();
+
+			GUILayout.Space(2);
 			DrawHalfSeparator(false);
 
 
 			////------------------------------------------
-			GUILayout.Space(6);
-
+			GUILayout.Space(3);
+			if(ocean._gridMode == 1) GUILayout.Space(10);
 			EditorGUI.DropShadowLabel(EditorGUILayout.BeginVertical(), "Water color");
 			GUILayout.Space(10);
 			EditorGUILayout.EndVertical();
@@ -679,7 +743,7 @@ public class OceanGeneratorInspector : Editor {
 
 			
 			GUI.contentColor = new Color(0.5f, 1f, 1f, 1f);
-			GUILayout.Space(10);
+			GUILayout.Space(6);
 			EditorGUILayout.BeginHorizontal();
 			EditorGUILayout.LabelField("Translucency",GUILayout.MaxWidth(90));
 			GUI.contentColor = new Color(1f, 1f, 1f, 1f);
@@ -787,7 +851,7 @@ public class OceanGeneratorInspector : Editor {
 
 
 
-			EditorGUILayout.EndVertical();
+			EditorGUILayout.EndVertical();//----------------------------------------------------------------------------------------
 			GUILayout.FlexibleSpace();
 			EditorGUILayout.EndHorizontal();
 
@@ -904,6 +968,7 @@ public class OceanGeneratorInspector : Editor {
 			}
 			oldocW = ocW;
 		}
+
 
 		if (GUI.changed) {
 			EditorUtility.SetDirty(ocean);
@@ -1031,6 +1096,7 @@ public class OceanGeneratorInspector : Editor {
 					swr.Write(ocean.discSize);//int
 					swr.Write(ocean.lowShaderLod);//int
 					swr.Write(ocean.forceDepth);//bool
+					swr.Write(ocean.waveDistanceFactor);//float
 				}
 
 			}

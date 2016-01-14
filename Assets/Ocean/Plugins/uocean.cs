@@ -10,13 +10,13 @@ public class uocean  {
 #if (UNITY_IOS || UNITY_IPHONE || UNITY_WEBGL) && !UNITY_EDITOR
 
         [DllImport("__Internal")]
-		public static extern void UoceanInit( int w, int h, float wx, float wy, float wvspd, float wvscl, float chop, float sx, float sy, float sz);
+		public static extern void UoceanInit( int w, int h, float wx, float wy, float wvspd, float wvscl, float chop, float sx, float sy, float sz, float wvdf);
 
 		[DllImport("__Internal")]
-		public static extern void UInit( int w, int h, float wx, float wy, float wvspd, float wvscl, float chop, float sx, float sy, float sz);
+		public static extern void UInit( int w, int h, float wx, float wy, float wvspd, float wvscl, float chop, float sx, float sy, float sz, float wvdf);
 
 		[DllImport("__Internal")]
-		public static extern void updVars( float wx, float wy, float wvspd, float wvscl, float chop, bool hh0);
+		public static extern void updVars( float wx, float wy, float wvspd, float wvscl, float chop, float wvdf, bool hh0);
 
 		[DllImport("__Internal")]
 		public static extern void InitWaveGenerator();
@@ -77,13 +77,13 @@ public class uocean  {
 #if UNITY_EDITOR || UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_ANDROID || UNITY_STANDALONE_LINUX || UNITY_WSA
 
         [DllImport(libname, EntryPoint = "UoceanInit")]
-		public static extern void UoceanInit( int w, int h, float wx, float wy, float wvspd, float wvscl, float chop, float sx, float sy, float sz);
+		public static extern void UoceanInit( int w, int h, float wx, float wy, float wvspd, float wvscl, float chop, float sx, float sy, float sz, float wvdf);
 
 		[DllImport(libname, EntryPoint = "UInit")]
-		public static extern void UInit( int w, int h, float wx, float wy, float wvspd, float wvscl, float chop, float sx, float sy, float sz);
+		public static extern void UInit( int w, int h, float wx, float wy, float wvspd, float wvscl, float chop, float sx, float sy, float sz, float wvdf);
 
 		[DllImport(libname, EntryPoint = "updVars")]
-		public static extern void updVars( float wx, float wy, float wvspd, float wvscl, float chop, bool hh0);
+		public static extern void updVars( float wx, float wy, float wvspd, float wvscl, float chop, float wvdf, bool hh0);
 
 		[DllImport(libname, EntryPoint = "InitWaveGenerator")]
 		public static extern void InitWaveGenerator();

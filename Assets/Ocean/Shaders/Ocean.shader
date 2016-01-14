@@ -98,9 +98,13 @@ Shader "Mobile/Ocean" {
 				o.bumpTexCoord.w = _SinTime.y * 0.5;
 
 				o.buv = float4(o.bumpTexCoord.x + _CosTime.x * 0.2, o.bumpTexCoord.y + _SinTime.x *0.3, o.bumpTexCoord.x + _CosTime.y * 0.04, o.bumpTexCoord.y + o.bumpTexCoord.w );
+
 				//World UV's
-				//o.worldPos = mul(_Object2World, v.vertex).xyz;	
+				//o.worldPos = mul(_Object2World, v.vertex).xyz;
 				//o.bumpuv.xyzw = o.worldPos.xzxz  * _WaveTiling*0.005  + frac(_Time.xxxx * _WaveDirection);
+
+				//float3 worldPos = mul(_Object2World, v.vertex).xyz;
+				//o.buv = float4(worldPos.x + _CosTime.x * 0.2, worldPos.z + _SinTime.x *0.3 ,worldPos.x + _CosTime.y * 0.04, worldPos.z + o.bumpTexCoord.w )*0.05;
 
 				o.normViewDir = normalize(viewDir);
 

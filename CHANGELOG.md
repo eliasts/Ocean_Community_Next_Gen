@@ -1,4 +1,11 @@
+**14/01/2016**
+
+- Fixed a bug on runtime loading of ocean presets.
+- Added the variable to define wave density.
+- More documentation in the ocean inspector.
+
 **11/01/20116**
+
 - Linear Color Space fix.
 
 
