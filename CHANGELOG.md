@@ -1,3 +1,8 @@
+**10/12/2016**
+
+- Added bitcode enabled ios plugins.
+
+
 **14/01/2016**
 
 - Fixed a bug on runtime loading of ocean presets.
