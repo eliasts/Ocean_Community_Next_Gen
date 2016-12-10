@@ -9,7 +9,7 @@
 - Added the variable to define wave density.
 - More documentation in the ocean inspector.
 
-**11/01/20116**
+**11/01/2016**
 
 - Linear Color Space fix.
 
