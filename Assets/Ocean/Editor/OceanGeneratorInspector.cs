@@ -754,13 +754,13 @@ public class OceanGeneratorInspector : Editor {
 			GUILayout.Space(10);
 			EditorGUILayout.BeginHorizontal();
 			EditorGUILayout.LabelField("Foam tiling",GUILayout.MaxWidth(90));
-			ocean.foamUV = (int)EditorGUILayout.Slider(ocean.foamUV, 1, 8);
+			ocean.foamUV = (int)EditorGUILayout.Slider(ocean.foamUV, 1, 16);
 			EditorGUILayout.EndHorizontal();
 		
 			GUILayout.Space(10);
 			EditorGUILayout.BeginHorizontal();
 			EditorGUILayout.LabelField("Bump tiling",GUILayout.MaxWidth(90));
-			ocean.bumpUV = (int)EditorGUILayout.Slider(ocean.bumpUV, 1, 8);
+			ocean.bumpUV = (int)EditorGUILayout.Slider(ocean.bumpUV, 1, 16);
 			EditorGUILayout.EndHorizontal();
 
 			GUILayout.Space(15);

@@ -1,3 +1,8 @@
+**22/02/2017**
+
+- Unity 5.5 shader compatibility fix.
+
+
 **10/12/2016**
 
 - Added bitcode enabled ios plugins.

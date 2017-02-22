@@ -66,13 +66,7 @@ public class uocean  {
 		protected static extern void getHeightChoppyBatchF(IntPtr data, int size, IntPtr Vec3);
 #endif
 
-#if UNITY_EDITOR_LINUX
-	private const string libname = "libocean";
-#endif
-	
-#if (UNITY_EDITOR_WIN || UNITY_EDITOR_OSX || UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_ANDROID || UNITY_WSA || UNITY_STANDALONE_LINUX) && !UNITY_EDITOR_LINUX
-	private const string libname = "ocean";
-#endif
+private const string libname = "ocean";
 
 #if UNITY_EDITOR || UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX || UNITY_ANDROID || UNITY_STANDALONE_LINUX || UNITY_WSA
 

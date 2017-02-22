@@ -189,7 +189,12 @@ Shader "Mobile/Ocean" {
 
 				//SHORELINES
 				#ifdef SHORE_ON
-				float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+				//UNITY5.5
+				#if defined(UNITY_REVERSED_Z)
+					float zdepth = 1.0f - LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+				#else
+					float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+				#endif
 				float intensityFactor = 1- saturate((zdepth- i.ref.z) / _ShoreDistance);  
 				half3 foamGradient = _ShoreStrength - tex2D(_FoamGradient, float2(intensityFactor - i.bumpTexCoord.w, 0) + tangentNormal.xy);
 				foam += foamGradient * intensityFactor * _foam;
@@ -371,7 +376,12 @@ Shader "Mobile/Ocean" {
 
 				//SHORELINES
 				#ifdef SHORE_ON
-				float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+				//UNITY5.5
+				#if defined(UNITY_REVERSED_Z)
+					float zdepth = 1.0f - LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+				#else
+					float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+				#endif
 				float intensityFactor = 1 - saturate((zdepth - i.ref.z) / _ShoreDistance);  
 				half3 foamGradient = _ShoreStrength - tex2D(_FoamGradient, float2(intensityFactor - i.bumpTexCoord.w, 0) + tangentNormal.xy);
 				foam += foamGradient * intensityFactor * _foam;
@@ -541,7 +551,12 @@ Shader "Mobile/Ocean" {
 
 				//SHORELINES
 				#ifdef SHORE_ON
-				float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+				//UNITY5.5
+				#if defined(UNITY_REVERSED_Z)
+					float zdepth = 1.0f - LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+				#else
+					float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+				#endif
 				float intensityFactor = 1 - saturate((zdepth - i.ref.z) / _ShoreDistance);  
 				half3 foamGradient = _ShoreStrength - tex2D(_FoamGradient, float2(intensityFactor - i.bumpTexCoord.w, 0) + tangentNormal.xy);
 				foam += foamGradient * intensityFactor * _foam;
@@ -711,7 +726,12 @@ Shader "Mobile/Ocean" {
 
 				//SHORELINES
 				#ifdef SHORE_ON
-				float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+				//UNITY5.5
+				#if defined(UNITY_REVERSED_Z)
+					float zdepth = 1.0f - LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+				#else
+					float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+				#endif
 				float intensityFactor = 1 - saturate((zdepth - i.ref.z) / _ShoreDistance);  
 				half3 foamGradient = _ShoreStrength - tex2D(_FoamGradient, float2(intensityFactor - i.bumpTexCoord.w, 0) + tangentNormal.xy);
 				foam += foamGradient * intensityFactor * _foam;
@@ -883,7 +903,12 @@ Shader "Mobile/Ocean" {
 
 				//SHORELINES
 				#ifdef SHORE_ON
-				float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+				//UNITY5.5
+				#if defined(UNITY_REVERSED_Z)
+					float zdepth = 1.0f - LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+				#else
+					float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+				#endif
 				float intensityFactor = 1 - saturate((zdepth - i.ref.z) / _ShoreDistance);  
 				half3 foamGradient = _ShoreStrength - tex2D(_FoamGradient, float2(intensityFactor - i.bumpTexCoord.w, 0) + tangentNormal.xy);
 				foam += foamGradient * intensityFactor * _foam;
@@ -1040,7 +1065,12 @@ Shader "Mobile/Ocean" {
 
 				//SHORELINES
 				#ifdef SHORE_ON
-				float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+				//UNITY5.5
+				#if defined(UNITY_REVERSED_Z)
+					float zdepth = 1.0f - LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+				#else
+					float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+				#endif
 				float intensityFactor = 1 - saturate((zdepth - i.ref.z) / _ShoreDistance);  
 				half3 foamGradient = _ShoreStrength - tex2D(_FoamGradient, float2(intensityFactor - i.bumpTexCoord.w, 0) + tangentNormal.xy);
 				foam += foamGradient * intensityFactor * _foam;
@@ -1300,7 +1330,12 @@ Shader "Mobile/Ocean" {
    
    				//SHORELINES
 				#ifdef SHORE_ON
-				float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+				//UNITY5.5
+				#if defined(UNITY_REVERSED_Z)
+					float zdepth = 1.0f - LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+				#else
+					float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+				#endif
 				float intensityFactor = 1 - saturate((zdepth - i.ref.z) / _ShoreDistance);  
 				half3 foamGradient = _ShoreStrength - tex2D(_FoamGradient, float2(intensityFactor - i.bumpTexCoord.w, 0) + tangentNormal.xy);
 				foam += foamGradient * intensityFactor * _foam;

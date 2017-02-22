@@ -183,7 +183,12 @@ Shader "Mobile/OceanL7" {
 					//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 					//SHORELINES
 					#ifdef SHORE_ON
-					float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+					//UNITY5.5
+					#if defined(UNITY_REVERSED_Z)
+						float zdepth = 1.0f - LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+					#else
+						float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
+					#endif
 					float intensityFactor = 1 - saturate((zdepth - i.ref.z) / _ShoreDistance);  
 					foam += _ShoreStrength * intensityFactor * _foam;
 					#endif
