@@ -1,5 +1,7 @@
 Based on ocean community : http://forum.unity3d.com/threads/wanted-ocean-shader.16540/
 
+[![IMAGE Ocean Community nextgen buoyancy 2](https://img.youtube.com/vi/OaLmEHpHYkI/0.jpg)](https://www.youtube.com/watch?v=OaLmEHpHYkI)
+
 ![Alt text](http://i.imgur.com/2aEaQF5.jpg)
 
 ![Alt text](http://i.imgur.com/iui8lyB.jpg)
