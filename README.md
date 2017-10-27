@@ -1,3 +1,6 @@
+Minimum Version Required is Unity 5.6. Works with Untiy 2017.
+
+
 Based on ocean community : http://forum.unity3d.com/threads/wanted-ocean-shader.16540/
 
 [![IMAGE Ocean Community nextgen buoyancy 2](https://img.youtube.com/vi/OaLmEHpHYkI/0.jpg)](https://www.youtube.com/watch?v=OaLmEHpHYkI)
