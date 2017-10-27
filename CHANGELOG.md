@@ -1,3 +1,10 @@
+**27/10/2017**
+
+- Shore Foam Fix
+
+- Minimum version recommended Unity 5.6
+
+
 **22/02/2017**
 
 - Unity 5.5 shader compatibility fix.
