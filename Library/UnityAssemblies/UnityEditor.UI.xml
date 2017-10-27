@@ -236,6 +236,11 @@
         <para>See: Editor.OnInspectorGUI.</para>
       </summary>
     </member>
+    <member name="T:UnityEditor.UI.MaskEditor">
+      <summary>
+        <para>Custom Editor for the Mask component.</para>
+      </summary>
+    </member>
     <member name="T:UnityEditor.UI.NavigationDrawer">
       <summary>
         <para>PropertyDrawer for Navigation.</para>
@@ -273,6 +278,11 @@
       </summary>
       <param name="rect">Rectangle in which to draw the preview.</param>
       <param name="background">Background image.</param>
+    </member>
+    <member name="T:UnityEditor.UI.RectMask2DEditor">
+      <summary>
+        <para>Custom editor for the RectMask2d component.</para>
+      </summary>
     </member>
     <member name="T:UnityEditor.UI.ScrollbarEditor">
       <summary>

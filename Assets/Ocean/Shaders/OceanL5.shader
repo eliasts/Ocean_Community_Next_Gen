@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
 Shader "Mobile/OceanL5" {
 	Properties {
 	    _SurfaceColor ("SurfaceColor", Color) = (1,1,1,1)
@@ -77,7 +79,7 @@ Shader "Mobile/OceanL5" {
 				UNITY_INITIALIZE_OUTPUT(v2f, o);
 
     			o.bumpTexCoord.xy = v.vertex.xz*_Size;///float2(_Size.x, _Size.z)*5;
-    			o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
+    			o.pos = UnityObjectToClipPos (v.vertex);
     			o.bumpTexCoord.z = v.tangent.w * _FoamFactor;
 
     			half3 objSpaceViewDir = ObjSpaceViewDir(v.vertex);
@@ -159,7 +161,7 @@ Shader "Mobile/OceanL5" {
 					#else
 						float zdepth = LinearEyeDepth (tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(i.ref)).r);
 					#endif
-					float intensityFactor = 1 - saturate((zdepth - i.ref.z) / _ShoreDistance);  
+                    float intensityFactor = 1 - saturate((zdepth - i.ref.w) / _ShoreDistance);
 					foam += _ShoreStrength * intensityFactor * _foam ;
 					#endif
                 

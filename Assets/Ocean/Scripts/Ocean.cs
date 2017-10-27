@@ -304,6 +304,8 @@ public class Ocean : MonoBehaviour {
 
 		Initialize();
 
+
+
 		
 		/*
 		Vector3 v3 = new Vector3();

@@ -1,0 +1,4 @@
+sceneSetups:
+- path: Assets/Ocean/Scene/Ocean_with_ships_island.unity
+  isLoaded: 1
+  isActive: 1

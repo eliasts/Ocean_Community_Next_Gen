@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
 Shader "Mobile/OceanL2" {
 	Properties {
 	    _SurfaceColor ("SurfaceColor", Color) = (1,1,1,1)
@@ -68,7 +70,7 @@ Shader "Mobile/OceanL2" {
 				UNITY_INITIALIZE_OUTPUT(v2f, o);
 
     			o.bumpTexCoord.xy = v.vertex.xz*_Size;///float2(_Size.x, _Size.z)*5;
-    			o.pos = mul (UNITY_MATRIX_MVP, v.vertex);
+    			o.pos = UnityObjectToClipPos (v.vertex);
     
     			half3 objSpaceViewDir = ObjSpaceViewDir(v.vertex);
     			half3 binormal = cross( normalize(v.normal), normalize(v.tangent.xyz) );
