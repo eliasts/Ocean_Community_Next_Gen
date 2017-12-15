@@ -1,3 +1,15 @@
+**15/12/2017**
+
+- Added the ability to load and use a fixed Gaussian table, so that the simulation can be predictable.
+   -- To be able to use this set the flag in the inspector to use a fixed table. Then save your preset in Play mode.
+   -- Afterwards use the presetLoader function to load your preset after the Initialize() function of the simulation.
+   
+- Separated the loadPreset function to its own class.
+
+- Fixed the issues of the inspector not saving changes !
+
+
+
 **27/10/2017**
 
 - Shore Foam Fix
