@@ -321,7 +321,7 @@ public class Ocean : MonoBehaviour {
 		// *** Use this to load a preset at runtime *** (You must have your presets at a folder on Application.dataPath or Application.persistentDataPath etc.)
 		//In this case we load a preset with a fixed gaussian random table to have the same ocean loaded every time (or on every machine in case of multiplayer)
 		#if !UNITY_EDITOR && UNITY_ANDROID
-		presetLoader.loadPreset(this, "jar:file://" + Application.dataPath + "!/assets/"+"OceanPresets/ocean1.preset", true, true);
+		//presetLoader.loadPreset(this, "jar:file://" + Application.dataPath + "!/assets/"+"OceanPresets/ocean1.preset", true, true);
 		#endif
 	}
 

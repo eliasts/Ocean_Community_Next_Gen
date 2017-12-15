@@ -8,6 +8,7 @@
 
 - Fixed the issues of the inspector not saving changes !
 
+- Examples on how to load presets from the StreamingAssets folder.
 
 
 **27/10/2017**
