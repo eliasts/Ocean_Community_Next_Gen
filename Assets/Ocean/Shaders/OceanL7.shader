@@ -66,6 +66,7 @@ Shader "Mobile/OceanL7" {
 			half _Size;
 			half _FoamFactor;
 			half4 _SunDir;
+			half _Translucency;
 			#ifdef FOGON
  			uniform half4 unity_FogStart;
 			uniform half4 unity_FogEnd;
@@ -105,7 +106,7 @@ Shader "Mobile/OceanL7" {
 
 				half3 transLightDir = -o.lightDir + v.normal;
 
-				o.objSpaceNormal.w = pow ( max (0, dot ( o.normViewDir, -transLightDir ) ), 1 ) * 0.5;
+				o.objSpaceNormal.w = pow ( max (0, dot ( o.normViewDir, -transLightDir ) ), 1 ) * 0.5 * _Translucency;
 
    	  			#ifdef SHORE_ON
 				o.ref = ComputeScreenPos(o.pos);
@@ -136,7 +137,7 @@ Shader "Mobile/OceanL7" {
 			half _ShoreDistance;
 			half _ShoreStrength;
 			#endif
-			half _Translucency;
+			
 			half4 _SurfaceColor;
 			half4 _WaterColor;
 			half _Specularity;
@@ -174,7 +175,7 @@ Shader "Mobile/OceanL7" {
 
 					 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 					 //translucency
-					half3 wc = _WaterColor.rgb * i.objSpaceNormal.w * _Translucency*_SunColor.rgb;//* floatVec.z 
+					half3 wc = _WaterColor.rgb * i.objSpaceNormal.w * _SunColor.rgb;//* floatVec.z 
 
 					half4 result = half4(wc.x , wc.y , wc.z, 1);
 					//-----------------------------------------------------------------------------------------------------------------------------------------------------------

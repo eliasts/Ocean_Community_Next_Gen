@@ -4,53 +4,57 @@ using System.Collections;
 using System.Reflection;
 using System.Collections.Generic;
 using System.IO;
+using UnityEditor.SceneManagement;
+using UnityEngine.SceneManagement;
 
 #if UNITY_EDITOR
 [CustomEditor(typeof(Ocean))]
+[System.Serializable]
 public class OceanGeneratorInspector : Editor {
 
-	static public Texture2D blankTexture {
+	static private Texture2D blankTexture {
 		get {
 			return EditorGUIUtility.whiteTexture;
 		}
 	}
 
+
 	//private Texture2D logo;
 	private Texture2D back;
-	public static string title;
+	private static string title;
 
-	public static int oldEveryXframe;
+	private static int oldEveryXframe;
 
-	public static Color oldWaterColor;
-	public static Color oldsurfaceColor;
-	public static Color oldFakeWaterColor;
-	public static float oldFoamFactor;
-	public static float oldSpecularity, oldSpecPower;
-	public static bool oldShaderLod;
-	public static bool oldrefl, prevrefl;
-	public static bool oldrefr, prevrefr, oldSpread, oldFixed;
-	public static float oldFoamUV, oldBumpUV, oldShaderAlpha;
-	public static float oldTranslucency, oldShoreDistance, oldShoreStrength;
-	public static Vector3 oldSunDir;
-	public static int oldRefrReflXframe, oldeDefaultLod, oldRenderQueue, oldDiscSize;
-	public static string presetPath;
-	public static int currentPreset, oldpreset, oldmodeset;
-	public static bool oldRenderRefraction, oldFixedTiles;
-	public static Shader oldShader;
-	public static bool hasShore, hasShore1,hasFog, hasFog1, hasFog2, distCan1, distCan2;
-	public static float cancellationDistance;
-	public static int ocW, oldocW, oldGridRes;
+	private static Color oldWaterColor;
+	private static Color oldsurfaceColor;
+	private static Color oldFakeWaterColor;
+	private static float oldFoamFactor;
+	private static float oldSpecularity, oldSpecPower;
+	private static bool oldShaderLod;
+	private static bool oldrefl, prevrefl;
+	private static bool oldrefr, prevrefr, oldSpread, oldFixed;
+	private static float oldFoamUV, oldBumpUV, oldShaderAlpha;
+	private static float oldTranslucency, oldShoreDistance, oldShoreStrength;
+	private static Vector3 oldSunDir;
+	private static int oldRefrReflXframe, oldeDefaultLod, oldRenderQueue, oldDiscSize;
+	private static string presetPath;
+	private static int currentPreset, oldpreset, oldmodeset;
+	private static bool oldRenderRefraction, oldFixedTiles;
+	private static Shader oldShader;
+	private static bool hasShore, hasShore1,hasFog, hasFog1, hasFog2, distCan1, distCan2;
+	private static float cancellationDistance;
+	private static int ocW, oldocW, oldGridRes;
 
 	private string[] defShader = {"default lod","1 (alpha)","2","3","4","5","6 (alpha)","7 (alpha)","8(translucent)"};
 	private string[] skiplods = {"off","1","2","3","4"};
 	private string[] tileSize = {"8x8","16x16","32x32","64x64","128x128"};
-	private string[] mode = {"Mobile Setting","Desktop Setting"};
+	private string[] mode = {"Random Gaussian Table","Fixed Gaussian Table"};
 	private string[] discSize = {"small", "medium", "large"};
 	//private string[] projRes = {"low", "medium", "high"};
 	private string[] gridMode = {"tiles"};//,"proj grid"};
-	public static string[] presets, presetpaths;
+	private static string[] presets, presetpaths;
 
-	public static int editormode = 0;
+	private static int editormode = 0;
 
 	private string GetPluginPath() {
 		MonoScript ms = MonoScript.FromScriptableObject( this );
@@ -60,25 +64,30 @@ public class OceanGeneratorInspector : Editor {
 		return directoryInfo != null ? directoryInfo.FullName : null;
 	}
 
+
 	private string FilePathToAssetPath(string filePath) {
 		int indexOfAssets = filePath.LastIndexOf("Assets");
 
 		return filePath.Substring(indexOfAssets);
 	}
 
+
 	void checkPdir(Ocean ocean) {
 		if(Directory.Exists(presetPath)){
 			string[] dp = Directory.GetFiles(presetPath);
 			int k=0;
+
 			for(int i=0; i<dp.Length; i++) {
-				if(!dp[i].Contains(".meta")&& dp[i].Contains(".preset")) {k++;}
+				if(!dp[i].Contains(".meta") && dp[i].Contains(".preset"))  k++;
 			}
 
-			presets=null; presetpaths=null;
+			presets=null;
+			presetpaths=null;
 			System.Array.Resize(ref presets, k+2);
 			System.Array.Resize(ref presetpaths, k+1);
 			k=0;
 			presets[0] = "Select Preset";
+
 			for(int i=0; i<dp.Length; i++) {
 				if(!dp[i].Contains(".meta") && dp[i].Contains(".preset")) {
 					k++;
@@ -91,11 +100,14 @@ public class OceanGeneratorInspector : Editor {
 		}
 	}
 
+
+
 	void OnEnable() {
 		Ocean ocean = target as Ocean;
-		oldmodeset = ocean._mode;
+		oldmodeset = ocean._gaussianMode;
 
-		presetPath = Application.dataPath+"/Ocean/Editor/_OceanPresets";
+		presetPath = Application.dataPath + "/Ocean/Editor/_OceanPresets";
+
 
 		checkPdir(ocean);
 
@@ -156,14 +168,37 @@ public class OceanGeneratorInspector : Editor {
 			EditorGUILayout.BeginVertical();
 
 			EditorGUILayout.BeginVertical();
-			ocean._mode = EditorGUILayout.Popup(ocean._mode, mode);
+			EditorGUILayout.BeginHorizontal();
+			ocean._gaussianMode = EditorGUILayout.Popup(ocean._gaussianMode, mode, GUILayout.MaxWidth(160));
+				
+			if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
+				EditorUtility.DisplayDialog("Gaussian Random Table","If a Fixed table is used, then the library will use a saved gaussian random table.\n\n"+
+				"To save the fixed random table, make your modifications and save the preset in PLAY MODE!.\n\n"+
+				"After this you can use the preset loader with the appropriate flag to load tour preset with a fixed gaussian random table. (After the Initialize function. See Start() in Ocean.cs.)\n\n"+
+				"This is useful when you want a predictable simulation behavior."
+				,"OK");		
+			}
+			EditorGUILayout.EndHorizontal();
 
 			GUILayout.Space(2);
 			GUI.backgroundColor = new Color(.7f, .8f, 1f, 1f);
+
 			currentPreset = EditorGUILayout.Popup(currentPreset, presets);
+
 			if(oldpreset != currentPreset ) {
 				if(currentPreset==0) { currentPreset = oldpreset; return; }
-				if(ocean.loadPreset(presetpaths[currentPreset-1],EditorApplication.isPlaying)) {oldpreset = currentPreset; ocean._name = presets[currentPreset]; checkOceanWidth(ocean); oldRenderRefraction=ocean.renderRefraction; EditorUtility.SetDirty(ocean); } else {currentPreset = oldpreset; checkPdir(ocean);}
+				if(presetLoader.loadPreset(ocean, presetpaths[currentPreset-1], EditorApplication.isPlaying)) {
+					oldpreset = currentPreset;
+					ocean._name = presets[currentPreset];
+					checkOceanWidth(ocean);
+					oldRenderRefraction = ocean.renderRefraction;
+					EditorUtility.SetDirty(ocean);
+					if(!EditorApplication.isPlaying) EditorSceneManager.MarkSceneDirty(ocean.gameObject.scene);
+				} else {
+					currentPreset = oldpreset;
+					checkPdir(ocean);
+				}
+
 			}
 			
 
@@ -173,12 +208,13 @@ public class OceanGeneratorInspector : Editor {
 
 				if (preset != null) {
 					if (preset.Length > 0) {
-						ocean.loadPreset(preset,EditorApplication.isPlaying);
+						presetLoader.loadPreset(ocean, preset,EditorApplication.isPlaying);
 						title = Path.GetFileName(preset).Replace(".preset", ""); ocean._name = title;
 						updcurPreset();
 						checkOceanWidth(ocean);
 						oldRenderRefraction=ocean.renderRefraction;
 						EditorUtility.SetDirty(ocean);
+						if(!EditorApplication.isPlaying) EditorSceneManager.MarkSceneDirty(ocean.gameObject.scene);
 					}
 				}
 			}
@@ -908,13 +944,32 @@ public class OceanGeneratorInspector : Editor {
 
 		if(oldeDefaultLod != ocean.defaultLOD) {
 			//hardcoded for now. If the shader has alpha disable refraction since it is not needed (and not supported by the shader.)
-			if(ocean.defaultLOD == 6 || ocean.defaultLOD == 7 || ocean.defaultLOD == 1 ) {oldRenderRefraction = ocean.renderRefraction;  ocean.renderRefraction = false; }
-			if(ocean.defaultLOD != 6 || ocean.defaultLOD != 7 || ocean.defaultLOD != 1) { ocean.renderRefraction = oldRenderRefraction; }
+			if(ocean.defaultLOD == 6 || ocean.defaultLOD == 7 || ocean.defaultLOD == 1 ) {
+				oldRenderRefraction = ocean.renderRefraction;
+				ocean.renderRefraction = false;
+				//Debug.Log("Shader cannot use Refraction");
+			}
+
+			if(ocean.defaultLOD != 6 || ocean.defaultLOD != 7 || ocean.defaultLOD != 1) {
+				ocean.renderRefraction = oldRenderRefraction;
+			}
+
 			oldeDefaultLod = ocean.defaultLOD;
 		}
 
-		if (ocean.renderReflection != oldrefl) { ocean.EnableReflection(ocean.renderReflection); oldrefl = ocean.renderReflection; }
-		if (ocean.renderRefraction != oldrefr) { if(ocean.defaultLOD!=6 && ocean.defaultLOD!=7) { ocean.EnableRefraction(ocean.renderRefraction);} else { ocean.renderRefraction=false; } oldrefr = ocean.renderRefraction; }
+		if (ocean.renderReflection != oldrefl) {
+			ocean.EnableReflection(ocean.renderReflection);
+			oldrefl = ocean.renderReflection;
+		}
+
+		if (ocean.renderRefraction != oldrefr) {
+			if(ocean.defaultLOD!=6 && ocean.defaultLOD!=7) {
+				ocean.EnableRefraction(ocean.renderRefraction);
+			} else {
+				ocean.renderRefraction=false;
+			}
+			oldrefr = ocean.renderRefraction;
+		}
 
 		if (ocean.shaderLod != oldShaderLod) {
 			if (ocean.shaderLod) {
@@ -937,9 +992,22 @@ public class OceanGeneratorInspector : Editor {
 				oldShader = ocean.oceanShader;
 			}
 		}
-		//switch between mobile and desktop settings
-		if(oldmodeset != ocean._mode) {
-			oldmodeset = ocean._mode;
+		//switch between fixed and random gaussian tables
+		if(oldmodeset != ocean._gaussianMode) {
+			oldmodeset = ocean._gaussianMode;
+			if(ocean._gaussianMode == 0) {
+			#if NATIVE
+				uocean._setFixedRandomTable(false, ocean.width * ocean.height, ocean.gaussRandom1, ocean.gaussRandom2);
+			#else
+				ocean.InitWaveGenerator(false, false);
+			#endif
+			} else {
+			#if NATIVE
+				uocean._setFixedRandomTable(true, ocean.width * ocean.height, ocean.gaussRandom1, ocean.gaussRandom2);
+			#else
+				ocean.InitWaveGenerator(false, true);
+			#endif
+			}
 		}
 
 		//switch fixed disc size
@@ -972,16 +1040,17 @@ public class OceanGeneratorInspector : Editor {
 
 		if (GUI.changed) {
 			EditorUtility.SetDirty(ocean);
+			if(!EditorApplication.isPlaying) EditorSceneManager.MarkSceneDirty(ocean.gameObject.scene);
 		}
 
 	}
 
-	public static void switchKeyword (Material mat, string keyword1, string keyword2, bool on){
+	private static void switchKeyword (Material mat, string keyword1, string keyword2, bool on){
 		if(on) { mat.EnableKeyword(keyword1);  mat.DisableKeyword(keyword2); }
 		 else { mat.EnableKeyword(keyword2);  mat.DisableKeyword(keyword1); }
 	}
 
-	public static void updcurPreset() {
+	private static void updcurPreset() {
 		if(presets!= null) {
 			if(presets.Length>0) {
 				for(int i=0; i<presets.Length; i++) {
@@ -991,7 +1060,7 @@ public class OceanGeneratorInspector : Editor {
 		}
 	}
 
-	public static void checkOceanWidth(Ocean ocean) {
+	private static void checkOceanWidth(Ocean ocean) {
 		switch (ocean.width) {
 			case 8:
 			ocW = 0; ocean.width = ocean.height = 8; break;
@@ -1007,7 +1076,7 @@ public class OceanGeneratorInspector : Editor {
 		oldocW = ocW;
 	}
 
-	public static void savePreset(Ocean ocean) {
+	private static void savePreset(Ocean ocean) {
 		if (!Directory.Exists(presetPath)) Directory.CreateDirectory(presetPath);
 		string preset = EditorUtility.SaveFilePanel("Save Ocean preset", presetPath,"","preset");
 
@@ -1026,12 +1095,12 @@ public class OceanGeneratorInspector : Editor {
 					swr.Write(ocean.width);//int
 					swr.Write(ocean.height);//int
 					swr.Write(ocean.fixedTiles);//bool
-					swr.Write(0);//int removed
-					swr.Write(0);//intremoved
+					swr.Write(0);//reserved
+					swr.Write(0);//reserved
 					swr.Write(ocean.scale);//float
 					swr.Write(ocean.choppy_scale);//float
 					swr.Write(ocean.speed);//float
-					swr.Write(0f);//float ocean.waveSpeed removed
+					swr.Write(0f);//reserved
 					swr.Write(ocean.wakeDistance);//float
 					swr.Write(ocean.renderReflection);//bool
 					swr.Write(ocean.renderRefraction);//bool
@@ -1097,13 +1166,38 @@ public class OceanGeneratorInspector : Editor {
 					swr.Write(ocean.lowShaderLod);//int
 					swr.Write(ocean.forceDepth);//bool
 					swr.Write(ocean.waveDistanceFactor);//float
+
+					swr.Write(ocean._gaussianMode == 1);//bool
+
+					swr.Write(false);//reserved
+					swr.Write(false);//reserved
+					swr.Write(false);//reserved
+					swr.Write(0);//reserved
+					swr.Write(0);//reserved
+					swr.Write(0f);//reserved
+					swr.Write(0f);//reserved
+
+					//if we should write a fixed gaussian random table
+					if(ocean._gaussianMode == 1) {
+						int len = ocean.width * ocean.height;
+						if(ocean.gaussRandom1 != null && ocean.gaussRandom1.Length > 0 && len == ocean.gaussRandom1.Length) {
+							swr.Write(len);
+							for(int i = 0; i < len; i++) {
+								swr.Write(ocean.gaussRandom1[i]);
+								swr.Write(ocean.gaussRandom2[i]);
+							}
+						} else {
+							swr.Write(0);
+							Debug.Log("<color=yellow>Fixed Gaussian Table not saved. Save the preset in Play mode.</color>");
+						}
+					}
 				}
 
 			}
 		}
 	}
 
-	public static int LayerMaskField(string label, int mask, params GUILayoutOption[] options) {
+	private static int LayerMaskField(string label, int mask, params GUILayoutOption[] options) {
 		List<string> layers = new List<string>();
 		List<int> layerNumbers = new List<int>();
 
@@ -1187,11 +1281,11 @@ public class OceanGeneratorInspector : Editor {
 		return mask;
 	}
 
-	public static int LayerMaskField(int mask, params GUILayoutOption[] options) {
+	private static int LayerMaskField(int mask, params GUILayoutOption[] options) {
 		return LayerMaskField(null, mask, options);
 	}
 
-	public void DrawSeparator() {
+	private void DrawSeparator() {
 		EditorGUILayout.BeginVertical();
 		GUILayout.Space(12f);
 
@@ -1207,7 +1301,7 @@ public class OceanGeneratorInspector : Editor {
 		EditorGUILayout.EndVertical();
 	}
 
-public void DrawHalfSeparator(bool left = true) {
+private void DrawHalfSeparator(bool left = true) {
 		EditorGUILayout.BeginVertical();
 		GUILayout.Space(10f);
 
@@ -1227,7 +1321,7 @@ public void DrawHalfSeparator(bool left = true) {
 	}
 
 
-	public void DrawVerticalSeparator() {
+	private void DrawVerticalSeparator() {
 		if (Event.current.type == EventType.Repaint) {
 			Texture2D tex = blankTexture;
 			Rect rect = GUILayoutUtility.GetLastRect();
@@ -1240,7 +1334,7 @@ public void DrawHalfSeparator(bool left = true) {
 		}
 	}
 
-	public void DrawBackground() {
+	private void DrawBackground() {
 		if (Event.current.type == EventType.Repaint) {
 			Texture2D tex = back;
 			Rect rect = GUILayoutUtility.GetLastRect();

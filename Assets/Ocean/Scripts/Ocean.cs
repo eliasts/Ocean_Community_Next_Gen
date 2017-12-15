@@ -41,9 +41,10 @@ using Mono.Simd;
 #endif
 
 [DisallowMultipleComponent]
+[System.Serializable]
 public class Ocean : MonoBehaviour {
 
-	public int _mode;//mobile or desktop mode (todo)
+	public int _gaussianMode;//mobile or desktop mode (todo)
 	public int _gridMode = 0;//the mesh generation algorithm mode
 	public int _gridRes = 0;// grid resolution mode
 	public string _name;//the name of the ocean preset
@@ -104,8 +105,8 @@ public class Ocean : MonoBehaviour {
 	public int sTilesLod = 0;
 	public int width = 32;
 	public int height = 32;
-	private int wh;
-	private float wh1;
+	public int wh;
+	public float wh1;
 	float sizeQX, sizeQZ;
 	#if !NATIVE
 	private float hhalf;
@@ -123,7 +124,7 @@ public class Ocean : MonoBehaviour {
 	public int renderTexHeight = 128;
 
 	public float scale = 0.1f;
-	private float waveScale = 1f;
+	public float waveScale = 1f;
 	public float speed = 0.7f;
 	#if NATIVE
 	private float oldSpeed;
@@ -138,6 +139,11 @@ public class Ocean : MonoBehaviour {
 	private Color previousFogColor;
 	private float previousFogDensity, previousFogNear, previousFogFar;
 	private FogMode previousFogMode;
+
+	//Fixed Gaussian Random tables to have predictable ocean Initialization.
+	public float[] gaussRandom1;
+	public float[] gaussRandom2;
+
 
     public static Ocean Singleton { get; private set; }
 
@@ -185,8 +191,8 @@ public class Ocean : MonoBehaviour {
 	private int max_LOD = 6;
 
 	#if !NATIVE
-	private ComplexF[] h0;
-	private ComplexF[] h02;
+	public ComplexF[] h0;
+	public ComplexF[] h02;
 	#if THREADS
 	private int gh2;
 	#endif
@@ -276,6 +282,11 @@ public class Ocean : MonoBehaviour {
 		private string oldTransform2;
 	#endif
 
+	//SIMD
+	#if SIMD
+	private Vector4f v4 = new Vector4f();
+	#endif
+
     void Awake() {
         Singleton = this;
 		//Application.targetFrameRate = 120;
@@ -300,70 +311,25 @@ public class Ocean : MonoBehaviour {
 			oldTransform = player.transform;
 			oldTransform2 = player.name;
 		}
-		#endif
+#endif
+
+		
 
 		Initialize();
 
 
-
-		
-		/*
-		Vector3 v3 = new Vector3();
-		float t1 = Time.realtimeSinceStartup;
-
-
-		for(int i=0; i<wh; i++)
-		v3 = r_grid.transform.TransformPoint( Rbasemesh.vertices[i]);
-
-		Debug.Log(Time.realtimeSinceStartup- t1);
-		Debug.Log(v3);
-
-		t1 = Time.realtimeSinceStartup;
-
-		for(int i=0; i<wh; i++)
-		v3 = r_grid.transform.localToWorldMatrix.MultiplyPoint3x4( Rbasemesh.vertices[i]) ;
-
-		Debug.Log(Time.realtimeSinceStartup- t1);
-		Debug.Log(v3);
-
-		t1 = Time.realtimeSinceStartup;
-
-		for(int i=0; i<wh; i++)
-		v3 = r_grid.transform.rotation*Vector3.Scale(Rbasemesh.vertices[i],transform.localScale) + transform.position;
-		Debug.Log(Time.realtimeSinceStartup- t1);
-		Debug.Log(v3);	
-		*/
-
+		// *** Use this to load a preset at runtime *** (You must have your presets at a folder on Application.dataPath or Application.persistentDataPath etc.)
+		//In this case we load a preset with a fixed gaussian random table to have the same ocean loaded every time (or on every machine in case of multiplayer)
+		#if !UNITY_EDITOR && UNITY_ANDROID
+		presetLoader.loadPreset(this, "jar:file://" + Application.dataPath + "!/assets/"+"OceanPresets/ocean1.preset", true, true);
+		#endif
 	}
 
 
-	void preallocateBuffers() {
-		// Get base values for vertices and uv coordinates.
-		//if(_gridMode == 0) {
-			if (baseHeight == null) {
-				baseHeight = baseMesh.vertices;
-				vertices = new Vector3[baseHeight.Length];
-				normals = new Vector3[baseHeight.Length];
-				tangents = new Vector4[baseHeight.Length];
-			}
 
-			//preallocate lod buffers to avoid garbage generation!
-			verticesLOD = new Vector3[max_LOD][];
-			normalsLOD  = new Vector3[max_LOD][];
-			tangentsLOD = new Vector4[max_LOD][];
 
-			for (int L0D=0; L0D<max_LOD; L0D++) {
-				int den = (int)System.Math.Pow (2f, L0D);
-				int itemcount = (int)((height / den + 1) * (width / den + 1));
-				tangentsLOD[L0D] = new Vector4[itemcount];
-				verticesLOD[L0D] = new Vector3[itemcount];
-				normalsLOD[L0D]  = new Vector3[itemcount];
-			}
-		//}
 
-	}
-
-	void Initialize(bool runtimeLoad = false) {
+	public void Initialize(bool runtimeLoad = false) {
 		#if !UNITY_WEBGL && !UNITY_WEBPLAYER && !(UNITY_WSA_8_1 ||  UNITY_WP_8_1 || UNITY_WINRT_8_1) && THREADS
 		start = false;
 		#endif
@@ -385,20 +351,20 @@ public class Ocean : MonoBehaviour {
 		//if the player is a boat, allow interactive foam drawing
 		if(player.GetComponent<Camera>()) isBoat = false; else isBoat = true;
 
-		bounds = new Bounds(new Vector3(size.x/2f,0f,size.z/2f),new Vector3(size.x+size.x*0.15f,0,size.z+size.z*0.15f));
+		bounds = new Bounds(new Vector3(size.x / 2f, 0f, size.z / 2f),new Vector3(size.x + size.x * 0.15f, 0, size.z + size.z * 0.15f));
 
-		wh = width*height;
-		wh1 = 1f/(float)wh;
+		wh = width * height;
+		wh1 = 1f / (float)wh;
 		#if !NATIVE
-		hhalf=height/2f;
-		whalf=width/2f;
+		hhalf = height / 2f;
+		whalf = width / 2f;
 		#else
 		floats = new float[5];
 		vecs = new Vector3[2];
 		#endif
 
-		sizeQX = 1f/size.x;
-		sizeQZ = 1f/size.z;
+		sizeQX = 1f / size.x;
+		sizeQZ = 1f / size.z;
 
 		//Avoid division every frame, so do it only once on start up
 		sizeInv = new Vector2(1f / size.x,  1f / size.z);
@@ -420,13 +386,14 @@ public class Ocean : MonoBehaviour {
 		offset = g_width * (g_height - 1);
 		sizeXg_width = size.x/g_width;
 		#if THREADS
-		gh2 = g_height/2;
+		gh2 = g_height / 2;
 		#endif
 		#endif
 
 		scaleA = choppy_scale / wh;
 		oldScaleA = choppy_scale;
-		oldWindx = pWindx; oldWindy = pWindy;
+		oldWindx = pWindx;
+		oldWindy = pWindy;
 		oldWaveDistanceFactor = waveDistanceFactor;
 		#if NATIVE
 		oldSpeed = speed;
@@ -434,7 +401,8 @@ public class Ocean : MonoBehaviour {
 		//factor to reduce lod offsets when the camera is high.
 		flodFact = 1f;
 		if(player) flodFact = 1.1f - Mathf.Clamp01((player.position.y)/1428f);
-		ffact = MyFloorInt(flodFact*10.5f); oldffact = ffact;
+		ffact = MyFloorInt(flodFact * 10.5f);
+		oldffact = ffact;
 
 		/*if(_gridMode == 0)*/ GenerateTiles();
 
@@ -466,12 +434,13 @@ public class Ocean : MonoBehaviour {
 			if(SystemInfo.processorCount == 1) uocean.setThreads(1);
 			//--------------------------------------------------------------------------------------------------------------------------------------------
 			uocean.UoceanInit(width, height, pWindx, pWindy, speed, waveScale, choppy_scale, size.x, size.y, size.z, waveDistanceFactor);
+			getGaussianTable();//optional: get the gaussian random table in case we want to save it
 			uocean._calcComplex(data, t_x, Time.time, 0, height);
 			uocean._fft1(data);
 			uocean._fft2(t_x);
 			uocean._calcPhase3(data, t_x, vertices, baseHeight, normals, tangents, reflectionRefractionEnabled, canCheckBuoyancyNow, waveScale);
 		#endif
-
+		
 		//place player boat on current water level.
 		if(player!= null && isBoat) {
 			player.position = new Vector3(player.position.x, GetWaterHeightAtLocation(player.position.x, player.position.z), player.position.z);
@@ -483,7 +452,31 @@ public class Ocean : MonoBehaviour {
 	}
 
 
-	
+	void preallocateBuffers() {
+		// Get base values for vertices and uv coordinates.
+		//if(_gridMode == 0) {
+			if (baseHeight == null) {
+				baseHeight = baseMesh.vertices;
+				vertices = new Vector3[baseHeight.Length];
+				normals = new Vector3[baseHeight.Length];
+				tangents = new Vector4[baseHeight.Length];
+			}
+
+			//preallocate lod buffers to avoid garbage generation!
+			verticesLOD = new Vector3[max_LOD][];
+			normalsLOD  = new Vector3[max_LOD][];
+			tangentsLOD = new Vector4[max_LOD][];
+
+			for (int L0D=0; L0D<max_LOD; L0D++) {
+				int den = (int)System.Math.Pow (2f, L0D);
+				int itemcount = (int)((height / den + 1) * (width / den + 1));
+				tangentsLOD[L0D] = new Vector4[itemcount];
+				verticesLOD[L0D] = new Vector3[itemcount];
+				normalsLOD[L0D]  = new Vector3[itemcount];
+			}
+		//}
+
+	}	
 
 	//how the frame/threads job will be distributed.
 	public void setSpread() {
@@ -500,6 +493,8 @@ public class Ocean : MonoBehaviour {
 		#endif
 		if(fixedUpdate ) spreadAlongFrames = false;
 	}
+
+
 
 
 	void FixedUpdate (){
@@ -1261,7 +1256,7 @@ public class Ocean : MonoBehaviour {
 		}
 	}
 
-	void matSetVars() {
+	public void matSetVars() {
 		material.shader = oceanShader;
 
 		for(int i=0; i<3; i++) {
@@ -1492,7 +1487,7 @@ public class Ocean : MonoBehaviour {
 	}
 
 
-	void zeroObjects(bool destroy = false) {
+	public void zeroObjects(bool destroy = false) {
 		
 	//if(_gridMode == 0) {
 			if(destroy) {
@@ -1520,13 +1515,18 @@ public class Ocean : MonoBehaviour {
 			btiles_LOD.Clear(); tiles_LOD.Clear(); btiles_LOD = null; tiles_LOD = null;
 		//}
 
-		t_x = null; data = null; 
+		t_x = null;
+		data = null;
+		gaussRandom1 = null;
+		gaussRandom2 = null;
+
 		#if NATIVE
-			uocean.UoceanClear();
+			uocean.UoceanClear(destroy);
 		#else
 			Fourier.ClearLookupTables();
 			Fourier2.ClearLookupTables();
-			h0 = null; h02 = null;
+			h0 = null;
+			h02 = null;
 		#endif
 
 		if(destroy) GC.Collect();
@@ -1756,190 +1756,8 @@ public class Ocean : MonoBehaviour {
 		 }
 	}
 
-	public bool loadPreset(string preset, bool runtime = false) {
-		#if !UNITY_WEBGL && !UNITY_WEBPLAYER && !(UNITY_WSA_8_1 ||  UNITY_WP_8_1 || UNITY_WINRT_8_1) || UNITY_EDITOR
-		if(File.Exists(preset)) {
-			using (BinaryReader br = new BinaryReader(File.Open(preset, FileMode.Open))){
-				int ct = tiles; float cx = size.x; float cz = size.z; int cwh = width;
-				int tt=ct; float ccx=cx; float ccy=0; float ccz=cz; int ccw=cwh, cch=0; bool ccfx=false;
-				if(br.BaseStream.Position != br.BaseStream.Length) followMainCamera = br.ReadBoolean();
-				if(br.BaseStream.Position != br.BaseStream.Length) ifoamStrength = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) farLodOffset = br.ReadSingle();
-				//these values cannot be updated at runtime!
-				if((!Application.isPlaying
-				#if UNITY_EDITOR
-				 && !EditorApplication.isPlaying
-				 #endif
-				 ) || !runtime ) {
-					if(br.BaseStream.Position != br.BaseStream.Length) tiles = br.ReadInt32();
-					if(br.BaseStream.Position != br.BaseStream.Length) size.x = br.ReadSingle();
-					if(br.BaseStream.Position != br.BaseStream.Length) size.y = br.ReadSingle();
-					if(br.BaseStream.Position != br.BaseStream.Length) size.z = br.ReadSingle();
-					if(br.BaseStream.Position != br.BaseStream.Length) width = br.ReadInt32();
-					if(br.BaseStream.Position != br.BaseStream.Length) height = br.ReadInt32();
-					if(br.BaseStream.Position != br.BaseStream.Length) fixedTiles = br.ReadBoolean();
-					if(br.BaseStream.Position != br.BaseStream.Length) br.ReadInt32();//fTilesDistance : removed
-					if(br.BaseStream.Position != br.BaseStream.Length) br.ReadInt32(); //fTilesLod : removed
-				} else {
-					if(br.BaseStream.Position != br.BaseStream.Length) tt = br.ReadInt32();
-					if(br.BaseStream.Position != br.BaseStream.Length) ccx = br.ReadSingle();
-					if(br.BaseStream.Position != br.BaseStream.Length) ccy = br.ReadSingle();
-					if(br.BaseStream.Position != br.BaseStream.Length) ccz = br.ReadSingle();
-					if(br.BaseStream.Position != br.BaseStream.Length) ccw = br.ReadInt32();
-					if(br.BaseStream.Position != br.BaseStream.Length) cch = br.ReadInt32();
-					if(br.BaseStream.Position != br.BaseStream.Length) ccfx = br.ReadBoolean();
-					if(br.BaseStream.Position != br.BaseStream.Length) br.ReadInt32();///
-					if(br.BaseStream.Position != br.BaseStream.Length) br.ReadInt32();///
-				}
-				if(br.BaseStream.Position != br.BaseStream.Length) scale = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) choppy_scale = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) speed = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) br.ReadSingle();//waveSpeed : removed
-				if(br.BaseStream.Position != br.BaseStream.Length) wakeDistance = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) renderReflection = br.ReadBoolean();
-				if(br.BaseStream.Position != br.BaseStream.Length) renderRefraction = br.ReadBoolean();
-				if(br.BaseStream.Position != br.BaseStream.Length) renderTexWidth = br.ReadInt32();
-				if(br.BaseStream.Position != br.BaseStream.Length) renderTexHeight = br.ReadInt32();
-				if(br.BaseStream.Position != br.BaseStream.Length) m_ClipPlaneOffset = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) renderLayers = br.ReadInt32();
-				if(br.BaseStream.Position != br.BaseStream.Length) specularity = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) mistEnabled = br.ReadBoolean();
-				if(br.BaseStream.Position != br.BaseStream.Length) dynamicWaves = br.ReadBoolean();
-				if(br.BaseStream.Position != br.BaseStream.Length) humidity = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) pWindx = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) pWindy = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) waterColor.r = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) waterColor.g = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) waterColor.b = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) waterColor.a = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) surfaceColor.r = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) surfaceColor.g = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) surfaceColor.b = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) surfaceColor.a = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) foamFactor = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) spreadAlongFrames = br.ReadBoolean();
-				if(br.BaseStream.Position != br.BaseStream.Length) shaderLod = br.ReadBoolean();
-				if(br.BaseStream.Position != br.BaseStream.Length) everyXframe = br.ReadInt32();
-				if(br.BaseStream.Position != br.BaseStream.Length) useShaderLods = br.ReadBoolean();
-				if(br.BaseStream.Position != br.BaseStream.Length) numberLods = br.ReadInt32();
-				if(br.BaseStream.Position != br.BaseStream.Length) fakeWaterColor.r = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) fakeWaterColor.g = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) fakeWaterColor.b = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) fakeWaterColor.a = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) defaultLOD = br.ReadInt32();
-			
-				if(br.BaseStream.Position != br.BaseStream.Length) { reflrefrXframe =  br.ReadInt32(); if(reflrefrXframe==0) reflrefrXframe = 1; }
 
-				if(br.BaseStream.Position != br.BaseStream.Length) foamUV = br.ReadSingle();
-
-				float x=1000, y=0, z=0;
-				if(br.BaseStream.Position != br.BaseStream.Length) x = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) y = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) z = br.ReadSingle();
-
-				if(loadSun) {
-					if(sun != null & x<999) {
-						sun.rotation = Quaternion.Euler (x, y, z);
-						SunDir = sun.transform.forward;
-					}
-				}
-
-				if(br.BaseStream.Position != br.BaseStream.Length) bumpUV = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) ifoamWidth = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) lodSkipFrames = br.ReadInt32();
-				if(br.BaseStream.Position != br.BaseStream.Length) {
-					string nm = br.ReadString();
-					if(nm!= null) {Material mtr = (Material)Resources.Load("oceanMaterials/"+nm, typeof(Material)); if(mtr!= null) { material = mtr; mat[0] = material;  } }
-				}
-				if(br.BaseStream.Position != br.BaseStream.Length) {
-					string nm1 = br.ReadString();
-					if(nm1!= null) { Material mtr = (Material)Resources.Load("oceanMaterials/"+nm1, typeof(Material)); if(mtr!= null) { material1 = mtr; mat[1] = material1; } }
-				}
-				if(br.BaseStream.Position != br.BaseStream.Length) {
-					string nm2 = br.ReadString();
-					if(nm2!= null) {Material mtr = (Material)Resources.Load("oceanMaterials/"+nm2, typeof(Material)); if(mtr!= null) { material2 = mtr; mat[2] = material2; } }
-				}
-
-				#if !NATIVE
-				if((!Application.isPlaying
-				#if UNITY_EDITOR
-				 && !EditorApplication.isPlaying
-				 #endif
-				 ) || !runtime ) {
-					if(ccw!=width) {
-						h0=null; h02=null; wh = width*height; wh1 = 1f/(float)wh;
-						h0 = new ComplexF[wh]; h02 = new ComplexF[wh];
-					} 
-				}
-				#endif
-
-				if((Application.isPlaying
-				#if UNITY_EDITOR
-				 && EditorApplication.isPlaying
-				 #endif
-				 ) || runtime ) {
-					if(tt!=ct || cx!=ccx || cz!=ccz || cwh!= ccw) {
-						zeroObjects(true);
-						tiles = tt; size.x = ccx; size.y = ccy; size.z = ccz; width = ccw; height = cch; fixedTiles = ccfx;
-						#if !NATIVE
-						h0=null; h02=null; wh = width*height; wh1 = 1f/(float)wh;
-						h0 = new ComplexF[wh]; h02 = new ComplexF[wh];
-						#endif
-						Initialize(true);
-					}
-				}
-
-				updMaterials();
-
-				if(br.BaseStream.Position != br.BaseStream.Length) shaderAlpha = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) reflectivity = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) translucency = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) shoreDistance = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) shoreStrength = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) specPower = br.ReadSingle();
-
-				if(br.BaseStream.Position != br.BaseStream.Length) {
-					string nm = br.ReadString();
-					if(nm!= null) {Shader shd = Shader.Find(nm);  if(shd && material) { material.shader = shd; oceanShader = shd; } }
-				}
-
-				if(br.BaseStream.Position != br.BaseStream.Length) hasShore = br.ReadBoolean();
-				if(br.BaseStream.Position != br.BaseStream.Length) hasShore1 = br.ReadBoolean();
-				if(br.BaseStream.Position != br.BaseStream.Length) hasFog = br.ReadBoolean();
-				if(br.BaseStream.Position != br.BaseStream.Length) hasFog1 = br.ReadBoolean();
-				if(br.BaseStream.Position != br.BaseStream.Length) hasFog2 = br.ReadBoolean();
-				if(br.BaseStream.Position != br.BaseStream.Length) distCan1 = br.ReadBoolean();
-				if(br.BaseStream.Position != br.BaseStream.Length) distCan2 = br.ReadBoolean();
-				if(br.BaseStream.Position != br.BaseStream.Length) cancellationDistance = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) foamDuration = br.ReadSingle();
-				if(br.BaseStream.Position != br.BaseStream.Length) sTilesLod = br.ReadInt32();
-				if(br.BaseStream.Position != br.BaseStream.Length) discSize = br.ReadInt32();
-				if(br.BaseStream.Position != br.BaseStream.Length) lowShaderLod = br.ReadInt32();
-				if(br.BaseStream.Position != br.BaseStream.Length) forceDepth = br.ReadBoolean();
-				if(br.BaseStream.Position != br.BaseStream.Length) waveDistanceFactor = br.ReadSingle(); else waveDistanceFactor = 1f;
-
-				if(Application.isPlaying) initDisc();
-
-				setSpread();
-
-				//UPDATE ALL VALUES (except tile settings) FOR STANDALONE RUNTIME !!!
-				matSetVars();
-
-				#if !NATIVE
-				InitWaveGenerator();
-				#else
-				uocean.UInit(width, height, pWindx, pWindy, speed, waveScale, choppy_scale, size.x, size.y, size.z, waveDistanceFactor);
-				#endif
-
-				return true;
-			}
-		} else {Debug.Log(preset+" does not exist..."); return false;}
-		#else
-		return false;
-		#endif
-	}
-
-	private void updMaterials() {
+	public void updMaterials() {
 
 		foreach (Transform tile in transform){
 			Renderer renderer = tile.GetComponent<Renderer>();
@@ -2083,6 +1901,7 @@ public class Ocean : MonoBehaviour {
 
 		int idx = width * MyFloorInt(y) + MyFloorInt(x);
 		hIndex = idx;
+
         return data[idx].Re * waveScale * wh1;
     }
 
@@ -2259,12 +2078,25 @@ public class Ocean : MonoBehaviour {
 		return Lerp(h1, h2, yy - fy);     
 	}
 
+
 	#if !NATIVE
-	void InitWaveGenerator(bool skip = false) {
+	public void InitWaveGenerator(bool skip = false, bool useMyRandom = false) {
 		// Wind restricted to one direction, reduces calculations
 		Vector2 windDirection = new Vector2 (windx, windy);
-		if(h0 == null) { h0 = new ComplexF[width*height]; }
-		if(h02 == null) { h02 = new ComplexF[width*height]; }
+
+		int len = width * height;
+
+		if(h0 == null) h0 = new ComplexF[len];
+		if(h02 == null) h02 = new ComplexF[len];
+
+		if(useMyRandom && (gaussRandom1 == null || gaussRandom2 == null)) {
+			useMyRandom = false;
+			Debug.Log("Fixed Gaussian Rand table is null!");
+		}
+
+		if (gaussRandom1 == null || (gaussRandom1 != null && gaussRandom1.Length == 0) ) gaussRandom1 = new float[len]; 
+		if (gaussRandom2 == null || (gaussRandom2 != null && gaussRandom2.Length == 0)) gaussRandom2 = new float[len];
+		
 
 		// Initialize wave generator	
 		for (int y=0; y<height; y++) {
@@ -2274,11 +2106,26 @@ public class Ocean : MonoBehaviour {
 				float tp = TWO_PI * waveDistanceFactor;
 				Vector2 vec_k = new Vector2 (tp * xc / size.x, tp* yc / size.z);
 				int idx = width * y + x;
-				if(!skip) h02[idx] = new ComplexF (GaussianRnd (), GaussianRnd ());
-				h0 [idx] = h02[idx] * 0.707f * (float)System.Math.Sqrt (P_spectrum (vec_k, windDirection));
+
+				if(useMyRandom) {
+					if(!skip) h02[idx] = new ComplexF (gaussRandom1[idx], gaussRandom2[idx]);
+				} else {
+					if(!skip) {
+						float g1 = GaussianRnd();
+						float g2 = GaussianRnd();
+						gaussRandom1[idx] = g1;
+						gaussRandom2[idx] = g2;
+						h02[idx] = new ComplexF (g1, g2);
+					}
+				}
+
+				h0 [idx] = h02[idx] * 0.707f * (float)Math.Sqrt (P_spectrum (vec_k, windDirection));
+
 			}
 		}
+
 	}
+
 
 	float GaussianRnd () {
 		float x1 = UnityEngine.Random.value;
@@ -2286,7 +2133,7 @@ public class Ocean : MonoBehaviour {
 	
 		if (x1 == 0.0f) x1 = 0.01f;
 	
-		return (float)(System.Math.Sqrt (-2.0 * System.Math.Log (x1)) * System.Math.Cos (TWO_PI * x2));
+		return (float)(Math.Sqrt (-2.0 * Math.Log (x1)) * Math.Cos (TWO_PI * x2));
 	}
 
     // Phillips spectrum
@@ -2300,41 +2147,22 @@ public class Ocean : MonoBehaviour {
 			return 0.0f;
 		}
 		float vcsq=vec_k.magnitude;	
-		return (float)(A * System.Math.Exp (-1.0f / (k2 * L * L) - System.Math.Pow (vcsq * 0.1, 2.0)) / (k2 * k2) * System.Math.Pow (Vector2.Dot (vec_k / vcsq, wind / wind.magnitude), 2.0));// * wind_x * wind_y;
+		return (float)(A * Math.Exp (-1.0f / (k2 * L * L) - Math.Pow (vcsq * 0.1, 2.0)) / (k2 * k2) * Math.Pow (Vector2.Dot (vec_k / vcsq, wind / wind.magnitude), 2.0));// * wind_x * wind_y;
 	}
 	#endif
 
-	//SIMD functions
-	#if SIMD
-
-	private Vector4f v4 = new Vector4f();
-/*
-    public static float Length(ref Vector4f vec) {
-        Vector4f length = vec * vec;
-        length = length.HorizontalAdd(length);
-        length = length.HorizontalAdd(length);
-        return length.Sqrt().X;
-    }
-
-    public static float LengthSquared(ref Vector4f vec) {
-        Vector4f length = vec * vec;
-        length = length.HorizontalAdd(length);
-        return length.HorizontalAdd(length).X;
-    }
-
-    static void Normalizef(ref Vector4f vec) {
-        Vector4f factor = vec * vec;
-        factor = factor.HorizontalAdd(factor);
-        factor = factor.HorizontalAdd(factor);
-        factor = factor.InvSqrt();
-        vec *= factor;
-    }
-
-	*/
+	#if NATIVE
+	public void getGaussianTable() {
+		int len = width * height;
+		if (gaussRandom1 == null || gaussRandom1.Length == 0) gaussRandom1 = new float[len]; 
+		if (gaussRandom2 == null || gaussRandom2.Length == 0) gaussRandom2 = new float[len];
+		uocean._getFixedRandomTable(gaussRandom1, gaussRandom2);
+	}
 	#endif
 
-//Only for the unity editor. Makes the ocean follow the editor camera.
-#if UNITY_EDITOR
+
+	//Only for the unity editor. Makes the ocean follow the editor camera.
+	#if UNITY_EDITOR
 	void _update () {
 		 if(oldSceneView != SceneView.currentDrawingSceneView) {
 			if( EditorWindow.focusedWindow != null && EditorWindow.focusedWindow.GetType() == typeof( SceneView ) ) {
@@ -2356,6 +2184,6 @@ public class Ocean : MonoBehaviour {
 			}
 		 }
 	}
-#endif
+	#endif
 
 }

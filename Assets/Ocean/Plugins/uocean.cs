@@ -22,7 +22,13 @@ public class uocean  {
 		public static extern void InitWaveGenerator();
 
 		[DllImport("__Internal")]
-		public static extern void UoceanClear();
+		protected static extern void setMyRandoms(bool enable, int size, IntPtr g1, IntPtr g2);
+
+		[DllImport("__Internal")]
+		protected static extern void getFixedTable(IntPtr g1, IntPtr g2);
+
+		[DllImport("__Internal")]
+		public static extern void UoceanClear(bool destroy);
 
 		//set the number of threads for native multithreaded functions (android and Linux).
 		//for all the other platforms(except webgl and webplayer) set this to >1 to have parallelization. If set to 1 no parallelization will be used.
@@ -82,8 +88,14 @@ private const string libname = "ocean";
 		[DllImport(libname, EntryPoint = "InitWaveGenerator")]
 		public static extern void InitWaveGenerator();
 
+		[DllImport(libname, EntryPoint = "setMyRandoms")]
+		protected static extern void setMyRandoms(bool enable, int size, IntPtr g1, IntPtr g2);
+
+		[DllImport(libname, EntryPoint = "getFixedTable")]
+		protected static extern void getFixedTable(IntPtr g1, IntPtr g2);
+
 		[DllImport(libname, EntryPoint = "UoceanClear")]
-		public static extern void UoceanClear();
+		public static extern void UoceanClear(bool destroy);
 
 		//set the number of threads for native multithreaded functions (android and Linux).
 		//for all the other platforms(except webgl and webplayer) set this to >1 to have parallelization. If set to 1 no parallelization will be used.
@@ -229,6 +241,20 @@ private const string libname = "ocean";
 			v1.Free(); v2.Free(); t1.Free(); t2.Free(); n1.Free(); n2.Free(); f1.Free();
 		}
 
+		public static void _setFixedRandomTable(bool enable, int size, float[] g1, float[] g2) {
+			GCHandle vg1 = GCHandle.Alloc(g1, GCHandleType.Pinned);
+			GCHandle vg2 = GCHandle.Alloc(g2, GCHandleType.Pinned);
 
+			setMyRandoms( enable, size, vg1.AddrOfPinnedObject(), vg2.AddrOfPinnedObject() );		
+			vg1.Free(); vg2.Free();
+		}
+
+		public static void _getFixedRandomTable(float[] g1, float[] g2) {
+			GCHandle vg1 = GCHandle.Alloc(g1, GCHandleType.Pinned);
+			GCHandle vg2 = GCHandle.Alloc(g2, GCHandleType.Pinned);
+
+			getFixedTable( vg1.AddrOfPinnedObject(), vg2.AddrOfPinnedObject() );		
+			vg1.Free(); vg2.Free();
+		}
 }
 #endif

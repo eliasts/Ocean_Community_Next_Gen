@@ -2,9 +2,11 @@
 using UnityEditor;
 using System.Collections.Generic;
 using System.IO;
+using UnityEditor.SceneManagement;
 
 #if UNITY_EDITOR
-[CustomEditor(typeof(Boyancy))]
+[CustomEditor(typeof(Buoyancy))]
+[System.Serializable]
 public class BuoyancyInspector  : Editor{
 
 	static public Texture2D blankTexture {
@@ -22,7 +24,7 @@ public class BuoyancyInspector  : Editor{
 
 
 	void OnEnable () {
-		Boyancy boyancy = target as Boyancy;
+		Buoyancy boyancy = target as Buoyancy;
 
 		presetPath = Application.dataPath+"/Ocean/Editor/_OceanPresets";
 
@@ -39,12 +41,12 @@ public class BuoyancyInspector  : Editor{
 
 	public override void OnInspectorGUI() {
 
-		Boyancy boyancy = target as Boyancy;
+		Buoyancy buoyancy = target as Buoyancy;
 		DrawSeparator();
 
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Render Queue", GUILayout.MaxWidth(130));
-		boyancy.renderQueue = EditorGUILayout.IntField(boyancy.renderQueue);
+		buoyancy.renderQueue = EditorGUILayout.IntField(buoyancy.renderQueue);
 		GUILayout.Space(175);
 		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 			EditorUtility.DisplayDialog("Material Render Queue","Set the object's material render queue to something that suits you. Useful for not showing shore lines under boat.","OK");
@@ -53,7 +55,7 @@ public class BuoyancyInspector  : Editor{
 		EditorGUILayout.EndHorizontal();
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("More Accurate", GUILayout.MaxWidth(130));
-		boyancy.moreAccurate = EditorGUILayout.Toggle(boyancy.moreAccurate);
+		buoyancy.moreAccurate = EditorGUILayout.Toggle(buoyancy.moreAccurate);
 		GUILayout.Space(175);
 		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 			EditorUtility.DisplayDialog("More accurate Calculation","If a more accurate function of the Water height function should be used.\n\nIt is however 2.5x times slower.","OK");
@@ -62,7 +64,7 @@ public class BuoyancyInspector  : Editor{
 
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Use FixedUpdate", GUILayout.MaxWidth(130));
-		boyancy.useFixedUpdate = EditorGUILayout.Toggle(boyancy.useFixedUpdate);
+		buoyancy.useFixedUpdate = EditorGUILayout.Toggle(buoyancy.useFixedUpdate);
 		GUILayout.Space(175);
 		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 			EditorUtility.DisplayDialog("Use FixedUpdate()","If this object should be simulated in the FixedUpdate function. Can be better timed but it is more accurate if unchecked.","OK");
@@ -72,7 +74,7 @@ public class BuoyancyInspector  : Editor{
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Buoyancy");
 		GUILayout.Space(-100);
-		boyancy.magnitude = EditorGUILayout.Slider(boyancy.magnitude, 0, 20);
+		buoyancy.magnitude = EditorGUILayout.Slider(buoyancy.magnitude, 0, 20);
 		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 			EditorUtility.DisplayDialog("Buoyancy magnitude","The amount of the buoyant forces applied to this vessel.","OK");
 		}
@@ -81,7 +83,7 @@ public class BuoyancyInspector  : Editor{
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Y offset");
 		GUILayout.Space(-100);
-		boyancy.ypos = EditorGUILayout.Slider(boyancy.ypos, -30f, 30f);
+		buoyancy.ypos = EditorGUILayout.Slider(buoyancy.ypos, -30f, 30f);
 		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 			EditorUtility.DisplayDialog("Y offset","How many units the boat will float above the calculated position.","OK");
 		}
@@ -90,7 +92,7 @@ public class BuoyancyInspector  : Editor{
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Center of Mass");
 		GUILayout.Space(-100);
-		boyancy.CenterOfMassOffset = EditorGUILayout.Slider(boyancy.CenterOfMassOffset, -20f, 20f);
+		buoyancy.CenterOfMassOffset = EditorGUILayout.Slider(buoyancy.CenterOfMassOffset, -20f, 20f);
 		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 			EditorUtility.DisplayDialog("Center of Mass offset","Offsets the height of the center of mass of the rigidbody.","OK");
 		}
@@ -99,7 +101,7 @@ public class BuoyancyInspector  : Editor{
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Damp Coeff");
 		GUILayout.Space(-100);
-		boyancy.dampCoeff = EditorGUILayout.Slider(boyancy.dampCoeff, 0f, 2f);
+		buoyancy.dampCoeff = EditorGUILayout.Slider(buoyancy.dampCoeff, 0f, 2f);
 		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 			EditorUtility.DisplayDialog("Damp Coefficient","The damp coefficient of the buoyancy.","OK");
 		}
@@ -108,7 +110,7 @@ public class BuoyancyInspector  : Editor{
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Slices X");
 		GUILayout.Space(-100);
-		boyancy.SlicesX = (int)EditorGUILayout.Slider(boyancy.SlicesX, 2, 20);
+		buoyancy.SlicesX = (int)EditorGUILayout.Slider(buoyancy.SlicesX, 2, 20);
 		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 			EditorUtility.DisplayDialog("Slices X dimension","The slicing of the bounds of the box collider in the X dimension.","OK");
 		}
@@ -117,7 +119,7 @@ public class BuoyancyInspector  : Editor{
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Slices Z");
 		GUILayout.Space(-100);
-		boyancy.SlicesZ = (int)EditorGUILayout.Slider(boyancy.SlicesZ, 2, 20);
+		buoyancy.SlicesZ = (int)EditorGUILayout.Slider(buoyancy.SlicesZ, 2, 20);
 		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 			EditorUtility.DisplayDialog("Slices Z dimension","The slicing of the bounds of the box collider in the Z dimension.","OK");
 		}
@@ -126,7 +128,7 @@ public class BuoyancyInspector  : Editor{
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Interpolation");
 		GUILayout.Space(-100);
-		boyancy.interpolation = (int)EditorGUILayout.Slider(boyancy.interpolation, 0, 20);
+		buoyancy.interpolation = (int)EditorGUILayout.Slider(buoyancy.interpolation, 0, 20);
 		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 			EditorUtility.DisplayDialog("Buoyancy Interpolation","How many cycles will be used to average/interpolate the final buoynacy.\n\nKeep this as small as you can since it adds overhead.","OK");
 		}
@@ -138,10 +140,10 @@ public class BuoyancyInspector  : Editor{
 
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Choppyness influence", GUILayout.MaxWidth(130));
-		boyancy.ChoppynessAffectsPosition = EditorGUILayout.Toggle(boyancy.ChoppynessAffectsPosition);
+		buoyancy.ChoppynessAffectsPosition = EditorGUILayout.Toggle(buoyancy.ChoppynessAffectsPosition);
 		GUILayout.Space(175);
 		EditorGUILayout.LabelField("ifIsVisible", GUILayout.MaxWidth(60));
-		boyancy.cvisible = EditorGUILayout.Toggle(boyancy.cvisible);
+		buoyancy.cvisible = EditorGUILayout.Toggle(buoyancy.cvisible);
 		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 			EditorUtility.DisplayDialog("Choppyness affects boat","If the choppyness of the waves affect the boat's position and rotation.\n\nThis will be skipped if the boat has reached a high speed.","OK");
 		}
@@ -152,7 +154,7 @@ public class BuoyancyInspector  : Editor{
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Choppyness factor", GUILayout.MinWidth(100));
 		GUILayout.Space(-80);
-		boyancy.ChoppynessFactor = EditorGUILayout.Slider(boyancy.ChoppynessFactor, 0, 10f);
+		buoyancy.ChoppynessFactor = EditorGUILayout.Slider(buoyancy.ChoppynessFactor, 0, 10f);
 		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 			EditorUtility.DisplayDialog("Choppyness Factor","The amount of choppyness that will influence the boat.","OK");
 		}
@@ -162,10 +164,10 @@ public class BuoyancyInspector  : Editor{
 
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Wind affects boat", GUILayout.MaxWidth(130));
-		boyancy.WindAffectsPosition = EditorGUILayout.Toggle(boyancy.WindAffectsPosition);
+		buoyancy.WindAffectsPosition = EditorGUILayout.Toggle(buoyancy.WindAffectsPosition);
 		GUILayout.Space(175);
 		EditorGUILayout.LabelField("ifIsVisible", GUILayout.MaxWidth(60));
-		boyancy.wvisible = EditorGUILayout.Toggle(boyancy.wvisible);
+		buoyancy.wvisible = EditorGUILayout.Toggle(buoyancy.wvisible);
 		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 			EditorUtility.DisplayDialog("Wind affects boat","If the Ocean wind affect the boat's position and rotation.\n\nThis will be skipped if the boat has reached a high speed.\n\n"+
 			"If ifIsVisible is checked the calculations will take place only if the objects renderer is visible.","OK");
@@ -177,7 +179,7 @@ public class BuoyancyInspector  : Editor{
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Wind factor", GUILayout.MinWidth(100));
 		GUILayout.Space(-80);
-		boyancy.WindFactor = EditorGUILayout.Slider(boyancy.WindFactor, 0, 5f);
+		buoyancy.WindFactor = EditorGUILayout.Slider(buoyancy.WindFactor, 0, 5f);
 		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 			EditorUtility.DisplayDialog("Wind Factor","The amount of wind that will influence the boat.","OK");
 		}
@@ -187,10 +189,10 @@ public class BuoyancyInspector  : Editor{
 
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Slope sliding",  GUILayout.MaxWidth(130));
-		boyancy.xAngleAddsSliding = EditorGUILayout.Toggle(boyancy.xAngleAddsSliding);
+		buoyancy.xAngleAddsSliding = EditorGUILayout.Toggle(buoyancy.xAngleAddsSliding);
 		GUILayout.Space(175);
 		EditorGUILayout.LabelField("ifIsVisible", GUILayout.MaxWidth(60));
-		boyancy.svisible = EditorGUILayout.Toggle(boyancy.svisible);
+		buoyancy.svisible = EditorGUILayout.Toggle(buoyancy.svisible);
 		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 			EditorUtility.DisplayDialog("Slope sliding","If the boat faces stormy waves, sliding forces will be applied to it.\n\n"+
 			"If ifIsVisible is checked the calculations will take place only if the objects renderer is visible.","OK");
@@ -202,7 +204,7 @@ public class BuoyancyInspector  : Editor{
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Slide factor", GUILayout.MinWidth(100));
 		GUILayout.Space(-80);
-		boyancy.slideFactor = EditorGUILayout.Slider(boyancy.slideFactor, 0, 10f);
+		buoyancy.slideFactor = EditorGUILayout.Slider(buoyancy.slideFactor, 0, 10f);
 		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 			EditorUtility.DisplayDialog("Slope sliding Factor","The amount of sliding force applied to the boat.","OK");
 		}
@@ -213,7 +215,7 @@ public class BuoyancyInspector  : Editor{
 		EditorGUILayout.BeginHorizontal();
 		EditorGUILayout.LabelField("Visible Renderer", GUILayout.MinWidth(130));
 		GUILayout.Space(-150);
-		boyancy._renderer = (Renderer)EditorGUILayout.ObjectField(boyancy._renderer, typeof(Renderer), true, GUILayout.MinWidth(120));
+		buoyancy._renderer = (Renderer)EditorGUILayout.ObjectField(buoyancy._renderer, typeof(Renderer), true, GUILayout.MinWidth(120));
 		if(GUILayout.Button("?",GUILayout.MaxWidth(20))) {
 			EditorUtility.DisplayDialog("Renderer","The object's renderer to make visibilty checks against it.","OK");
 		}
@@ -225,10 +227,10 @@ public class BuoyancyInspector  : Editor{
 
 		EditorGUILayout.BeginHorizontal();
 		if(GUILayout.Button("Save preset")) {
-			savePreset(boyancy);
+			savePreset(buoyancy);
 		}	
 		if(GUILayout.Button("Load preset")) {
-			loadPreset(boyancy);
+			loadPreset(buoyancy);
 		}
 
 		EditorGUILayout.EndHorizontal();
@@ -238,7 +240,8 @@ public class BuoyancyInspector  : Editor{
 		DrawSeparator();	
 		
 		if (GUI.changed) {
-			EditorUtility.SetDirty(boyancy);
+			EditorUtility.SetDirty(buoyancy);
+			if(!EditorApplication.isPlaying) EditorSceneManager.MarkSceneDirty(buoyancy.gameObject.scene);
 		}
 														
 	}
@@ -263,7 +266,7 @@ public class BuoyancyInspector  : Editor{
 
 
 	//saves a buoyancy preset
-	public static void savePreset(Boyancy boyancy) {
+	public static void savePreset(Buoyancy buoyancy) {
 		if (!Directory.Exists(presetPath)) Directory.CreateDirectory(presetPath);
 		string preset = EditorUtility.SaveFilePanel("Save buoyancy preset", presetPath,"","buoyancy");
 
@@ -285,32 +288,32 @@ public class BuoyancyInspector  : Editor{
 						swr.Write(col.center.x);//float
 						swr.Write(col.center.y);//float
 						swr.Write(col.center.z);//float
-						swr.Write(col.size.x * boyancy.transform.localScale.x);//float
-						swr.Write(col.size.y * boyancy.transform.localScale.y);//float
-						swr.Write(col.size.z * boyancy.transform.localScale.z);//float
+						swr.Write(col.size.x * buoyancy.transform.localScale.x);//float
+						swr.Write(col.size.y * buoyancy.transform.localScale.y);//float
+						swr.Write(col.size.z * buoyancy.transform.localScale.z);//float
 					}
 
 					//buoyancy parameters
-					swr.Write(boyancy.magnitude);//float
-					swr.Write(boyancy.ypos);//float
-					swr.Write(boyancy.CenterOfMassOffset);//float
-					swr.Write(boyancy.dampCoeff);//float
-					swr.Write(boyancy.SlicesX);//int
-					swr.Write(boyancy.SlicesZ);//int
-					swr.Write(boyancy.interpolation);//int
-					swr.Write(boyancy.ChoppynessAffectsPosition);//bool
-					swr.Write(boyancy.cvisible);//bool
-					swr.Write(boyancy.ChoppynessFactor);//float
-					swr.Write(boyancy.WindAffectsPosition);//bool
-					swr.Write(boyancy.wvisible);//bool
-					swr.Write(boyancy.WindFactor);//float
-					swr.Write(boyancy.xAngleAddsSliding);//bool
-					swr.Write(boyancy.svisible);//bool
-					swr.Write(boyancy.slideFactor);//float
-					swr.Write(boyancy.moreAccurate);//bool
-					swr.Write(boyancy.useFixedUpdate);//bool
+					swr.Write(buoyancy.magnitude);//float
+					swr.Write(buoyancy.ypos);//float
+					swr.Write(buoyancy.CenterOfMassOffset);//float
+					swr.Write(buoyancy.dampCoeff);//float
+					swr.Write(buoyancy.SlicesX);//int
+					swr.Write(buoyancy.SlicesZ);//int
+					swr.Write(buoyancy.interpolation);//int
+					swr.Write(buoyancy.ChoppynessAffectsPosition);//bool
+					swr.Write(buoyancy.cvisible);//bool
+					swr.Write(buoyancy.ChoppynessFactor);//float
+					swr.Write(buoyancy.WindAffectsPosition);//bool
+					swr.Write(buoyancy.wvisible);//bool
+					swr.Write(buoyancy.WindFactor);//float
+					swr.Write(buoyancy.xAngleAddsSliding);//bool
+					swr.Write(buoyancy.svisible);//bool
+					swr.Write(buoyancy.slideFactor);//float
+					swr.Write(buoyancy.moreAccurate);//bool
+					swr.Write(buoyancy.useFixedUpdate);//bool
 
-					var bc = boyancy.GetComponent<BoatController>();
+					var bc = buoyancy.GetComponent<BoatController>();
 
 					//If the object has a boat controller attached write the properties.
 					//This is useful, because if you change the buoynacy settings the speed
@@ -326,7 +329,7 @@ public class BuoyancyInspector  : Editor{
 						swr.Write(false);//bool
 					}
 
-					swr.Write(boyancy.renderQueue);//int
+					swr.Write(buoyancy.renderQueue);//int
 				}
 
 			}
@@ -334,7 +337,7 @@ public class BuoyancyInspector  : Editor{
 	}
 
 	//loads a buoyancy preset (and boat controller settings if available)
-	public static bool loadPreset(Boyancy boyancy) {
+	public static bool loadPreset(Buoyancy buoyancy) {
 
 		string preset = EditorUtility.OpenFilePanel("Load Ocean preset",presetPath,"buoyancy");
 		if(!Application.isPlaying) {
@@ -374,35 +377,35 @@ public class BuoyancyInspector  : Editor{
 								if(col != null) {
 									
 									col.center = new Vector3(x, y, z);
-									col.size = new Vector3(sx/boyancy.transform.localScale.x, sy/boyancy.transform.localScale.y, sz/boyancy.transform.localScale.z);
+									col.size = new Vector3(sx/buoyancy.transform.localScale.x, sy/buoyancy.transform.localScale.y, sz/buoyancy.transform.localScale.z);
 
 								} else { Debug.Log("No Box Collider found"); }
 							}
 
-							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.magnitude = br.ReadSingle();
-							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.ypos = br.ReadSingle();
-							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.CenterOfMassOffset = br.ReadSingle();
-							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.dampCoeff = br.ReadSingle();
-							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.SlicesX = br.ReadInt32();
-							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.SlicesZ = br.ReadInt32();
-							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.interpolation = br.ReadInt32();
-							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.ChoppynessAffectsPosition = br.ReadBoolean();
-							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.cvisible = br.ReadBoolean();
-							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.ChoppynessFactor = br.ReadSingle();
-							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.WindAffectsPosition = br.ReadBoolean();
-							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.wvisible = br.ReadBoolean();
-							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.WindFactor = br.ReadSingle();
-							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.xAngleAddsSliding = br.ReadBoolean();
-							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.svisible = br.ReadBoolean();
-							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.slideFactor = br.ReadSingle();
-							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.moreAccurate = br.ReadBoolean();
-							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.useFixedUpdate = br.ReadBoolean();
+							if(br.BaseStream.Position != br.BaseStream.Length) buoyancy.magnitude = br.ReadSingle();
+							if(br.BaseStream.Position != br.BaseStream.Length) buoyancy.ypos = br.ReadSingle();
+							if(br.BaseStream.Position != br.BaseStream.Length) buoyancy.CenterOfMassOffset = br.ReadSingle();
+							if(br.BaseStream.Position != br.BaseStream.Length) buoyancy.dampCoeff = br.ReadSingle();
+							if(br.BaseStream.Position != br.BaseStream.Length) buoyancy.SlicesX = br.ReadInt32();
+							if(br.BaseStream.Position != br.BaseStream.Length) buoyancy.SlicesZ = br.ReadInt32();
+							if(br.BaseStream.Position != br.BaseStream.Length) buoyancy.interpolation = br.ReadInt32();
+							if(br.BaseStream.Position != br.BaseStream.Length) buoyancy.ChoppynessAffectsPosition = br.ReadBoolean();
+							if(br.BaseStream.Position != br.BaseStream.Length) buoyancy.cvisible = br.ReadBoolean();
+							if(br.BaseStream.Position != br.BaseStream.Length) buoyancy.ChoppynessFactor = br.ReadSingle();
+							if(br.BaseStream.Position != br.BaseStream.Length) buoyancy.WindAffectsPosition = br.ReadBoolean();
+							if(br.BaseStream.Position != br.BaseStream.Length) buoyancy.wvisible = br.ReadBoolean();
+							if(br.BaseStream.Position != br.BaseStream.Length) buoyancy.WindFactor = br.ReadSingle();
+							if(br.BaseStream.Position != br.BaseStream.Length) buoyancy.xAngleAddsSliding = br.ReadBoolean();
+							if(br.BaseStream.Position != br.BaseStream.Length) buoyancy.svisible = br.ReadBoolean();
+							if(br.BaseStream.Position != br.BaseStream.Length) buoyancy.slideFactor = br.ReadSingle();
+							if(br.BaseStream.Position != br.BaseStream.Length) buoyancy.moreAccurate = br.ReadBoolean();
+							if(br.BaseStream.Position != br.BaseStream.Length) buoyancy.useFixedUpdate = br.ReadBoolean();
 							bool hasBoatController = false;
 							if(br.BaseStream.Position != br.BaseStream.Length) {
 								hasBoatController = br.ReadBoolean();
 								if(hasBoatController) {
 									float res=0;
-									var bc = boyancy.GetComponent<BoatController>();
+									var bc = buoyancy.GetComponent<BoatController>();
 									res=br.ReadSingle(); if(bc) bc.m_FinalSpeed = res;
 									res=br.ReadSingle(); if(bc) bc.m_accelerationTorqueFactor = res;
 									res=br.ReadSingle(); if(bc) bc.m_InertiaFactor = res;
@@ -411,22 +414,24 @@ public class BuoyancyInspector  : Editor{
 								}
 							}
 							
-							if(br.BaseStream.Position != br.BaseStream.Length) boyancy.renderQueue = br.ReadInt32();
+							if(br.BaseStream.Position != br.BaseStream.Length) buoyancy.renderQueue = br.ReadInt32();
 
 							//try to asign a renderer for visibility checks if there is none assigned in the boyancy inspector.
-							if(boyancy._renderer == null) {
-								boyancy._renderer = boyancy.GetComponent<Renderer>();
-								if(!boyancy._renderer) {
-									boyancy._renderer = boyancy.GetComponentInChildren<Renderer>();
+							if(buoyancy._renderer == null) {
+								buoyancy._renderer = buoyancy.GetComponent<Renderer>();
+								if(!buoyancy._renderer) {
+									buoyancy._renderer = buoyancy.GetComponentInChildren<Renderer>();
 								}
 							}
 
-							EditorUtility.SetDirty(boyancy);
+							EditorUtility.SetDirty(buoyancy);
 							if(hasBoatController){
-								var bc = boyancy.GetComponent<BoatController>();
+								var bc = buoyancy.GetComponent<BoatController>();
 								EditorUtility.SetDirty(bc);
+								if(!EditorApplication.isPlaying) EditorSceneManager.MarkSceneDirty(bc.gameObject.scene);
 							}
 
+							if(!EditorApplication.isPlaying) EditorSceneManager.MarkSceneDirty(buoyancy.gameObject.scene);
 							return true;
 							
 						}

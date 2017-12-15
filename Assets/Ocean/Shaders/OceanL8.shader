@@ -60,6 +60,7 @@ Shader "Mobile/OceanL8" {
 
 			half _Size;
 			half4 _SunDir;
+			half _Translucency;
 			#ifdef FOGON
  			uniform half4 unity_FogStart;
 			uniform half4 unity_FogEnd;
@@ -98,7 +99,7 @@ Shader "Mobile/OceanL8" {
 
 				half3 transLightDir = -o.lightDir + v.normal;
 
-				o.objSpaceNormal.w = pow ( max (0, dot ( o.normViewDir, -transLightDir ) ), 1 ) * 0.5;
+				o.objSpaceNormal.w = pow ( max (0, dot ( o.normViewDir, -transLightDir ) ), 1 ) * 0.5 * _Translucency;;
 
 				#ifdef FOGON
 				//manual fog
@@ -120,7 +121,7 @@ Shader "Mobile/OceanL8" {
 			sampler2D _Bump;
 
 			//#endif
-			half _Translucency;
+			
 			half4 _SurfaceColor;
 			half4 _WaterColor;
 			half _Specularity;
@@ -154,7 +155,7 @@ Shader "Mobile/OceanL8" {
 
 					 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 					 //translucency
-					half3 wc = _WaterColor.rgb * i.objSpaceNormal.w * _Translucency*_SunColor.rgb;//* floatVec.z 
+					half3 wc = _WaterColor.rgb * i.objSpaceNormal.w * _SunColor.rgb;//* floatVec.z 
 
 					half4 result = half4(wc.x , wc.y , wc.z, 1);
 					//-----------------------------------------------------------------------------------------------------------------------------------------------------------
