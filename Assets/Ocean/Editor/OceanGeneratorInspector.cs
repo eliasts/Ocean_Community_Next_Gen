@@ -45,13 +45,14 @@ public class OceanGeneratorInspector : Editor {
 	private static float cancellationDistance;
 	private static int ocW, oldocW, oldGridRes;
 
-	private string[] defShader = {"default lod","1 (alpha)","2","3","4","5","6 (alpha)","7 (alpha)","8(translucent)"};
-	private string[] skiplods = {"off","1","2","3","4"};
-	private string[] tileSize = {"8x8","16x16","32x32","64x64","128x128"};
-	private string[] mode = {"Random Gaussian Table","Fixed Gaussian Table"};
-	private string[] discSize = {"small", "medium", "large"};
+	private readonly string[] defShader = {"default lod","1 (alpha)","2","3","4","5","6 (alpha)","7 (alpha)","8(translucent)"};
+	private readonly string[] skiplods = {"off","1","2","3","4"};
+	private readonly string[] tileSize = {"8x8","16x16","32x32","64x64","128x128"};
+	private readonly string[] mode = {"Random Gaussian Table","Fixed Gaussian Table"};
+	private readonly string[] discSize = {"small", "medium", "large"};
 	//private string[] projRes = {"low", "medium", "high"};
-	private string[] gridMode = {"tiles"};//,"proj grid"};
+	private readonly string[] gridMode = {"tiles"};//,"proj grid"};
+
 	private static string[] presets, presetpaths;
 
 	private static int editormode = 0;
@@ -106,8 +107,8 @@ public class OceanGeneratorInspector : Editor {
 		Ocean ocean = target as Ocean;
 		oldmodeset = ocean._gaussianMode;
 
-		presetPath = Application.dataPath + "/Ocean/Editor/_OceanPresets";
-
+		var script = MonoScript.FromScriptableObject( this );
+		presetPath = Path.GetDirectoryName( AssetDatabase.GetAssetPath( script ))+"/_OceanPresets";
 
 		checkPdir(ocean);
 
