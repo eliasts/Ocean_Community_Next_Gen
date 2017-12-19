@@ -26,7 +26,8 @@ public class BuoyancyInspector  : Editor{
 	void OnEnable () {
 		Buoyancy boyancy = target as Buoyancy;
 
-		presetPath = Application.dataPath+"/Ocean/Editor/_OceanPresets";
+		var script = MonoScript.FromScriptableObject( this );
+		presetPath = Path.GetDirectoryName( AssetDatabase.GetAssetPath( script ))+"/_OceanPresets";
 
 		rrig = boyancy.GetComponent<Rigidbody>();
 		if(rrig== null) Debug.Log("Object requires a Rigidbody");
