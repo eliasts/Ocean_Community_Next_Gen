@@ -1,3 +1,8 @@
+**19/10/2017**
+
+- The Presets path is now found automatically.
+
+
 **15/12/2017**
 
 - Added the ability to load and use a fixed Gaussian table, so that the simulation can be predictable.
