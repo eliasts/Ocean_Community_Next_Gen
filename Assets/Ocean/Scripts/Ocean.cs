@@ -11,6 +11,7 @@
 #endif
 
 using UnityEngine;
+using UnityEngine.XR;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -1388,7 +1389,7 @@ public class Ocean : MonoBehaviour {
 
 	public void RenderReflectionAndRefraction() {
 		int cullingMask = ~(1 << 4) & renderLayers.value;
-		Camera cam = Camera.current;
+		Camera cam = XRDevice.isPresent ?  Camera.main :  Camera.current;
 		if( !cam ) return;
 
 		Camera reflectionCamera, refractionCamera;
@@ -2166,12 +2167,15 @@ public class Ocean : MonoBehaviour {
 	void _update () {
 		 if(oldSceneView != SceneView.currentDrawingSceneView) {
 			if( EditorWindow.focusedWindow != null && EditorWindow.focusedWindow.GetType() == typeof( SceneView ) ) {
-				if(Camera.current) {
-					if(oldTransform2 != Camera.current.name) {
+
+				Camera cam = XRDevice.isPresent ?  Camera.main :  Camera.current;
+
+				if(cam) {
+					if(oldTransform2 != cam.name) {
 						oldSceneView = SceneView.currentDrawingSceneView;
-						player = Camera.current.transform;
+						player = cam.transform;
 						//Debug.Log("------> "+player.name);
-						oldTransform2 = Camera.current.name;
+						oldTransform2 = cam.name;
 						isBoat = false;
 					}
 				}
