@@ -2411,7 +2411,8 @@ Transitions with exit times greater than one will be evaluated only once, so the
     </member>
     <member name="M:UnityEditor.AssetDatabase.GetAssetPathsFromAssetBundleAndAssetName(System.String,System.String)">
       <summary>
-        <para>Get the asset paths from the given assetBundle name and asset name.</para>
+        <para>Get the Asset paths for all Assets tagged with assetBundleName and
+                named assetName.</para>
       </summary>
       <param name="assetBundleName"></param>
       <param name="assetName"></param>
@@ -14484,6 +14485,41 @@ Note: Use HandleUtility.GetHandleSize where you might want to have constant scre
         <para>Highlights an entire editor control using its label text as identifier.</para>
       </summary>
     </member>
+    <member name="T:UnityEditor.IconKind">
+      <summary>
+        <para>Icon kind.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEditor.IconKind.Any">
+      <summary>
+        <para>This icon can be used for any purpose in an application.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEditor.IconKind.Application">
+      <summary>
+        <para>This icon is used for the main application icons.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEditor.IconKind.Notification">
+      <summary>
+        <para>This icon is used for push notifications.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEditor.IconKind.Settings">
+      <summary>
+        <para>This icon is used for settings.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEditor.IconKind.Spotlight">
+      <summary>
+        <para>This icon is used for Spotlight searches. (iOS only).</para>
+      </summary>
+    </member>
+    <member name="F:UnityEditor.IconKind.Store">
+      <summary>
+        <para>This icon is used by the iOS App Store.</para>
+      </summary>
+    </member>
     <member name="T:UnityEditor.IHVImageFormatImporter">
       <summary>
         <para>Use IHVImageFormatImporter to modify Texture2D import settings for Textures in IHV (Independent Hardware Vendor) formats such as .DDS and .PVR from Editor scripts.</para>
@@ -16370,6 +16406,41 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
         <para>Default.</para>
       </summary>
     </member>
+    <member name="T:UnityEditor.iOSSystemGestureDeferMode">
+      <summary>
+        <para>Bit-mask used to control the deferring of system gestures on iOS.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEditor.iOSSystemGestureDeferMode.All">
+      <summary>
+        <para>Identifies all screen edges.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEditor.iOSSystemGestureDeferMode.BottomEdge">
+      <summary>
+        <para>Identifies bottom screen edge.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEditor.iOSSystemGestureDeferMode.LeftEdge">
+      <summary>
+        <para>Identifies left screen edge.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEditor.iOSSystemGestureDeferMode.None">
+      <summary>
+        <para>Disables gesture deferring on all edges.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEditor.iOSSystemGestureDeferMode.RightEdge">
+      <summary>
+        <para>Identifies right screen edge.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEditor.iOSSystemGestureDeferMode.TopEdge">
+      <summary>
+        <para>Identifies top screen edge.</para>
+      </summary>
+    </member>
     <member name="T:UnityEditor.iOSTargetDevice">
       <summary>
         <para>Target iOS device.</para>
@@ -16500,19 +16571,29 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
         <para>Enable baked ambient occlusion (AO).</para>
       </summary>
     </member>
-    <member name="P:UnityEditor.LightmapEditorSettings.giBakeBackend">
+    <member name="P:UnityEditor.LightmapEditorSettings.filterTypeAO">
       <summary>
-        <para>Determines which backend to use for baking lightmaps.</para>
+        <para>Configure a filter kernel for the ambient occlusion target.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEditor.LightmapEditorSettings.filterTypeDirect">
+      <summary>
+        <para>Configure a filter kernel for the direct light target.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEditor.LightmapEditorSettings.filterTypeIndirect">
+      <summary>
+        <para>Configure a filter kernel for the indirect light target.</para>
       </summary>
     </member>
     <member name="P:UnityEditor.LightmapEditorSettings.giPathTracerFilter">
       <summary>
-        <para>Determines the filtering kernel for the Progressive Path Tracer backend.</para>
+        <para>Determines the filtering kernel for the Progressive Lightmapper.</para>
       </summary>
     </member>
-    <member name="P:UnityEditor.LightmapEditorSettings.giPathTracerSampling">
+    <member name="P:UnityEditor.LightmapEditorSettings.lightmapper">
       <summary>
-        <para>Determines which sampling strategy to use for baking lightmaps with the path tracing backend.</para>
+        <para>Determines which backend to use for baking lightmaps.</para>
       </summary>
     </member>
     <member name="P:UnityEditor.LightmapEditorSettings.maxAtlasHeight">
@@ -16540,72 +16621,82 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.</param>
         <para>Determines how Unity will compress baked reflection cubemap.</para>
       </summary>
     </member>
+    <member name="P:UnityEditor.LightmapEditorSettings.sampling">
+      <summary>
+        <para>Determines which sampling strategy to use for baking lightmaps with the Progressive Lightmapper.</para>
+      </summary>
+    </member>
     <member name="P:UnityEditor.LightmapEditorSettings.textureCompression">
       <summary>
         <para>Whether to use texture compression on the generated lightmaps.</para>
       </summary>
     </member>
-    <member name="T:UnityEditor.LightmapEditorSettings.GIBakeBackend">
+    <member name="T:UnityEditor.LightmapEditorSettings.FilterMode">
       <summary>
-        <para>Backends available for baking lightmaps.</para>
+        <para>The available filtering modes for the Progressive Lightmapper.</para>
       </summary>
     </member>
-    <member name="F:UnityEditor.LightmapEditorSettings.GIBakeBackend.PathTracer">
+    <member name="F:UnityEditor.LightmapEditorSettings.FilterMode.Advanced">
       <summary>
-        <para>Backend for baking lightmaps with path tracing.</para>
+        <para>Enables the advanced filtering mode for the Progressive Lightmapper.</para>
       </summary>
     </member>
-    <member name="F:UnityEditor.LightmapEditorSettings.GIBakeBackend.Radiosity">
-      <summary>
-        <para>Backend for baking lightmaps with the Enlighten radiosity middleware.</para>
-      </summary>
-    </member>
-    <member name="T:UnityEditor.LightmapEditorSettings.PathTracerFilter">
-      <summary>
-        <para>The available filter kernels for the Progressive Path Tracer GI backend.</para>
-      </summary>
-    </member>
-    <member name="F:UnityEditor.LightmapEditorSettings.PathTracerFilter.ATrous">
-      <summary>
-        <para>Filter baked results of the Progressive Path Tracer with an A-Trous kernel.</para>
-      </summary>
-    </member>
-    <member name="F:UnityEditor.LightmapEditorSettings.PathTracerFilter.Gaussian">
-      <summary>
-        <para>Filter baked results of the Progressive Path Tracer with an Gauss kernel.</para>
-      </summary>
-    </member>
-    <member name="T:UnityEditor.LightmapEditorSettings.PathTracerFilterMode">
-      <summary>
-        <para>The available filtering modes for the Progressive Path Tracer GI backend.</para>
-      </summary>
-    </member>
-    <member name="F:UnityEditor.LightmapEditorSettings.PathTracerFilterMode.Advanced">
-      <summary>
-        <para>Enables the advanced filtering mode for the Progressive Path Tracer GI backend.</para>
-      </summary>
-    </member>
-    <member name="F:UnityEditor.LightmapEditorSettings.PathTracerFilterMode.Auto">
+    <member name="F:UnityEditor.LightmapEditorSettings.FilterMode.Auto">
       <summary>
         <para>The filtering is configured automatically.</para>
       </summary>
     </member>
-    <member name="F:UnityEditor.LightmapEditorSettings.PathTracerFilterMode.None">
+    <member name="F:UnityEditor.LightmapEditorSettings.FilterMode.None">
       <summary>
         <para>Turn filtering off.</para>
       </summary>
     </member>
-    <member name="T:UnityEditor.LightmapEditorSettings.PathTracerSampling">
+    <member name="T:UnityEditor.LightmapEditorSettings.FilterType">
       <summary>
-        <para>Available sampling strategies for baking lightmaps with the path tracing backend.</para>
+        <para>The available filter kernels for the Progressive Lightmapper.</para>
       </summary>
     </member>
-    <member name="F:UnityEditor.LightmapEditorSettings.PathTracerSampling.Auto">
+    <member name="F:UnityEditor.LightmapEditorSettings.FilterType.ATrous">
+      <summary>
+        <para>Use an A-Trous filter for a GI texture.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEditor.LightmapEditorSettings.FilterType.Gaussian">
+      <summary>
+        <para>Use a Gaussian filter for a GI texture.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEditor.LightmapEditorSettings.FilterType.None">
+      <summary>
+        <para>Do not filter GI texture.</para>
+      </summary>
+    </member>
+    <member name="T:UnityEditor.LightmapEditorSettings.Lightmapper">
+      <summary>
+        <para>Backends available for baking lightmaps.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEditor.LightmapEditorSettings.Lightmapper.PathTracer">
+      <summary>
+        <para>Backend for baking lightmaps with path tracing.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEditor.LightmapEditorSettings.Lightmapper.Radiosity">
+      <summary>
+        <para>Backend for baking lightmaps with the Enlighten radiosity middleware.</para>
+      </summary>
+    </member>
+    <member name="T:UnityEditor.LightmapEditorSettings.Sampling">
+      <summary>
+        <para>Available sampling strategies for baking lightmaps with the Progressive Lightmapper.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEditor.LightmapEditorSettings.Sampling.Auto">
       <summary>
         <para>Auto will automatically select the sampling settings.</para>
       </summary>
     </member>
-    <member name="F:UnityEditor.LightmapEditorSettings.PathTracerSampling.Fixed">
+    <member name="F:UnityEditor.LightmapEditorSettings.Sampling.Fixed">
       <summary>
         <para>Fixed sampling uses a fixed number of samples per texel. This can be used when the other strategies fail to use enough samples in some areas. It will typically be slow.</para>
       </summary>
@@ -19966,12 +20057,28 @@ See Also: PhysicsVisualizationSettings.</para>
         <para>Returns the list of assigned icons for the specified platform.</para>
       </summary>
       <param name="platform"></param>
+      <param name="kind"></param>
+    </member>
+    <member name="M:UnityEditor.PlayerSettings.GetIconsForTargetGroup(UnityEditor.BuildTargetGroup,UnityEditor.IconKind)">
+      <summary>
+        <para>Returns the list of assigned icons for the specified platform.</para>
+      </summary>
+      <param name="platform"></param>
+      <param name="kind"></param>
     </member>
     <member name="M:UnityEditor.PlayerSettings.GetIconSizesForTargetGroup(UnityEditor.BuildTargetGroup)">
       <summary>
         <para>Returns a list of icon sizes for the specified platform.</para>
       </summary>
       <param name="platform"></param>
+      <param name="kind"></param>
+    </member>
+    <member name="M:UnityEditor.PlayerSettings.GetIconSizesForTargetGroup(UnityEditor.BuildTargetGroup,UnityEditor.IconKind)">
+      <summary>
+        <para>Returns a list of icon sizes for the specified platform.</para>
+      </summary>
+      <param name="platform"></param>
+      <param name="kind"></param>
     </member>
     <member name="M:UnityEditor.PlayerSettings.GetPropertyBool(System.String,UnityEditor.BuildTargetGroup)">
       <summary>
@@ -20108,6 +20215,11 @@ See Also: PhysicsVisualizationSettings.</para>
         <para>Describes the reason for access to the user's camera.</para>
       </summary>
     </member>
+    <member name="P:UnityEditor.PlayerSettings.iOS.deferSystemGesturesMode">
+      <summary>
+        <para>Defer system gestures until the second swipe on specific edges.</para>
+      </summary>
+    </member>
     <member name="P:UnityEditor.PlayerSettings.iOS.exitOnSuspend">
       <summary>
         <para>Application should exit when suspended to background.</para>
@@ -20116,6 +20228,11 @@ See Also: PhysicsVisualizationSettings.</para>
     <member name="P:UnityEditor.PlayerSettings.iOS.forceHardShadowsOnMetal">
       <summary>
         <para>Should hard shadows be enforced when running on (mobile) Metal.</para>
+      </summary>
+    </member>
+    <member name="P:UnityEditor.PlayerSettings.iOS.hideHomeButton">
+      <summary>
+        <para>Specifies whether the home button should be hidden in the iOS build of this application.</para>
       </summary>
     </member>
     <member name="P:UnityEditor.PlayerSettings.iOS.iOSManualProvisioningProfileID">
@@ -20892,6 +21009,15 @@ See Also: PhysicsVisualizationSettings.</para>
       </summary>
       <param name="platform"></param>
       <param name="icons"></param>
+      <param name="kind"></param>
+    </member>
+    <member name="M:UnityEditor.PlayerSettings.SetIconsForTargetGroup(UnityEditor.BuildTargetGroup,UnityEngine.Texture2D[],UnityEditor.IconKind)">
+      <summary>
+        <para>Assign a list of icons for the specified platform.</para>
+      </summary>
+      <param name="platform"></param>
+      <param name="icons"></param>
+      <param name="kind"></param>
     </member>
     <member name="M:UnityEditor.PlayerSettings.SetPropertyBool(System.String,System.Boolean,UnityEditor.BuildTargetGroup)">
       <summary>
@@ -22318,6 +22444,11 @@ For more information - https:msdn.microsoft.comlibrarywindowsappshh779671https:m
     <member name="F:UnityEditor.Rendering.TierSettings.detailNormalMap">
       <summary>
         <para>Allows you to specify whether Detail Normal Map should be sampled if assigned.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEditor.Rendering.TierSettings.enableLPPV">
+      <summary>
+        <para>Allows you to specify whether Light Probe Proxy Volume should be used.</para>
       </summary>
     </member>
     <member name="F:UnityEditor.Rendering.TierSettings.hdr">
@@ -24407,11 +24538,14 @@ See Also:</para>
 See Also: AssetDatabase.IsOpenForEdit, AssetDatabase.IsMetaFileOpenForEdit.</para>
       </summary>
     </member>
+    <member name="F:UnityEditor.StatusQueryOptions.UseCachedAsync">
+      <summary>
+        <para>This option sets the status query to first use the latest valid version control system status of the file and query for a valid status asynchronously if otherwise.</para>
+      </summary>
+    </member>
     <member name="F:UnityEditor.StatusQueryOptions.UseCachedIfPossible">
       <summary>
-        <para>Use the last known version control system status of the file. This is faster on average but less accurate than forcing an update, as it will cache the status of the file for a period of time.
-
-See Also: AssetDatabase.IsOpenForEdit, AssetDatabase.IsMetaFileOpenForEdit.</para>
+        <para>This option sets the status query to first use the latest valid version control system status of the file and query for a valid status synchronously if otherwise.</para>
       </summary>
     </member>
     <member name="T:UnityEditor.StereoRenderingPath">

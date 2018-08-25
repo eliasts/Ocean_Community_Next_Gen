@@ -8604,6 +8604,16 @@ See Also: WWW.assetBundle, WWW.LoadFromCacheOrDownload.</param>
       <summary>
         <para>Delete all AssetBundle and Procedural Material content that has been cached by the current application.</para>
       </summary>
+      <param name="expiration">The number of seconds that AssetBundles may remain unused in the cache.</param>
+      <returns>
+        <para>True when cache cleaning succeeded, false if cache was in use.</para>
+      </returns>
+    </member>
+    <member name="M:UnityEngine.Caching.CleanCache(System.Int32)">
+      <summary>
+        <para>Delete all AssetBundle and Procedural Material content that has been cached by the current application.</para>
+      </summary>
+      <param name="expiration">The number of seconds that AssetBundles may remain unused in the cache.</param>
       <returns>
         <para>True when cache cleaning succeeded, false if cache was in use.</para>
       </returns>
@@ -17887,7 +17897,7 @@ Changing this value affects any subsequently loaded shaders. Initially this valu
         <para>Copies source texture into destination render texture with a shader.</para>
       </summary>
       <param name="source">Source texture.</param>
-      <param name="dest">Destination RenderTexture, or null to blit directly to screen.</param>
+      <param name="dest">The destination RenderTexture. Set this to null to blit directly to screen. See description for more information.</param>
       <param name="mat">Material to use. Material's shader could do some post-processing effect, for example.</param>
       <param name="pass">If -1 (default), draws all passes in the material. Otherwise, draws given pass only.</param>
     </member>
@@ -17896,7 +17906,7 @@ Changing this value affects any subsequently loaded shaders. Initially this valu
         <para>Copies source texture into destination render texture with a shader.</para>
       </summary>
       <param name="source">Source texture.</param>
-      <param name="dest">Destination RenderTexture, or null to blit directly to screen.</param>
+      <param name="dest">The destination RenderTexture. Set this to null to blit directly to screen. See description for more information.</param>
       <param name="mat">Material to use. Material's shader could do some post-processing effect, for example.</param>
       <param name="pass">If -1 (default), draws all passes in the material. Otherwise, draws given pass only.</param>
     </member>
@@ -17905,7 +17915,7 @@ Changing this value affects any subsequently loaded shaders. Initially this valu
         <para>Copies source texture into destination render texture with a shader.</para>
       </summary>
       <param name="source">Source texture.</param>
-      <param name="dest">Destination RenderTexture, or null to blit directly to screen.</param>
+      <param name="dest">The destination RenderTexture. Set this to null to blit directly to screen. See description for more information.</param>
       <param name="mat">Material to use. Material's shader could do some post-processing effect, for example.</param>
       <param name="pass">If -1 (default), draws all passes in the material. Otherwise, draws given pass only.</param>
     </member>
@@ -24689,9 +24699,19 @@ Only usable on Android, Windows Phone or Windows Tablets.</para>
         <para>iPad Pro 9.7", first generation.</para>
       </summary>
     </member>
+    <member name="F:UnityEngine.iOS.DeviceGeneration.iPadPro10Inch2Gen">
+      <summary>
+        <para>iPad Pro 10.5", second generation 10" iPad.</para>
+      </summary>
+    </member>
     <member name="F:UnityEngine.iOS.DeviceGeneration.iPadPro1Gen">
       <summary>
-        <para>iPad Pro, first generation.</para>
+        <para>iPad Pro 12.9", first generation.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.iOS.DeviceGeneration.iPadPro2Gen">
+      <summary>
+        <para>iPad Pro 12.9", second generation.</para>
       </summary>
     </member>
     <member name="F:UnityEngine.iOS.DeviceGeneration.iPadUnknown">
@@ -24769,6 +24789,16 @@ Only usable on Android, Windows Phone or Windows Tablets.</para>
         <para>iPhone 7 Plus.</para>
       </summary>
     </member>
+    <member name="F:UnityEngine.iOS.DeviceGeneration.iPhone8">
+      <summary>
+        <para>iPhone 8.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.iOS.DeviceGeneration.iPhone8Plus">
+      <summary>
+        <para>iPhone 8 Plus.</para>
+      </summary>
+    </member>
     <member name="F:UnityEngine.iOS.DeviceGeneration.iPhoneSE1Gen">
       <summary>
         <para>iPhone SE, first generation.</para>
@@ -24777,6 +24807,11 @@ Only usable on Android, Windows Phone or Windows Tablets.</para>
     <member name="F:UnityEngine.iOS.DeviceGeneration.iPhoneUnknown">
       <summary>
         <para>Yet unknown iPhone.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.iOS.DeviceGeneration.iPhoneX">
+      <summary>
+        <para>iPhone X.</para>
       </summary>
     </member>
     <member name="F:UnityEngine.iOS.DeviceGeneration.iPodTouch1Gen">
@@ -42366,13 +42401,13 @@ frame. Minimum value is 1 and maximum is 33.</para>
       <summary>
         <para>Get the corners of the calculated rectangle in the local space of its Transform.</para>
       </summary>
-      <param name="fourCornersArray">Array that corners should be filled into.</param>
+      <param name="fourCornersArray">The array that corners are filled into.</param>
     </member>
     <member name="M:UnityEngine.RectTransform.GetWorldCorners(UnityEngine.Vector3[])">
       <summary>
         <para>Get the corners of the calculated rectangle in world space.</para>
       </summary>
-      <param name="fourCornersArray">Array that corners should be filled into.</param>
+      <param name="fourCornersArray">The ray that corners are filled into.</param>
     </member>
     <member name="T:UnityEngine.RectTransform.ReapplyDrivenProperties">
       <summary>
@@ -45679,6 +45714,11 @@ Updating a probe's cubemap is a costly operation. Unity needs to render the enti
         <para>Volume extent of a 3D render texture.</para>
       </summary>
     </member>
+    <member name="P:UnityEngine.RenderTexture.vrUsage">
+      <summary>
+        <para>If this RenderTexture is a VR eye texture used in stereoscopic rendering, this property decides what special rendering occurs, if any.</para>
+      </summary>
+    </member>
     <member name="P:UnityEngine.RenderTexture.width">
       <summary>
         <para>The width of the render texture in pixels.</para>
@@ -45756,6 +45796,7 @@ Updating a probe's cubemap is a costly operation. Unity needs to render the enti
       <param name="format">Render texture format.</param>
       <param name="readWrite">Color space conversion mode.</param>
       <param name="antiAliasing">Anti-aliasing (1,2,4,8).</param>
+      <param name="vrUsage"></param>
     </member>
     <member name="M:UnityEngine.RenderTexture.IsCreated">
       <summary>
@@ -56718,6 +56759,26 @@ This function calls &lt;a href=" https:msdn.microsoft.comen-uslibrarywindowsdesk
       </summary>
       <param name="oldState">The previous state of the world tracking systems.</param>
       <param name="newState">The new state of the world tracking systems.</param>
+    </member>
+    <member name="T:UnityEngine.VRTextureUsage">
+      <summary>
+        <para>This enum describes how the RenderTexture is used as a VR eye texture. Instead of using the values of this enum manually, use the value returned by GetDefaultVREyeTextureDesc or other VR functions returning a RenderTextureDesc.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.VRTextureUsage.None">
+      <summary>
+        <para>The RenderTexture is not a VR eye texture. No special rendering behavior will occur.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.VRTextureUsage.OneEye">
+      <summary>
+        <para>This texture corresponds to a single eye on a stereoscopic display.</para>
+      </summary>
+    </member>
+    <member name="F:UnityEngine.VRTextureUsage.TwoEyes">
+      <summary>
+        <para>This texture corresponds to two eyes on a stereoscopic display. This will be taken into account when using Graphics.Blit and other rendering functions.</para>
+      </summary>
     </member>
     <member name="T:UnityEngine.WaitForEndOfFrame">
       <summary>

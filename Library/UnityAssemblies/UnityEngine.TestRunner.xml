@@ -29,6 +29,11 @@
         <para>LogAssert allows you to expect Unity log messages that would normally cause the test to fail.</para>
       </summary>
     </member>
+    <member name="P:UnityEngine.TestTools.LogAssert.ignoreFailingMessages">
+      <summary>
+        <para>Set this property to true to prevent unexpected error log messages from triggering an assertion. This property is set to false by default.</para>
+      </summary>
+    </member>
     <member name="M:UnityEngine.TestTools.LogAssert.Expect(UnityEngine.LogType,System.String)">
       <summary>
         <para>Expect a log message of a specfic type. If an error, assertion or exception log is expected, the test will not fail. The test will fail if a log message is expected but does not appear.</para>

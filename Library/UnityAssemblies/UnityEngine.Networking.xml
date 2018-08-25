@@ -850,6 +850,11 @@
         <para>The registered network message handlers.</para>
       </summary>
     </member>
+    <member name="P:UnityEngine.Networking.NetworkClient.hostPort">
+      <summary>
+        <para>The local port that the network client uses to connect to the server.</para>
+      </summary>
+    </member>
     <member name="P:UnityEngine.Networking.NetworkClient.hostTopology">
       <summary>
         <para>The host topology that this client is using.</para>

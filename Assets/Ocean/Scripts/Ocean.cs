@@ -11,12 +11,14 @@
 #endif
 
 using UnityEngine;
+#if UNITY_2017_OR_NEWER
 using UnityEngine.XR;
+#endif
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-#if !UNITY_WEBGL && !UNITY_WEBPLAYER && !(UNITY_WSA_8_1 ||  UNITY_WP_8_1 || UNITY_WINRT_8_1) || UNITY_EDITOR
+#if !UNITY_WEBGL && !UNITY_WEBPLAYER && !(UNITY_WSA_8_1 || UNITY_WP_8_1 || UNITY_WINRT_8_1) || UNITY_EDITOR
 using System.IO;
 #if THREADS
 using System.Threading;
@@ -25,12 +27,12 @@ using System.Threading;
 
 
 #if NETFX_CORE
-    #if UNITY_WSA_10_0
+#if UNITY_WSA_10_0
     using System.Threading.Tasks;
     using static System.IO.Directory;
     using static System.IO.File;
     using static System.IO.FileStream;
-    #endif
+#endif
 #endif
 
 #if UNITY_EDITOR
@@ -87,14 +89,14 @@ public class Ocean : MonoBehaviour {
 	public int renderQueue = 2521;
 
 	private Vector3 centerOffset;
-	#if !UNITY_WEBGL && !UNITY_WEBPLAYER && !(UNITY_WSA_8_1 ||  UNITY_WP_8_1 || UNITY_WINRT_8_1) && THREADS
-	#if !NETFX_CORE
+#if !UNITY_WEBGL && !UNITY_WEBPLAYER && !(UNITY_WSA_8_1 || UNITY_WP_8_1 || UNITY_WINRT_8_1) && THREADS
+#if !NETFX_CORE
 	private Thread th0, th0b, th1,th1b, th2, th3, th3b;
-	#else
+#else
 	private Task th0, th0b, th1,th1b, th2, th3, th3b;
-	#endif
+#endif
 	bool start;
-	#endif
+#endif
 	
 	bool start2;
 
@@ -109,15 +111,15 @@ public class Ocean : MonoBehaviour {
 	public int wh;
 	public float wh1;
 	float sizeQX, sizeQZ;
-	#if !NATIVE
+#if !NATIVE
 	private float hhalf;
 	private float whalf;
 	private int offset;
 	private float sizeXg_width;
-	#else
+#else
 	float [] floats;
 	Vector3[] vecs;
-	#endif
+#endif
 	private int gwgh;
 	private float scaleA, oldScaleA;
 
@@ -127,9 +129,9 @@ public class Ocean : MonoBehaviour {
 	public float scale = 0.1f;
 	public float waveScale = 1f;
 	public float speed = 0.7f;
-	#if NATIVE
+#if NATIVE
 	private float oldSpeed;
-	#endif
+#endif
 	public float wakeDistance = 5f, waveDistanceFactor = 1f;
 	private float oldWaveDistanceFactor = 1f;
 	public Vector3 size = new Vector3 (150.0f, 1.0f, 150.0f);
@@ -191,13 +193,13 @@ public class Ocean : MonoBehaviour {
 	//this is hardcoded 
 	private int max_LOD = 6;
 
-	#if !NATIVE
+#if !NATIVE
 	public ComplexF[] h0;
 	public ComplexF[] h02;
-	#if THREADS
+#if THREADS
 	private int gh2;
-	#endif
-	#endif
+#endif
+#endif
 	private ComplexF[] t_x;
 	private ComplexF[] data;
 
@@ -277,16 +279,16 @@ public class Ocean : MonoBehaviour {
 
 	private Vector3 mv2;
 
-	#if UNITY_EDITOR
+#if UNITY_EDITOR
 		private SceneView oldSceneView;
 		private Transform oldTransform;
 		private string oldTransform2;
-	#endif
+#endif
 
 	//SIMD
-	#if SIMD
+#if SIMD
 	private Vector4f v4 = new Vector4f();
-	#endif
+#endif
 
     void Awake() {
         Singleton = this;
@@ -305,7 +307,7 @@ public class Ocean : MonoBehaviour {
 		//experiment with this value on low end mobiles (default: -1. Read the documentation about it.)
 		//QualitySettings.maxQueuedFrames = 1;
 
-		#if UNITY_EDITOR
+#if UNITY_EDITOR
 		oldSceneView = SceneView.currentDrawingSceneView;
 		EditorApplication.update += _update;
 		if(player) {
@@ -321,9 +323,9 @@ public class Ocean : MonoBehaviour {
 
 		// *** Use this to load a preset at runtime *** (You must have your presets at a folder on Application.dataPath or Application.persistentDataPath etc.)
 		//In this case we load a preset with a fixed gaussian random table to have the same ocean loaded every time (or on every machine in case of multiplayer)
-		#if !UNITY_EDITOR && UNITY_ANDROID
+#if !UNITY_EDITOR && UNITY_ANDROID
 		//presetLoader.loadPreset(this, "jar:file://" + Application.dataPath + "!/assets/"+"OceanPresets/ocean1.preset", true, true);
-		#endif
+#endif
 	}
 
 
@@ -331,9 +333,9 @@ public class Ocean : MonoBehaviour {
 
 
 	public void Initialize(bool runtimeLoad = false) {
-		#if !UNITY_WEBGL && !UNITY_WEBPLAYER && !(UNITY_WSA_8_1 ||  UNITY_WP_8_1 || UNITY_WINRT_8_1) && THREADS
+#if !UNITY_WEBGL && !UNITY_WEBPLAYER && !(UNITY_WSA_8_1 || UNITY_WP_8_1 || UNITY_WINRT_8_1) && THREADS
 		start = false;
-		#endif
+#endif
 		ticked = false;  start2= false;
 
 		previousFogState = RenderSettings.fog;
@@ -356,13 +358,13 @@ public class Ocean : MonoBehaviour {
 
 		wh = width * height;
 		wh1 = 1f / (float)wh;
-		#if !NATIVE
+#if !NATIVE
 		hhalf = height / 2f;
 		whalf = width / 2f;
-		#else
+#else
 		floats = new float[5];
 		vecs = new Vector3[2];
-		#endif
+#endif
 
 		sizeQX = 1f / size.x;
 		sizeQZ = 1f / size.z;
@@ -383,22 +385,22 @@ public class Ocean : MonoBehaviour {
 		g_width = width + 1;
 
 		gwgh = g_width*g_height-1;
-		#if !NATIVE
+#if !NATIVE
 		offset = g_width * (g_height - 1);
 		sizeXg_width = size.x/g_width;
-		#if THREADS
+#if THREADS
 		gh2 = g_height / 2;
-		#endif
-		#endif
+#endif
+#endif
 
 		scaleA = choppy_scale / wh;
 		oldScaleA = choppy_scale;
 		oldWindx = pWindx;
 		oldWindy = pWindy;
 		oldWaveDistanceFactor = waveDistanceFactor;
-		#if NATIVE
+#if NATIVE
 		oldSpeed = speed;
-		#endif
+#endif
 		//factor to reduce lod offsets when the camera is high.
 		flodFact = 1f;
 		if(player) flodFact = 1.1f - Mathf.Clamp01((player.position.y)/1428f);
@@ -409,11 +411,11 @@ public class Ocean : MonoBehaviour {
 
 
 		// Init wave spectra. One for vertex offset and another for normal map
-		#if !NATIVE
+#if !NATIVE
 		h0 = new ComplexF[width * height];
 		h02 = new ComplexF[width * height];
 		InitWaveGenerator();
-		#endif
+#endif
 		matSetVars ();
 		/*if(_gridMode == 0)*/ GenerateHeightmap ();
 		if(!runtimeLoad) StartCoroutine(AddMist());
@@ -423,12 +425,12 @@ public class Ocean : MonoBehaviour {
 
 
 		//These must be called at start !!!
-		#if !NATIVE
+#if !NATIVE
 			calcComplex(Time.time, 0, height);
 			Fourier.FFT2 (data, width, height, FourierDirection.Backward);
 			Fourier2.FFT2 (t_x, width, height, FourierDirection.Backward);
 			/*if(_gridMode == 0) */calcPhase3();
-		#else
+#else
 			//set the number of threads for native multithreaded functions (android and Linux).
 			//for all the other platforms set this to >1 to have parallelization. If set to 1, no parallelization will be used.
 			uocean.setThreads(2);
@@ -440,7 +442,7 @@ public class Ocean : MonoBehaviour {
 			uocean._fft1(data);
 			uocean._fft2(t_x);
 			uocean._calcPhase3(data, t_x, vertices, baseHeight, normals, tangents, reflectionRefractionEnabled, canCheckBuoyancyNow, waveScale);
-		#endif
+#endif
 		
 		//place player boat on current water level.
 		if(player!= null && isBoat) {
@@ -481,17 +483,17 @@ public class Ocean : MonoBehaviour {
 
 	//how the frame/threads job will be distributed.
 	public void setSpread() {
-		#if !NATIVE
+#if !NATIVE
 			fr1 =0; fr2 = 0;  fr2B = 1; fr3 = 2; fr4 = 3;
 			if(everyXframe == 4) {fr2 = 1; fr2B = 2; fr3 = 2; fr4 = 3;  }
 			if(everyXframe == 3) {fr2=0; fr2B = 1; fr3 = 1; fr4 = 2;  }
 			if(everyXframe == 2) { fr2 = 0; fr2B = 0; fr3 = 1; fr4 = 1;  }
-		#else
+#else
 			fr1 =0; fr2 = 1;  fr2B = 2; fr3 = 2; fr4 = 3;
 			if(everyXframe == 4) {fr2 = 1; fr2B = 2; fr3 = 2; fr4 = 3;  }
 			if(everyXframe == 3) {fr2=0; fr2B = 1; fr3 = 1; fr4 = 2;  }
 			if(everyXframe == 2) { fr2 = 0; fr2B = 0; fr3 = 1; fr4 = 1;  }
-		#endif
+#endif
 		if(fixedUpdate ) spreadAlongFrames = false;
 	}
 
@@ -506,17 +508,17 @@ public class Ocean : MonoBehaviour {
 	void Update (){
 
 		if(!fixedUpdate) {
-			#if THREADS && !UNITY_WEBGL && !UNITY_WEBPLAYER && !(UNITY_WSA_8_1 ||  UNITY_WP_8_1 || UNITY_WINRT_8_1)
+#if THREADS && !UNITY_WEBGL && !UNITY_WEBPLAYER && !(UNITY_WSA_8_1 || UNITY_WP_8_1 || UNITY_WINRT_8_1)
 				if(spreadAlongFrames) updWithThreads(); else updNoThreads();
-			#else
+#else
 				updNoThreads();
-			#endif
+#endif
 		}
 	}
 	
 
 
-	#if !UNITY_WEBGL && !UNITY_WEBPLAYER && !(UNITY_WSA_8_1 ||  UNITY_WP_8_1 || UNITY_WINRT_8_1) && THREADS
+#if !UNITY_WEBGL && !UNITY_WEBPLAYER && !(UNITY_WSA_8_1 || UNITY_WP_8_1 || UNITY_WINRT_8_1) && THREADS
 	void updWithThreads() {
 
 		int fint = Time.frameCount % everyXframe;
@@ -541,70 +543,70 @@ public class Ocean : MonoBehaviour {
 
 			if(fint == fr2 || !spreadAlongFrames) {
 				canCheckBuoyancyNow[0] = 0;
-				#if !NATIVE
-					#if !NETFX_CORE
+#if !NATIVE
+#if !NETFX_CORE
 						th0 = new Thread( () => { calcComplex(time, 0, height/2); }); th0.Start();
 						th0b = new Thread( () => { calcComplex(time, height/2, height); }); th0b.Start();
-					#else
+#else
 						th0 = new Task( () => { calcComplex(time, 0, height/2); }); th0.Start();
 						th0b = new Task( () => { calcComplex(time, height/2, height); }); th0b.Start();
-					#endif
-				#else
+#endif
+#else
 					uocean._calcComplex(data, t_x, time, 0, height);
-				#endif				
+#endif
 			}
 
 			if(fint == fr2B || !spreadAlongFrames) {
-				#if !NATIVE
+#if !NATIVE
 					
-					#if !NETFX_CORE
+#if !NETFX_CORE
 						if(th0 != null) { if(th0.IsAlive) th0.Join(); } if(th0b != null) { if(th0b.IsAlive) th0b.Join();}
 						th1 = new Thread( () => { Fourier.FFT2 (data, width, height, FourierDirection.Backward); } );
-					#else
+#else
 						if(th0 != null && th0b!=null) Task.WaitAll(th0,th0b);
 						th1 = new Task( () => { Fourier.FFT2 (data, width, height, FourierDirection.Backward); } );
-					#endif
+#endif
 					th1.Start();
-				#else
+#else
 					uocean._fft1(data);
-				#endif
+#endif
 					
 			}
 		
 			if(fint == fr3 || !spreadAlongFrames) {
-				#if !NATIVE
-					#if !NETFX_CORE
+#if !NATIVE
+#if !NETFX_CORE
 						th1b = new Thread( () => { Fourier2.FFT2 (t_x, width, height, FourierDirection.Backward); } );
-					#else
+#else
 						th1b = new Task( () => { Fourier2.FFT2 (t_x, width, height, FourierDirection.Backward); } );
-					#endif
+#endif
 					th1b.Start();
-				#else
+#else
 					uocean._fft2(t_x);
-				#endif
+#endif
 					
 			}
 
 			if(fint == fr4 || !spreadAlongFrames ) {
-				#if !NATIVE
-					#if !NETFX_CORE
+#if !NATIVE
+#if !NETFX_CORE
 						if(th1b != null) {if(th1b.IsAlive) th1b.Join(); } if(th1 != null) {if(th1.IsAlive) th1.Join(); }
 						th2 = new Thread( calcPhase3 ); th2.Start();
-					#else
+#else
 						if(th1b != null && th1!=null) Task.WaitAll(th1b,th1);
 						th2 = new Task( calcPhase3 ); th2.Start();
-					#endif
+#endif
 					
-				#else
+#else
 					//2nd stage of tile update
 					if (skipLods) updateTiles(1, max_LOD);
 					uocean._calcPhase3(data, t_x, vertices, baseHeight, normals, tangents, reflectionRefractionEnabled, canCheckBuoyancyNow, waveScale);
-				#endif
+#endif
 			}
 
 		}
 	}
-	#endif
+#endif
 
 
 	void updNoThreads() {
@@ -628,38 +630,38 @@ public class Ocean : MonoBehaviour {
 
 			if(fint == fr2 || !spreadAlongFrames) {
 				canCheckBuoyancyNow[0] = 0;
-				#if !NATIVE
+#if !NATIVE
 					calcComplex(time, 0, height);
-				#else
+#else
 					uocean._calcComplex(data, t_x, time, 0, height);
-				#endif
+#endif
 			}
 
 			if(fint == fr2B || !spreadAlongFrames) {
-				#if !NATIVE
+#if !NATIVE
 					Fourier.FFT2 (data, width, height, FourierDirection.Backward);
-				#else
+#else
 					uocean._fft1(data);
-				#endif
+#endif
 			}
 
 			if(fint == fr3 || !spreadAlongFrames) {
-				#if !NATIVE
+#if !NATIVE
 					Fourier.FFT2 (t_x, width, height, FourierDirection.Backward);
-				#else
+#else
 					uocean._fft2(t_x);
-				#endif
+#endif
 			}
 
 			if(fint == fr4 || !spreadAlongFrames) {
-				#if !NATIVE
+#if !NATIVE
 					calcPhase3();
-				#else
+#else
 					//2nd stage of tile update
 					if (skipLods) updateTiles(1, max_LOD); 
 					uocean._calcPhase3(data, t_x, vertices, baseHeight, normals, tangents, reflectionRefractionEnabled, canCheckBuoyancyNow, waveScale);
 					canCheckBuoyancyNow[0] = 1;
-				#endif
+#endif
 
 			}
 		}
@@ -688,7 +690,7 @@ public class Ocean : MonoBehaviour {
 		}
 	}
 
-	#if !NATIVE
+#if !NATIVE
 	void calcComplex(float time, int ha, int hb) {
 		ComplexF coeffA = new ComplexF(0,0);
 		ComplexF tmp = new ComplexF(0,0);
@@ -727,12 +729,12 @@ public class Ocean : MonoBehaviour {
 	void calcPhase3() {
 		float scaleB = waveScale * wh1;
 		float scaleBinv = 1.0f / scaleB;
-		#if !SIMD
+#if !SIMD
 		float magnitude = 1 , invm;
 		float mag2 = scaleBinv*scaleBinv;
-		#else
+#else
 		Vector4f factor;
-		#endif
+#endif
 
 		for (int i=0; i<wh; i++) {
 			int iw = i + i / width;
@@ -743,16 +745,16 @@ public class Ocean : MonoBehaviour {
 			normals[iw].x = t_x [i].Re;
 			normals[iw].z = t_x [i].Im;
 			normals[iw].y = scaleBinv;
-			#if !SIMD
+#if !SIMD
 				//normalize
 				magnitude = (float)System.Math.Sqrt(normals[iw].x *normals[iw].x + mag2 + normals[iw].z * normals[iw].z);
 				if(magnitude>0){ invm = 1f/magnitude; normals[iw].x *= invm; normals[iw].y *= invm; normals[iw].z *= invm; }
-			#else
+#else
 				v4.X = normals[iw].x; v4.Y = scaleBinv; v4.Z = normals[iw].z;
 				//Normalizef(ref v4);
 				factor = v4 * v4; factor = factor.HorizontalAdd(factor); factor = factor.HorizontalAdd(factor); factor = factor.InvSqrt(); v4 *= factor;
 				normals[iw].x = v4.X; normals[iw].y = v4.Y; normals[iw].z = v4.Z;
-			#endif
+#endif
 
 			if (((i + 1) % width)==0) {
 				int iwi=iw+1;
@@ -764,16 +766,16 @@ public class Ocean : MonoBehaviour {
 				normals[iwi].x = t_x [iwidth].Re;
 				normals[iwi].z = t_x [iwidth].Im;
 				normals[iwi].y = scaleBinv;
-				#if !SIMD
+#if !SIMD
 					//normalize
 					magnitude = (float)System.Math.Sqrt(normals[iwi].x *normals[iwi].x + mag2 + normals[iwi].z * normals[iwi].z);
 					if(magnitude>0){ invm = 1f/magnitude; normals[iwi].x *= invm; normals[iwi].y *= invm; normals[iwi].z *= invm; }
-				#else
+#else
 					v4.X = normals[iwi].x; v4.Y = scaleBinv; v4.Z = normals[iwi].z;
 					//Normalizef(ref v4);
 					factor = v4 * v4; factor = factor.HorizontalAdd(factor); factor = factor.HorizontalAdd(factor); factor = factor.InvSqrt(); v4 *= factor;
 					normals[iwi].x = v4.X; normals[iwi].y = v4.Y; normals[iwi].z = v4.Z;
-				#endif
+#endif
 			}
 		}
 
@@ -788,16 +790,16 @@ public class Ocean : MonoBehaviour {
 			normals[io].z = t_x [mod].Im;
 			normals[io].y = scaleBinv;
 
-			#if !SIMD
+#if !SIMD
 				//normalize
 				magnitude = (float)System.Math.Sqrt(normals[io].x *normals[io].x + mag2 + normals[io].z * normals[io].z);
 				if(magnitude>0){ invm = 1f/magnitude; normals[io].x *= invm; normals[io].y *= invm; normals[io].z *= invm; }
-			#else
+#else
 				v4.X = normals[io].x; v4.Y = scaleBinv; v4.Z = normals[io].z;
 				//Normalizef(ref v4);
 				factor = v4 * v4; factor = factor.HorizontalAdd(factor); factor = factor.HorizontalAdd(factor); factor = factor.InvSqrt(); v4 *= factor;
 				normals[io].x = v4.X; normals[io].y = v4.Y; normals[io].z = v4.Z;
-			#endif
+#endif
 		}
 	    
 		canCheckBuoyancyNow[0] = 1;
@@ -811,16 +813,16 @@ public class Ocean : MonoBehaviour {
 			} else {
 				tmp = (vertices [i + 1] - vertices [i]);
 			}
-			#if !SIMD
+#if !SIMD
 				magnitude = (float)System.Math.Sqrt(tmp.x *tmp. x + tmp.y * tmp.y + tmp.z * tmp.z);
 				if(magnitude>0){ invm = 1f/magnitude; tmp.x *= invm; tmp.y *= invm; tmp.z *= invm; }
 				tangents[i].x = tmp.x; tangents[i].y = tmp.y; tangents[i].z = tmp.z;
-			#else
+#else
 				v4.X = tmp.x; v4.Y = tmp.y; v4.Z = tmp.z;
 				//Normalizef(ref v4);
 				factor = v4 * v4; factor = factor.HorizontalAdd(factor); factor = factor.HorizontalAdd(factor); factor = factor.InvSqrt(); v4 *= factor;
 				tangents[i].x = v4.X; tangents[i].y = v4.Y; tangents[i].z = v4.Z;				
-			#endif
+#endif
 
 			//Need to preserve w in refraction/reflection mode
 			if (!reflectionRefractionEnabled) tangents [i].w = 1.0f;
@@ -860,97 +862,97 @@ public class Ocean : MonoBehaviour {
 		}
 	}
 
-	#endif	
+#endif
 
 
-	#if !UNITY_WEBGL && !UNITY_WEBPLAYER && THREADS
+#if !UNITY_WEBGL && !UNITY_WEBPLAYER && THREADS
 	void calcPhase4() {
 		//Vector3 playerRelPos =  player.position - transform.position;
-		#if SIMD
+#if SIMD
 		Vector4f fac;
-		#endif
+#endif
 
 		//In reflection mode, use tangent w for foam strength
 		if (reflectionRefractionEnabled) {
 			float deltaTime = Time.deltaTime;  Vector3 playerPosition =  player.position;  Vector3 currentPosition = transform.position;
-			#if !NATIVE
-				#if !NETFX_CORE
+#if !NATIVE
+#if !NETFX_CORE
 					th3 = new Thread( () => { calcPhase4a(0, gh2, deltaTime, playerPosition, currentPosition);	});
-				#else
+#else
 					th3 = new Task( () => { calcPhase4a(0, gh2, deltaTime, playerPosition, currentPosition);	});
-				#endif
+#endif
 				th3.Start();
-				#if !NETFX_CORE
+#if !NETFX_CORE
 					th3b = new Thread( () => { calcPhase4a(gh2, g_height, deltaTime, playerPosition, currentPosition);	});
-				#else
+#else
 					th3b = new Task( () => { calcPhase4a(gh2, g_height, deltaTime, playerPosition, currentPosition);	});
-				#endif
+#endif
 				th3b.Start();
 				//not needed
 				//th3b.Join(); th3.Join();
-			#else
+#else
 				floats[0] = deltaTime; floats[1] = 	ifoamStrength; floats[2] = wakeDistance; floats[3] = ifoamWidth; floats[4] = foamDuration;
 				vecs[0] = playerPosition; vecs[1] = currentPosition;
 				uocean._calcPhase4b(vertices, tangents, floats, isBoat, vecs);
-			#endif
+#endif
 		}
 
-		#if !NATIVE
-			#if !NETFX_CORE
+#if !NATIVE
+#if !NETFX_CORE
 				if(th2 != null) { if(th2.IsAlive) th2.Join();}
-			#else
+#else
 				if(th2 != null) th2.Wait();
-			#endif
-		#endif
+#endif
+#endif
 
-		#if !SIMD
+#if !SIMD
 			tangents [gwgh] = Vector4.Normalize(vertices [gwgh] + mv2 - vertices [1]);
-		#else
+#else
 			Vector3 t = vertices [gwgh] + mv2 - vertices [1];
 			v4.X = t.x; v4.Y = t.y; v4.Z = t.z;
 			fac = v4 * v4; fac = fac.HorizontalAdd(fac); fac = fac.HorizontalAdd(fac); fac = fac.InvSqrt(); v4 *= fac;
 			tangents[gwgh].x = v4.X; tangents[gwgh].y = v4.Y; tangents[gwgh].z = v4.Z;
-		#endif
-		#if NATIVE
+#endif
+#if NATIVE
 			if (skipLods) updateTiles(0, 1); else updateTiles(0, max_LOD);
-		#else
+#else
 			updateTiles(0, max_LOD);
-		#endif
+#endif
 	}
-	#endif
+#endif
 
 	void calcPhase4N() {
 		//Vector3 playerRelPos =  player.position - transform.position;
-		#if SIMD
+#if SIMD
 		Vector4f fac;
-		#endif
+#endif
 
 		//In reflection mode, use tangent w for foam strength
 		if (reflectionRefractionEnabled) {
 
-			#if !NATIVE
+#if !NATIVE
 				calcPhase4a(0, g_height, Time.deltaTime, player.position, transform.position);
-			#else
+#else
 				floats[0] = Time.deltaTime; floats[1] = ifoamStrength; floats[2] = wakeDistance; floats[3] = ifoamWidth; floats[4] = foamDuration;
 				vecs[0] = player.position; vecs[1] = transform.position;
 				uocean._calcPhase4b(vertices, tangents, floats, isBoat, vecs);
-			#endif
+#endif
 		}
 
-		#if !SIMD
+#if !SIMD
 			tangents [gwgh] = Vector4.Normalize(vertices [gwgh] + mv2 - vertices [1]);
-		#else
+#else
 			Vector3 t = vertices [gwgh] + mv2 - vertices [1];
 			v4.X = t.x; v4.Y = t.y; v4.Z = t.z;
 			fac = v4 * v4; fac = fac.HorizontalAdd(fac); fac = fac.HorizontalAdd(fac); fac = fac.InvSqrt(); v4 *= fac;
 			tangents[gwgh].x = v4.X; tangents[gwgh].y = v4.Y; tangents[gwgh].z = v4.Z;
-		#endif
+#endif
 		
-		#if NATIVE
+#if NATIVE
 			if (skipLods) updateTiles(0, 1); else updateTiles(0, max_LOD);
-		#else
+#else
 			updateTiles(0, max_LOD);
-		#endif
+#endif
 	}
 
 
@@ -970,7 +972,7 @@ public class Ocean : MonoBehaviour {
 			//this will skip one update of the LOD0 tiles because they got updated earlier when they should.
 			if(ticked2 && L0D==0) { ticked2=false; continue; }
 
-			#if !NATIVE
+#if !NATIVE
 				int den = MyIntPow (2, L0D);
 				int idx = 0;
 
@@ -988,9 +990,9 @@ public class Ocean : MonoBehaviour {
 						normalsLOD[L0D] [idx++] = normals [idx2];
 					}			
 				}
-			#else
+#else
 				uocean._updateTilesA(verticesLOD[L0D], vertices, tangentsLOD[L0D], tangents, normalsLOD[L0D], normals, L0D, farLodOffset, flodoffset, flodFact);
-			#endif
+#endif
 
 			btiles_LOD[L0D].vertices = verticesLOD[L0D];
 			btiles_LOD[L0D].normals = normalsLOD[L0D];
@@ -1227,21 +1229,21 @@ public class Ocean : MonoBehaviour {
 		}
 
 		bool fchange = false;
-		#if NATIVE
+#if NATIVE
 		bool gchange = false;
 		if(oldSpeed != speed) {oldSpeed = speed; gchange = true; }
-		#endif
+#endif
 
 		if(oldScaleA != choppy_scale) {
 			scaleA = choppy_scale * wh1; oldScaleA = choppy_scale;
-			#if NATIVE
+#if NATIVE
 			gchange = true;
-			#endif
+#endif
 		}
 
-		#if NATIVE
+#if NATIVE
 		if(gchange) { uocean.updVars( pWindx, pWindy, speed, waveScale, choppy_scale,waveDistanceFactor, false); }
-		#endif
+#endif
 
 		if(oldWindx != pWindx) { oldWindx = pWindx; fchange = true; }
 		if(oldWindy != pWindy) { oldWindy = pWindy; fchange = true; }
@@ -1249,11 +1251,11 @@ public class Ocean : MonoBehaviour {
 
 		//***TODO*** make these changes affect the ocean smoothly and not rebuild the h0 buffer
 		if(fchange) {
-			#if !NATIVE
+#if !NATIVE
 				InitWaveGenerator(true);
-			#else
+#else
 				uocean.updVars( pWindx, pWindy, speed, waveScale, choppy_scale, waveDistanceFactor, true);
-			#endif		
+#endif
 		}
 	}
 
@@ -1389,8 +1391,12 @@ public class Ocean : MonoBehaviour {
 
 	public void RenderReflectionAndRefraction() {
 		int cullingMask = ~(1 << 4) & renderLayers.value;
+        #if UNITY_2017_OR_NEWER
 		Camera cam = XRDevice.isPresent ?  Camera.main :  Camera.current;
-		if( !cam ) return;
+        #else
+        Camera cam = Camera.current;
+        #endif
+        if ( !cam ) return;
 
 		Camera reflectionCamera, refractionCamera;
 		CreateWaterObjects( cam, out reflectionCamera, out refractionCamera );
@@ -1482,9 +1488,9 @@ public class Ocean : MonoBehaviour {
 
 		zeroObjects();
 
-		#if UNITY_EDITOR
+#if UNITY_EDITOR
 		EditorApplication.update -= _update;
-		#endif
+#endif
 	}
 
 
@@ -1521,14 +1527,14 @@ public class Ocean : MonoBehaviour {
 		gaussRandom1 = null;
 		gaussRandom2 = null;
 
-		#if NATIVE
+#if NATIVE
 			uocean.UoceanClear(destroy);
-		#else
+#else
 			Fourier.ClearLookupTables();
 			Fourier2.ClearLookupTables();
 			h0 = null;
 			h02 = null;
-		#endif
+#endif
 
 		if(destroy) GC.Collect();
 	}
@@ -1561,10 +1567,10 @@ public class Ocean : MonoBehaviour {
 			DestroyImmediate( (kvp.Value).gameObject );
 		m_RefractionCameras.Clear();
 
-		#if !NATIVE
+#if !NATIVE
 			Fourier.ClearLookupTables();
 			Fourier2.ClearLookupTables();
-		#endif
+#endif
 	}
 
 	private void UpdateCameraModes( Camera src, Camera dest ) {
@@ -2080,7 +2086,7 @@ public class Ocean : MonoBehaviour {
 	}
 
 
-	#if !NATIVE
+#if !NATIVE
 	public void InitWaveGenerator(bool skip = false, bool useMyRandom = false) {
 		// Wind restricted to one direction, reduces calculations
 		Vector2 windDirection = new Vector2 (windx, windy);
@@ -2150,27 +2156,31 @@ public class Ocean : MonoBehaviour {
 		float vcsq=vec_k.magnitude;	
 		return (float)(A * Math.Exp (-1.0f / (k2 * L * L) - Math.Pow (vcsq * 0.1, 2.0)) / (k2 * k2) * Math.Pow (Vector2.Dot (vec_k / vcsq, wind / wind.magnitude), 2.0));// * wind_x * wind_y;
 	}
-	#endif
+#endif
 
-	#if NATIVE
+#if NATIVE
 	public void getGaussianTable() {
 		int len = width * height;
 		if (gaussRandom1 == null || gaussRandom1.Length == 0) gaussRandom1 = new float[len]; 
 		if (gaussRandom2 == null || gaussRandom2.Length == 0) gaussRandom2 = new float[len];
 		uocean._getFixedRandomTable(gaussRandom1, gaussRandom2);
 	}
-	#endif
+#endif
 
 
 	//Only for the unity editor. Makes the ocean follow the editor camera.
-	#if UNITY_EDITOR
+#if UNITY_EDITOR
 	void _update () {
 		 if(oldSceneView != SceneView.currentDrawingSceneView) {
 			if( EditorWindow.focusedWindow != null && EditorWindow.focusedWindow.GetType() == typeof( SceneView ) ) {
 
-				Camera cam = XRDevice.isPresent ?  Camera.main :  Camera.current;
+                #if UNITY_2017_OR_NEWER
+		        Camera cam = XRDevice.isPresent ?  Camera.main :  Camera.current;
+                #else
+                Camera cam = Camera.current;
+                #endif
 
-				if(cam) {
+                if (cam) {
 					if(oldTransform2 != cam.name) {
 						oldSceneView = SceneView.currentDrawingSceneView;
 						player = cam.transform;
@@ -2188,6 +2198,6 @@ public class Ocean : MonoBehaviour {
 			}
 		 }
 	}
-	#endif
+#endif
 
 }
