@@ -148,21 +148,22 @@ public class Buoyancy : MonoBehaviour {
 
 			visible = _renderer.isVisible;
 
-			//put object on the correct height of the sea surface when it has visibilty checks on and it became visible again.
-			if(visible != lastvisible) {
-				if(visible && !lastvisible) {
-					if(Time.frameCount-lastFrame>15) {
-						float off = ocean.GetChoppyAtLocation(transform.position.x, transform.position.z);
-						float y = ocean.GetWaterHeightAtLocation2 (transform.position.x-off, transform.position.z);
-						transform.position = new Vector3(transform.position.x, y, transform.position.z);
-						lastFrame = Time.frameCount;
-					}
-				}
-				lastvisible = visible;
-			}
+            //put object on the correct height of the sea surface when it has visibilty checks on and it became visible again.
+            if (visible != lastvisible) {
+                if (visible && !lastvisible) {
+                    if (Time.frameCount - lastFrame > 15) {
+                        //float off = ocean.GetChoppyAtLocation(transform.position.x, transform.position.z);
+                        //float y = ocean.GetWaterHeightAtLocation2 (transform.position.x-off, transform.position.z);
+                        float y = ocean.GetHeightChoppyAtLocation2(transform.position.x, transform.position.z);
+                        transform.position = new Vector3(transform.position.x, y, transform.position.z);
+                        lastFrame = Time.frameCount;
+                    }
+                }
+                lastvisible = visible;
+            }
 
-			//prevent use of gravity when buoyancy is disabled
-			if(cvisible) {
+            //prevent use of gravity when buoyancy is disabled
+            if (cvisible) {
 				if(useGravity) {
 					if(!visible) {
 							rrigidbody.useGravity=false;
