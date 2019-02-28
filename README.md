@@ -1,4 +1,4 @@
-Minimum Version Required is Unity 5.6. Works with Untiy 2017.
+Minimum Version Required is Unity 5.6. Works with Untiy 2017, 2018.
 
 
 Based on ocean community : http://forum.unity3d.com/threads/wanted-ocean-shader.16540/

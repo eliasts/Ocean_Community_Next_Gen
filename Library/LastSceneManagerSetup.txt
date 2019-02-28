@@ -1,4 +1,0 @@
-sceneSetups:
-- path: Assets/Ocean/Scene/Ocean_with_ships_HQ.unity
-  isLoaded: 1
-  isActive: 1

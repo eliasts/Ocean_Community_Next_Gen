@@ -1023,24 +1023,37 @@ public class OceanGeneratorInspector : Editor {
 			if(Application.isPlaying)  ocean.initDisc();
 		}
 
-		if(ocW != oldocW) {
-			switch (ocW) {
-				case 0:
-				ocean.width = ocean.height = 8; break;
-				case 1:
-				;ocean.width = ocean.height = 16; break;
-				case 2:
-				ocean.width = ocean.height = 32; break;
-				case 3:
-				ocean.width = ocean.height = 64; break;
-				case 4:
-				ocean.width = ocean.height = 128; break;
-			}
-			oldocW = ocW;
-		}
+        if (ocW != oldocW)
+        {
+            switch (ocW)
+            {
+                case 0:
+                    ocean.width = ocean.height = 8; break;
+                case 1:
+                    ; ocean.width = ocean.height = 16; break;
+                case 2:
+                    ocean.width = ocean.height = 32; break;
+                case 3:
+                    ocean.width = ocean.height = 64; break;
+                case 4:
+                    ocean.width = ocean.height = 128; break;
+            }
+
+            #if !NATIVE
+                ocean.InitWaveGenerator();
+            #endif
+
+            #if NATIVE
+                ocean.InitNative();
+            #endif
+
+            ocean._gaussianMode = 0;
+
+            oldocW = ocW;
+        }
 
 
-		if (GUI.changed) {
+        if (GUI.changed) {
 			EditorUtility.SetDirty(ocean);
 			if(!EditorApplication.isPlaying) EditorSceneManager.MarkSceneDirty(ocean.gameObject.scene);
 		}

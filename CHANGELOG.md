@@ -1,3 +1,9 @@
+**28/02/2019**
+
+Fixed a bug that was introduced when the fixed gaussian table was implemented.
+Now no crashes should occur when going from lower to higher tile resolution.
+
+
 **19/10/2017**
 
 - The Presets path is now found automatically.

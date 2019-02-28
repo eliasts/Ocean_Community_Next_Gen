@@ -2093,7 +2093,10 @@ public class Ocean : MonoBehaviour {
 
 		int len = width * height;
 
-		if(h0 == null) h0 = new ComplexF[len];
+        if (h0 != null && h0.Length != len) h0 = null;
+        if (h02 != null && h02.Length != len) h02 = null;
+
+        if (h0 == null) h0 = new ComplexF[len];
 		if(h02 == null) h02 = new ComplexF[len];
 
 		if(useMyRandom && (gaussRandom1 == null || gaussRandom2 == null)) {
@@ -2101,7 +2104,10 @@ public class Ocean : MonoBehaviour {
 			Debug.Log("Fixed Gaussian Rand table is null!");
 		}
 
-		if (gaussRandom1 == null || (gaussRandom1 != null && gaussRandom1.Length == 0) ) gaussRandom1 = new float[len]; 
+        if(gaussRandom1 != null && gaussRandom1.Length != len) gaussRandom1 = null;
+        if (gaussRandom2 != null && gaussRandom2.Length != len) gaussRandom2 = null;
+
+        if (gaussRandom1 == null || (gaussRandom1 != null && gaussRandom1.Length == 0) ) gaussRandom1 = new float[len]; 
 		if (gaussRandom2 == null || (gaussRandom2 != null && gaussRandom2.Length == 0)) gaussRandom2 = new float[len];
 		
 
@@ -2159,18 +2165,29 @@ public class Ocean : MonoBehaviour {
 #endif
 
 #if NATIVE
-	public void getGaussianTable() {
-		int len = width * height;
-		if (gaussRandom1 == null || gaussRandom1.Length == 0) gaussRandom1 = new float[len]; 
-		if (gaussRandom2 == null || gaussRandom2.Length == 0) gaussRandom2 = new float[len];
-		uocean._getFixedRandomTable(gaussRandom1, gaussRandom2);
-	}
+    public void getGaussianTable()
+    {
+        int len = width * height;
+
+        if (gaussRandom1 != null && gaussRandom1.Length != len) gaussRandom1 = null;
+        if (gaussRandom2 != null && gaussRandom2.Length != len) gaussRandom2 = null;
+
+        if (gaussRandom1 == null || gaussRandom1.Length == 0) gaussRandom1 = new float[len];
+        if (gaussRandom2 == null || gaussRandom2.Length == 0) gaussRandom2 = new float[len];
+        uocean._getFixedRandomTable(gaussRandom1, gaussRandom2);
+    }
+
+    public void InitNative()
+    {
+        uocean.UInit(width, height, pWindx, pWindy, speed, waveScale, choppy_scale, size.x, size.y, size.z, waveDistanceFactor);
+        getGaussianTable();//optional: get the gaussian random table in case we want to save it
+    }
 #endif
 
 
-	//Only for the unity editor. Makes the ocean follow the editor camera.
+    //Only for the unity editor. Makes the ocean follow the editor camera.
 #if UNITY_EDITOR
-	void _update () {
+    void _update () {
 		 if(oldSceneView != SceneView.currentDrawingSceneView) {
 			if( EditorWindow.focusedWindow != null && EditorWindow.focusedWindow.GetType() == typeof( SceneView ) ) {
 
