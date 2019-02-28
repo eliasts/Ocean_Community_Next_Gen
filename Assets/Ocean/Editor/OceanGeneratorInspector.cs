@@ -47,7 +47,11 @@ public class OceanGeneratorInspector : Editor {
 
 	private readonly string[] defShader = {"default lod","1 (alpha)","2","3","4","5","6 (alpha)","7 (alpha)","8(translucent)"};
 	private readonly string[] skiplods = {"off","1","2","3","4"};
-	private readonly string[] tileSize = {"8x8","16x16","32x32","64x64","128x128"};
+	private readonly string[] tileSize = {"8x8","16x16","32x32","64x64","128x128"
+    #if UNITY_2017_3_OR_NEWER
+    , "256x256"
+    #endif
+    };
 	private readonly string[] mode = {"Random Gaussian Table","Fixed Gaussian Table"};
 	private readonly string[] discSize = {"small", "medium", "large"};
 	//private string[] projRes = {"low", "medium", "high"};
@@ -56,6 +60,11 @@ public class OceanGeneratorInspector : Editor {
 	private static string[] presets, presetpaths;
 
 	private static int editormode = 0;
+
+    private bool markedDirty = false;
+    private int checkPlayCounter = 0;
+
+    private Ocean _ocean;
 
 	private string GetPluginPath() {
 		MonoScript ms = MonoScript.FromScriptableObject( this );
@@ -107,6 +116,8 @@ public class OceanGeneratorInspector : Editor {
 		Ocean ocean = target as Ocean;
 		oldmodeset = ocean._gaussianMode;
 
+        _ocean = ocean;
+
 		var script = MonoScript.FromScriptableObject( this );
 		presetPath = Path.GetDirectoryName( AssetDatabase.GetAssetPath( script ))+"/_OceanPresets";
 
@@ -134,12 +145,13 @@ public class OceanGeneratorInspector : Editor {
 
 
 
-	public override void OnInspectorGUI() {
+
+
+    public override void OnInspectorGUI() {
 
 		Ocean ocean = target as Ocean;
 
-
-		GUILayout.Space(8);
+        GUILayout.Space(8);
 		EditorGUILayout.BeginHorizontal();
 		
 		if (GUILayout.Button("Ocean Settings")) { editormode=0;}
@@ -193,8 +205,7 @@ public class OceanGeneratorInspector : Editor {
 					ocean._name = presets[currentPreset];
 					checkOceanWidth(ocean);
 					oldRenderRefraction = ocean.renderRefraction;
-					EditorUtility.SetDirty(ocean);
-					if(!EditorApplication.isPlaying) EditorSceneManager.MarkSceneDirty(ocean.gameObject.scene);
+					makeDirty(ocean);
 				} else {
 					currentPreset = oldpreset;
 					checkPdir(ocean);
@@ -214,9 +225,8 @@ public class OceanGeneratorInspector : Editor {
 						updcurPreset();
 						checkOceanWidth(ocean);
 						oldRenderRefraction=ocean.renderRefraction;
-						EditorUtility.SetDirty(ocean);
-						if(!EditorApplication.isPlaying) EditorSceneManager.MarkSceneDirty(ocean.gameObject.scene);
-					}
+                        makeDirty(ocean);
+                    }
 				}
 			}
 
@@ -896,7 +906,17 @@ public class OceanGeneratorInspector : Editor {
 
 			GUILayout.FlexibleSpace();
 
-		}
+
+
+            if(GUI.changed) markedDirty = true;
+
+            checkPlayCounter++;
+            if (checkPlayCounter > 2) { 
+                OnPlaymodeStateChange();
+                checkPlayCounter = 0;
+            }
+
+        }
 
 		//UPDATE SHADER IN REALTIME
 
@@ -1037,6 +1057,10 @@ public class OceanGeneratorInspector : Editor {
                     ocean.width = ocean.height = 64; break;
                 case 4:
                     ocean.width = ocean.height = 128; break;
+                #if UNITY_2017_3_OR_NEWER
+                case 5:
+                    ocean.width = ocean.height = 256; break;
+                #endif
             }
 
             #if !NATIVE
@@ -1053,12 +1077,34 @@ public class OceanGeneratorInspector : Editor {
         }
 
 
-        if (GUI.changed) {
-			EditorUtility.SetDirty(ocean);
-			if(!EditorApplication.isPlaying) EditorSceneManager.MarkSceneDirty(ocean.gameObject.scene);
-		}
-
 	}
+
+    private void OnDisable()
+    {
+        if (markedDirty) { 
+            markedDirty = false;
+            makeDirty(_ocean);
+        }
+    }
+
+    void OnPlaymodeStateChange()
+    {
+
+        if (!EditorApplication.isPlaying && EditorApplication.isPlayingOrWillChangePlaymode)
+        {
+            if (markedDirty)
+            {
+                markedDirty = false;
+                makeDirty(_ocean);
+            }
+        }
+    }
+
+    public static void makeDirty(Ocean ocean)
+    {
+        EditorUtility.SetDirty(ocean);
+        if (!EditorApplication.isPlaying) EditorSceneManager.MarkSceneDirty(ocean.gameObject.scene);
+    }
 
 	private static void switchKeyword (Material mat, string keyword1, string keyword2, bool on){
 		if(on) { mat.EnableKeyword(keyword1);  mat.DisableKeyword(keyword2); }
@@ -1087,7 +1133,11 @@ public class OceanGeneratorInspector : Editor {
 			ocW = 3; ocean.width = ocean.height = 64; break;
 			case 128:
 			ocW = 4; ocean.width = ocean.height = 128; break;
-		}
+            #if UNITY_2017_3_OR_NEWER
+            case 256:
+            ocW = 5; ocean.width = ocean.height = 256; break;
+            #endif
+        }
 		oldocW = ocW;
 	}
 

@@ -1,3 +1,10 @@
+**28/02/2019 (b)**
+
+- Added support for 32 bit indices and 256x256 tile grid.
+- Added unity ui fps counter.
+- Fixed a bug on setting the scene as dirty when making changes to the inspector.
+
+
 **28/02/2019**
 
 Fixed a bug that was introduced when the fixed gaussian table was implemented.

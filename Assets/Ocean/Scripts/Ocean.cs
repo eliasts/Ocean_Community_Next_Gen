@@ -1026,7 +1026,11 @@ public class Ocean : MonoBehaviour {
 		tiles_LOD = new List<List<Mesh>>();
 
 		for (int L0D=0; L0D<max_LOD; L0D++) {
-			btiles_LOD.Add(new Mesh());
+            Mesh mh = new Mesh();
+            #if UNITY_2017_3_OR_NEWER
+            if(width>128) mh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+            #endif
+            btiles_LOD.Add(mh);
 			tiles_LOD.Add (new List<Mesh>());
 		}
 
@@ -1129,7 +1133,9 @@ public class Ocean : MonoBehaviour {
 	void GenerateHeightmap () {
 
 		Mesh mesh = new Mesh ();
-
+        #if UNITY_2017_3_OR_NEWER
+        if (width > 128) mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+        #endif
 		int y = 0;
 		int x = 0;
 
