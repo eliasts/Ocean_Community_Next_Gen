@@ -3,6 +3,8 @@
 Fixed a bug that was introduced when the fixed gaussian table was implemented.
 Now no crashes should occur when going from lower to higher tile resolution.
 
+Added arm64-v8a native plugin for Android.
+
 
 **19/10/2017**
 
