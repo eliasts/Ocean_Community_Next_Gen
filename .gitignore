@@ -5,6 +5,7 @@
 /[Bb]uilds/
 /[Ll]ibrary/
 /Assets/AssetStoreTools*
+/.vs/
 
 # Windows image file caches
 Thumbs.db
@@ -25,6 +26,7 @@ $RECYCLE.BIN/
 *.csproj
 .suo
 *.vscode
+
 
 # Windows shortcuts
 *.lnk
@@ -58,6 +60,7 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+
 # Unity3D generated meta files
 *.pidb.meta
 
@@ -69,3 +72,4 @@ sysinfo.txt
 *.unitypackage
 
 #Ignore these directories
+.vs/
