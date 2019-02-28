@@ -5,6 +5,8 @@ Now no crashes should occur when going from lower to higher tile resolution.
 
 Added arm64-v8a native plugin for Android.
 
+Added macOS 64 bit only native plugin.
+
 
 **19/10/2017**
 
