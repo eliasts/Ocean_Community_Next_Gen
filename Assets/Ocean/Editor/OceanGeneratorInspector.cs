@@ -1073,6 +1073,8 @@ public class OceanGeneratorInspector : Editor {
 
             ocean._gaussianMode = 0;
 
+            makeDirty(ocean);
+
             oldocW = ocW;
         }
 
@@ -1102,6 +1104,7 @@ public class OceanGeneratorInspector : Editor {
 
     public static void makeDirty(Ocean ocean)
     {
+        if(ocean == null) return;
         EditorUtility.SetDirty(ocean);
         if (!EditorApplication.isPlaying) EditorSceneManager.MarkSceneDirty(ocean.gameObject.scene);
     }
