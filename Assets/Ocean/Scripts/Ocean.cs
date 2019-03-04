@@ -2185,9 +2185,8 @@ public class Ocean : MonoBehaviour {
 
     public void InitNative()
     {
-        uocean.UoceanClear(true);
-        uocean.UoceanInit(width, height, pWindx, pWindy, speed, waveScale, choppy_scale, size.x, size.y, size.z, waveDistanceFactor);
-        getGaussianTable();//optional: get the gaussian random table in case we want to save it
+        uocean.UInit(width, height, pWindx, pWindy, speed, waveScale, choppy_scale, size.x, size.y, size.z, waveDistanceFactor);
+        //getGaussianTable();//optional: get the gaussian random table in case we want to save it
     }
 #endif
 
