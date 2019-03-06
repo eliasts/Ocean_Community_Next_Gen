@@ -1,4 +1,4 @@
-**06/03/2019 **
+**06/03/2019**
 
 - Improved Translucency in the shaders.
 
@@ -6,7 +6,7 @@
   because sometimes the reflection camera got stuck.
   
 
-**04/03/2019 **
+**04/03/2019**
 Uploaded correct native Android plugins.
 
 
