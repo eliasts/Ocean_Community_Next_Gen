@@ -505,7 +505,7 @@ public class Ocean : MonoBehaviour {
 	}
 
 
-	void Update (){
+	void Update () {
 
 		if(!fixedUpdate) {
 #if THREADS && !UNITY_WEBGL && !UNITY_WEBPLAYER && !(UNITY_WSA_8_1 || UNITY_WP_8_1 || UNITY_WINRT_8_1)
@@ -514,7 +514,10 @@ public class Ocean : MonoBehaviour {
 				updNoThreads();
 #endif
 		}
-	}
+
+        //create reflection/refraction render textures (moved here, because OnWillRenderObject caused sometimes the reflection camera to stuck)
+        OnWillRenderObject2();
+    }
 	
 
 
@@ -1384,7 +1387,7 @@ public class Ocean : MonoBehaviour {
     Called when the object is about to be rendered. We render the refraction/reflection
     passes from here, since we only need to do it once per frame, not once per tile.
     */
-	void OnWillRenderObject ()
+	void OnWillRenderObject2 ()
 	{
 		if (renderReflection || renderRefraction) {
 			int rint = Time.frameCount % reflrefrXframe;

@@ -97,9 +97,8 @@ Shader "Mobile/OceanL8" {
 
 				o.normViewDir = normalize(viewDir);
 
-				half3 transLightDir = -o.lightDir + v.normal;
-
-				o.objSpaceNormal.w = pow ( max (0, dot ( o.normViewDir, -transLightDir ) ), 1 ) * 0.5 * _Translucency;;
+				//translucency calculation
+				o.objSpaceNormal.w = pow ( max (0, dot ( o.normViewDir, o.lightDir ) ), 1 ) * 0.5 * _Translucency ;
 
 				#ifdef FOGON
 				//manual fog
