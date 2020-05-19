@@ -1,3 +1,7 @@
+**19/05/2020**
+
+- Removed Native plugin support for WebGL since it does not provide any significant speed gain.
+
 **06/03/2019**
 
 - Improved Translucency in the shaders.
