@@ -6,6 +6,12 @@
 #undef SIMD
 #endif
 
+// Removing Native plugin support for WebGL since it does not provide any significant speed gain
+#if (UNITY_WEBGL && !UNITY_EDITOR)
+#undef NATIVE
+#endif
+
+
 #if (UNITY_WSA_8_1 ||  UNITY_WP_8_1 || UNITY_WINRT_8_1) && !UNITY_EDITOR
 #undef THREADS
 #endif

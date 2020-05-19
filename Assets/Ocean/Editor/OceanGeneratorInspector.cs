@@ -43,7 +43,7 @@ public class OceanGeneratorInspector : Editor {
 	private static Shader oldShader;
 	private static bool hasShore, hasShore1,hasFog, hasFog1, hasFog2, distCan1, distCan2;
 	private static float cancellationDistance;
-	private static int ocW, oldocW, oldGridRes;
+	private static int ocW, oldocW;
 
 	private readonly string[] defShader = {"default lod","1 (alpha)","2","3","4","5","6 (alpha)","7 (alpha)","8(translucent)"};
 	private readonly string[] skiplods = {"off","1","2","3","4"};
@@ -137,7 +137,6 @@ public class OceanGeneratorInspector : Editor {
 		oldRenderRefraction = ocean.renderRefraction;
 		oldDiscSize = ocean.discSize;
 		oldFixedTiles = ocean.fixedTiles;
-		oldGridRes = ocean._gridRes;
 
 		checkOceanWidth(ocean);
 	}
@@ -1407,7 +1406,11 @@ private void DrawHalfSeparator(bool left = true) {
 			Texture2D tex = back;
 			Rect rect = GUILayoutUtility.GetLastRect();
 			GUI.color = new Color(0.6f, 0.6f, 0.6f, 1f);
-			GUI.DrawTexture(new Rect(0f, rect.yMin + 6f, Screen.width, 950), tex);
+            #if UNITY_2019_3 || UNITY_2020 || UNITY_2021
+			GUI.DrawTexture(new Rect(0f, rect.yMin + 6f, Screen.width, 1028), tex);
+            #else
+            GUI.DrawTexture(new Rect(0f, rect.yMin + 6f, Screen.width, 950), tex);
+            #endif
 			GUI.color = Color.white;
 		}
 	}
